@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Video + Chat + Audio + Upload</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans flex flex-col items-center justify-start p-4">
+
+<!-- Đăng nhập -->
+<div id="loginPanel" class="w-full max-w-md bg-white p-6 rounded-2xl shadow-lg mt-12">
+  <h2 class="text-2xl font-bold text-center text-gray-700 mb-6">🔐 Nhập tên để vào phòng</h2>
+  <input id="usernameInput" class="w-full p-3 border rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Tên người dùng" />
+  <button onclick="login()" class="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Đăng nhập</button>
+</div>
+
+<!-- Giao diện chính -->
+<div id="mainPanel" class="hidden w-full max-w-4xl bg-white p-6 rounded-2xl shadow-lg mt-8 space-y-5">
+
+  <div class="text-center space-y-1">
+    <h2 id="userLabel" class="text-xl font-semibold text-gray-800">👤 Bạn</h2>
+    <div id="statusLabel" class="text-lg font-semibold text-green-600">🟢 ALO CHAT</div>
+  </div>
+
+  <!-- Camera -->
+  <div class="flex justify-center gap-6">
+    <div class="text-center space-y-2">
+      <h3 class="text-gray-600 text-sm">🎥 Camera của bạn</h3>
+      <video id="localVideo" autoplay muted class="w-64 h-36 border rounded-lg shadow object-cover"></video>
+    </div>
+    <div class="text-center space-y-2">
+      <h3 class="text-gray-600 text-sm">🎥 Camera người kia</h3>
+      <video id="remoteVideo" autoplay class="w-64 h-36 border rounded-lg shadow object-cover"></video>
+    </div>
+  </div>
+   
+  <center> Bản quyền © 2025 <span class="font-bold text-red-600">PHẠM HUY TUÂN</span> · ĐT: <a href="tel:0389897989" class="text-blue-600 hover:underline">0389 897 989</a></center>
+
+  <!-- Nút điều khiển -->
+  <div class="flex justify-center gap-4">
+    <button onclick="toggleCamera()" id="camBtn" class="py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 transition">📷 Bật Camera</button>
+    <button onclick="toggleMic()" id="micBtn" class="py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 transition">🎙️ Bật Mic</button>
+  </div>
+
+  <!-- Đang nói -->
+  <div id="activityLabel" class="text-center text-red-500 text-sm hidden">🔴 Đang nói...</div>
+
+  <!-- Chat -->
+  <div class="flex gap-2 mt-4">
+    <input id="messageInput" class="flex-1 border p-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nhập tin nhắn..." />
+    <button onclick="sendMessage()" class="px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition">Gửi</button>
+  </div>
+
+  <!-- Gửi file -->
+  <div class="flex gap-2 items-center mt-2">
+    <input id="fileInput" type="file" accept="image/*,video/*" class="flex-1 border p-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
+    <button onclick="sendFile()" class="px-4 py-2 bg-purple-500 text-white text-sm rounded-md hover:bg-purple-600 transition">📎 Gửi file</button>
+  </div>
+
+  <!-- Hiển thị chat -->
+  <div id="chatBox" class="mt-2 p-3 bg-gray-50 h-40 overflow-y-auto text-sm border rounded-md"></div>
+
+</div>
+
+<script>
+const socket = io();
+let username = '';
+let localStream;
+let audioTrack, videoTrack;
+let peerConnection;
+const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+function login() {
+  username = document.getElementById("usernameInput").value.trim();
+  if (!username) return alert("Vui lòng nhập tên!");
+
+  document.getElementById("loginPanel").classList.add("hidden");
+  document.getElementById("mainPanel").classList.remove("hidden");
+  document.getElementById("userLabel").textContent = `👤 ${username}`;
+  socket.emit("user_online", { name: username });
+}
+
+socket.on("peer_online", data => {
+  const other = data.name !== username ? data.name : null;
+  if (other) {
+    document.getElementById("statusLabel").textContent = `🟢 ${other} đang online`;
+    startConnection();
+  }
+});
+
+function toggleCamera() {
+  if (!videoTrack) {
+    startMedia(true, false);
+  } else {
+    videoTrack.enabled = !videoTrack.enabled;
+    document.getElementById("camBtn").textContent = videoTrack.enabled ? "📷 Tắt Camera" : "📷 Bật Camera";
+  }
+}
+
+function toggleMic() {
+  if (!audioTrack) {
+    startMedia(false, true);
+  } else {
+    audioTrack.enabled = !audioTrack.enabled;
+    document.getElementById("micBtn").textContent = audioTrack.enabled ? "🎙️ Tắt Mic" : "🎙️ Bật Mic";
+  }
+}
+
+function startMedia(useVideo = true, useAudio = true) {
+  navigator.mediaDevices.getUserMedia({ video: useVideo, audio: useAudio })
+    .then(stream => {
+      localStream = stream;
+      document.getElementById("localVideo").srcObject = stream;
+
+      if (useVideo) {
+        videoTrack = stream.getVideoTracks()[0];
+        document.getElementById("camBtn").textContent = "📷 Tắt Camera";
+      }
+
+      if (useAudio) {
+        audioTrack = stream.getAudioTracks()[0];
+        document.getElementById("micBtn").textContent = "🎙️ Tắt Mic";
+        detectSpeaking(stream);
+      }
+
+      if (peerConnection) {
+        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+      }
+    })
+    .catch(e => alert("Không thể truy cập media: " + e));
+}
+
+function detectSpeaking(stream) {
+  const ctx = new AudioContext();
+  const source = ctx.createMediaStreamSource(stream);
+  const analyser = ctx.createAnalyser();
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  source.connect(analyser);
+
+  function checkVolume() {
+    analyser.getByteFrequencyData(data);
+    const volume = data.reduce((a, b) => a + b, 0) / data.length;
+    document.getElementById("activityLabel").classList.toggle("hidden", volume < 10);
+    requestAnimationFrame(checkVolume);
+  }
+
+  checkVolume();
+}
+
+function startConnection() {
+  peerConnection = new RTCPeerConnection(config);
+
+  if (localStream) {
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+  }
+
+  peerConnection.ontrack = event => {
+    document.getElementById("remoteVideo").srcObject = event.streams[0];
+  };
+
+  peerConnection.onicecandidate = event => {
+    if (event.candidate) {
+      socket.emit("ice_candidate", { candidate: event.candidate });
+    }
+  };
+
+  peerConnection.createOffer().then(offer => {
+    return peerConnection.setLocalDescription(offer);
+  }).then(() => {
+    socket.emit("offer", { offer: peerConnection.localDescription });
+  });
+}
+
+socket.on("offer", data => {
+  if (!peerConnection) startConnection();
+
+  peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer)).then(() => {
+    return peerConnection.createAnswer();
+  }).then(answer => {
+    return peerConnection.setLocalDescription(answer);
+  }).then(() => {
+    socket.emit("answer", { answer: peerConnection.localDescription });
+  });
+});
+
+socket.on("answer", data => {
+  peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+});
+
+socket.on("ice_candidate", data => {
+  peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+});
+
+function sendMessage() {
+  const msg = document.getElementById("messageInput").value.trim();
+  if (!msg) return;
+  socket.emit("send_message", { from: username, text: msg });
+  document.getElementById("messageInput").value = '';
+}
+
+socket.on("receive_message", data => {
+  const chat = document.getElementById("chatBox");
+  chat.innerHTML += `<p><strong>${data.from}:</strong> ${data.text}</p>`;
+  chat.scrollTop = chat.scrollHeight;
+});
+
+function sendFile() {
+  const fileInput = document.getElementById("fileInput");
+  const file = fileInput.files[0];
+  if (!file) return alert("Chọn một file để gửi.");
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    socket.emit("send_file", {
+      from: username,
+      name: file.name,
+      type: file.type,
+      data: reader.result
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+socket.on("receive_file", data => {
+  const chat = document.getElementById("chatBox");
+  const { from, name, type, data: fileData } = data;
+
+  let html = `<p><strong>${from}:</strong><br/>`;
+  if (type.startsWith("image/")) {
+    html += `<img src="${fileData}" alt="${name}" class="max-h-32 mt-1 rounded-md"/>`;
+  } else if (type.startsWith("video/")) {
+    html += `<video controls src="${fileData}" class="max-h-48 mt-1 rounded-md"></video>`;
+  } else {
+    html += `<a href="${fileData}" download="${name}" class="text-blue-500 underline">📎 ${name}</a>`;
+  }
+  html += `</p>`;
+
+  chat.innerHTML += html;
+  chat.scrollTop = chat.scrollHeight;
+});
+</script>
+
+</body>
+</html>
