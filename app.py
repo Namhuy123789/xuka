@@ -151,6 +151,15 @@ def web():
 @app.route("/mobile")
 def mobile():
     return render_template("index_mobile.html")
+@socketio.on("join_room")
+def join_room_event(data):
+    join_room(data['room'])
+    emit("peer_online", {"name": data['name']}, to=data['room'], include_self=False)
+
+@socketio.on("offer")
+def handle_offer(data):
+    emit("offer", {"offer": data['offer']}, to=data['room'], include_self=False)
+# Tương tự cho "answer", "ice_candidate", "send_message", "send_file"
 
 # --- API: Danh sách mã đề ---
 @app.get("/api/made")
