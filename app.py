@@ -12,7 +12,6 @@ from flask_socketio import SocketIO, emit
 
 
 
-
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change_this_secret_key")
@@ -20,9 +19,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 QUESTION_DIR = os.path.join(BASE_DIR, "questions")
 QUESTIONS_FILE = os.path.join(QUESTION_DIR, "questions.json")
-socketio = SocketIO(app, async_mode="threading")
-
-
+from flask_cors import CORS
+CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 # CSRF
 csrf = CSRFProtect(app)
 
@@ -99,6 +98,9 @@ def tinh_diem_va_luu_bai_lam(bai_lam, de_thi):
         "tong_cau_trac_nghiem": tong_cau_trac_nghiem,
         "bai_lam_chi_tiet": ket_qua
     }
+@socketio.on("send_file")
+def handle_file(data):
+    emit("receive_file", data, broadcast=True)
 
 
 @app.route('/alochat')
@@ -138,11 +140,11 @@ def tronde():
 def h2():
     return render_template('h2.html')
 
-@app.route("/index")
+@app.route("/")
 def index():
     return render_template("index.html")
 
-@app.route("/")
+@app.route("/web")
 def web():
     return render_template("index_web.html")
 
