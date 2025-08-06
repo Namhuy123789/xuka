@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
@@ -9,245 +9,126 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      overflow: hidden;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0; padding: 0; height: 100vh; overflow: hidden;
+      font-family: 'Inter', sans-serif;
       background: linear-gradient(to bottom, #f1f5f9, #e2e8f0);
-      transition: background-color 0.3s, color 0.3s;
     }
-    .dark {
-      background: linear-gradient(to bottom, #1f2937, #374151);
-      color: #e5e7eb;
-    }
-    .dark .bg-white { background-color: #374151; }
-    .dark .text-gray-700 { color: #e5e7eb; }
-    .dark .bg-gray-50 { background-color: #4b5563; }
-    .chat-bubble {
-      margin-bottom: 0.5rem;
-      padding: 0.4rem 0.75rem;
-      line-height: 1.4rem;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      background-color: transparent;
-      color: black;
-      word-break: break-word;
-    }
-    .chat-bubble.other,
-    .chat-bubble.translated {
-      background-color: white !important;
-      color: black !important;
-      border-left: none !important;
-    }
-    .dark .chat-bubble,
-    .dark .chat-bubble.self,
-    .dark .chat-bubble.other,
-    .dark .chat-bubble.translated {
-      background-color: white !important;
-      color: black !important;
-    }
-    .scroll-to-bottom {
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      background-color: #2563eb;
-      color: white;
-      border-radius: 50%;
-      padding: 0.4rem;
-      cursor: pointer;
-      display: none;
-      font-size: 0.875rem;
-    }
-    .btn-icon {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      transition: all 0.2s ease;
-    }
-    .video-container {
-      max-width: 100%;
-      aspect-ratio: 16 / 9;
-    }
-    #chatBox > div {
-      background: transparent !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      border: none !important;
-      border-radius: 0 !important;
-      line-height: 1.3;
-    }
+    .chat-bubble { padding: 4px 8px; border-radius: 6px; }
+    .activity-label { font-size: 0.75rem; color: green; display: none; }
   </style>
 </head>
 
-<body class="min-h-screen flex flex-col items-center justify-start p-3 sm:p-4">
-  <!-- Dark mode toggle -->
-  <button id="themeToggle" class="fixed top-3 right-3 p-1.5 bg-gray-800 text-white rounded-full hover:bg-gray-700 transition text-sm">
-    <i class="fas fa-moon"></i>
-  </button>
+<body class="min-h-screen flex flex-col items-center p-4">
 
   <!-- Đăng nhập -->
   <div id="loginPanel" class="w-full max-w-sm bg-white p-5 rounded-xl shadow-md mt-10">
-    <h2 class="text-xl font-semibold text-center text-gray-700 mb-5">🔐 Nhập tên và mã phòng</h2>
-    <input id="usernameInput" class="w-full p-2.5 border rounded-md mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Tên người dùng" />
-    <input id="roomInput" class="w-full p-2.5 border rounded-md mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Mã phòng (vd: abc123)" />
-    <button onclick="login()" class="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition text-sm">Đăng nhập</button>
+    <h2 class="text-xl font-semibold text-center text-gray-700 mb-5">🔐 Nhập tên & mã phòng</h2>
+    <input id="usernameInput" class="w-full p-2 border rounded mb-3" placeholder="Tên người dùng" />
+    <input id="roomInput" class="w-full p-2 border rounded mb-4" placeholder="Mã phòng (vd: abc123)" />
+    <button onclick="login()" class="w-full py-2 bg-blue-600 text-white rounded">Đăng nhập</button>
   </div>
 
   <!-- Giao diện chính -->
-  <div id="mainPanel" class="hidden w-full max-w-4xl bg-white p-4 rounded-xl shadow-md mt-0 space-y-4">
+  <div id="mainPanel" class="hidden w-full max-w-4xl bg-white p-4 rounded-xl shadow-md space-y-4">
     <div class="text-center space-y-1">
-      <h2 id="userLabel" class="text-lg font-semibold text-gray-800">👤 Bạn</h2>
-      <div id="statusLabel" class="text-base font-medium text-green-600">🟢 ALO CHAT</div>
-      <div id="typingIndicator" class="text-xs text-gray-500 hidden">Đang nhập...</div>
+      <h2 id="userLabel" class="font-semibold text-gray-800">👤 Bạn</h2>
+      <div id="statusLabel" class="text-green-600">🟢 ALO CHAT</div>
+      <div id="activityLabel" class="activity-label">🎙️ Đang nói…</div>
     </div>
 
     <!-- Camera -->
-    <div class="flex flex-col sm:flex-row justify-center gap-4">
-      <div class="text-center space-y-1 video-container">
-        <h3 class="text-gray-600 text-xs">Camera của bạn</h3>
-        <video id="localVideo" autoplay muted class="w-full h-32 rounded-lg shadow-sm object-cover border-2 border-blue-500"></video>
+    <div class="flex gap-4 justify-center">
+      <div class="text-center">
+        <h3 class="text-xs">Camera của bạn</h3>
+        <video id="localVideo" autoplay muted class="w-48 rounded border-2 border-blue-500"></video>
       </div>
-      <div class="text-center space-y-1 video-container">
-        <h3 class="text-gray-600 text-xs">Camera người kia</h3>
-        <video id="remoteVideo" autoplay class="w-full h-32 rounded-lg shadow-sm object-cover border-2 border-red-500"></video>
+      <div class="text-center">
+        <h3 class="text-xs">Camera người kia</h3>
+        <video id="remoteVideo" autoplay class="w-48 rounded border-2 border-red-500"></video>
       </div>
     </div>
 
-    <center class="text-xs text-gray-500">Bản quyền © 2025 <span class="font-semibold text-red-600">PHẠM HUY TUÂN</span> · ĐT: <a href="tel:0389897989" class="text-blue-600 hover:underline">0389 897 989</a></center>
-
     <!-- Nút điều khiển -->
-    <div class="flex justify-center gap-1 flex-wrap text-xs items-center">
-      <button onclick="toggleCamera()" id="camBtn" class="h-8 px-2 bg-green-500 text-white hover:bg-green-600 rounded flex items-center gap-1">
+    <div class="flex gap-2 justify-center">
+      <button onclick="toggleCamera()" id="camBtn" class="px-3 py-1 bg-green-500 text-white rounded">
         <i class="fas fa-video"></i> Bật Camera
       </button>
-      <button onclick="toggleMic()" id="micBtn" class="h-8 px-2 bg-green-500 text-white hover:bg-green-600 rounded flex items-center gap-1">
+      <button onclick="toggleMic()" id="micBtn" class="px-3 py-1 bg-green-500 text-white rounded">
         <i class="fas fa-microphone"></i> Bật Mic
-      </button>
-      <button onclick="toggleSpeechTranslation()" id="speechTranslateBtn" class="h-8 px-2 bg-yellow-500 text-white hover:bg-yellow-600 rounded flex items-center gap-1">
-        <i class="fas fa-language"></i> Phiên dịch nói
-      </button>
-      <select id="translateLang" class="h-8 px-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
-        <option value="en">Tiếng Anh</option>
-        <option value="vi">Tiếng Việt</option>
-        <option value="zh-CN">Tiếng Trung</option>
-        <option value="fr">Tiếng Pháp</option>
-      </select>
-      <button onclick="toggleTranslation()" id="translateBtn" class="h-8 px-2 bg-blue-500 text-white hover:bg-blue-600 rounded flex items-center gap-1">
-        <i class="fas fa-globe"></i> Phiên dịch chat
       </button>
     </div>
 
     <!-- Chat -->
-    <div class="relative">
-      <div id="chatBox" class="mt-2 p-3 bg-transparent h-40 overflow-y-auto text-sm border rounded-md relative"></div>
-      <button id="scrollToBottom" class="scroll-to-bottom"><i class="fas fa-arrow-down"></i></button>
-    </div>
+    <div id="chatBox" class="p-2 border rounded h-40 overflow-y-auto text-sm"></div>
 
     <!-- Gửi tin nhắn -->
-    <div class="flex gap-2 mt-2">
-      <input id="messageInput" class="flex-1 border p-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nhập tin nhắn..." />
-      <button onclick="sendMessage()" class="btn-icon bg-blue-500 text-white hover:bg-blue-600"><i class="fas fa-paper-plane"></i> Gửi</button>
+    <div class="flex gap-2">
+      <input id="messageInput" class="flex-1 border p-2 rounded" placeholder="Nhập tin nhắn..." />
+      <button onclick="sendMessage()" class="bg-blue-500 text-white px-3 rounded"><i class="fas fa-paper-plane"></i> Gửi</button>
     </div>
 
     <!-- Gửi file -->
-    <div class="flex gap-2 items-center mt-2">
-      <input id="fileInput" type="file" accept="image/*,video/*,application/pdf" class="flex-1 border p-2 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-purple-400" />
-      <small class="text-xs text-gray-500 hidden sm:block">Nhấn Enter để gửi file</small>
-      <button onclick="sendFile()" class="btn-icon bg-purple-500 text-white hover:bg-purple-600"><i class="fas fa-paperclip"></i> Gửi file</button>
-    </div>
-
-    <!-- File preview -->
-    <div id="filePreview" class="hidden mt-2">
-      <div id="previewContent" class="text-center"></div>
-    </div>
-
-    <!-- Tiến trình gửi -->
-    <div id="progressContainer" class="w-full mt-2 hidden">
-      <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-        <div id="progressBar" class="bg-green-500 h-2 transition-all duration-200" style="width: 0%"></div>
-      </div>
-      <div id="progressEstimate" class="text-xs text-gray-600 mt-1 text-center"></div>
+    <div class="flex gap-2">
+      <input id="fileInput" type="file" class="flex-1 border p-2 rounded text-xs" />
+      <button onclick="sendFile()" class="bg-purple-500 text-white px-3 rounded"><i class="fas fa-paperclip"></i> Gửi file</button>
     </div>
   </div>
-<script>
-const socket = io({
-    path: '/socket.io', // đường dẫn WebSocket trên server
-    transports: ['websocket', 'polling'] // fallback an toàn
-  });
-  socket.on('connect', () => {
-    console.log('✅ Đã kết nối tới server:', socket.id);
-  });
-  socket.on('message', (msg) => {
-    console.log('📩 Nhận tin nhắn:', msg);
-  });
-  socket.emit('message', 'Hello từ client!');
 
-let username = '';
-let localStream;
-let audioTrack, videoTrack;
-let peerConnection;
+<script>
+const socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
+
+let username = '', room = '';
+let localStream, audioTrack, videoTrack, peerConnection;
 const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
 function login() {
   username = document.getElementById("usernameInput").value.trim();
-  if (!username) return alert("Vui lòng nhập tên!");
+  room = document.getElementById("roomInput").value.trim();
+  if (!username || !room) return alert("Nhập đủ tên & mã phòng!");
 
   document.getElementById("loginPanel").classList.add("hidden");
   document.getElementById("mainPanel").classList.remove("hidden");
   document.getElementById("userLabel").textContent = `👤 ${username}`;
-  socket.emit("user_online", { name: username });
+
+  socket.emit("join_room", { name: username, room: room });
 }
 
 socket.on("peer_online", data => {
-  const other = data.name !== username ? data.name : null;
-  if (other) {
-    document.getElementById("statusLabel").textContent = `🟢 ${other} đang online`;
+  if (data.name !== username) {
+    document.getElementById("statusLabel").textContent = `🟢 ${data.name} đang online`;
     startConnection();
   }
 });
 
 function toggleCamera() {
-  if (!videoTrack) {
-    startMedia(true, false);
-  } else {
+  if (!videoTrack) { startMedia(true, false); }
+  else {
     videoTrack.enabled = !videoTrack.enabled;
-    document.getElementById("camBtn").textContent = videoTrack.enabled ? "📷 Tắt Camera" : "📷 Bật Camera";
+    document.getElementById("camBtn").innerHTML = `<i class="fas fa-video"></i> ${videoTrack.enabled ? "Tắt Camera" : "Bật Camera"}`;
   }
 }
 
 function toggleMic() {
-  if (!audioTrack) {
-    startMedia(false, true);
-  } else {
+  if (!audioTrack) { startMedia(false, true); }
+  else {
     audioTrack.enabled = !audioTrack.enabled;
-    document.getElementById("micBtn").textContent = audioTrack.enabled ? "🎙️ Tắt Mic" : "🎙️ Bật Mic";
+    document.getElementById("micBtn").innerHTML = `<i class="fas fa-microphone"></i> ${audioTrack.enabled ? "Tắt Mic" : "Bật Mic"}`;
   }
 }
 
 function startMedia(useVideo = true, useAudio = true) {
   navigator.mediaDevices.getUserMedia({ video: useVideo, audio: useAudio })
     .then(stream => {
-      localStream = stream;
-      document.getElementById("localVideo").srcObject = stream;
-
-      if (useVideo) {
-        videoTrack = stream.getVideoTracks()[0];
-        document.getElementById("camBtn").textContent = "📷 Tắt Camera";
+      if (!localStream) {
+        localStream = stream;
+        document.getElementById("localVideo").srcObject = stream;
       }
-
+      if (useVideo) videoTrack = stream.getVideoTracks()[0];
       if (useAudio) {
         audioTrack = stream.getAudioTracks()[0];
-        document.getElementById("micBtn").textContent = "🎙️ Tắt Mic";
         detectSpeaking(stream);
       }
-
-      if (peerConnection) {
-        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
-      }
+      if (peerConnection) stream.getTracks().forEach(t => peerConnection.addTrack(t, stream));
     })
     .catch(e => alert("Không thể truy cập media: " + e));
 }
@@ -258,51 +139,31 @@ function detectSpeaking(stream) {
   const analyser = ctx.createAnalyser();
   const data = new Uint8Array(analyser.frequencyBinCount);
   source.connect(analyser);
-
   function checkVolume() {
     analyser.getByteFrequencyData(data);
     const volume = data.reduce((a, b) => a + b, 0) / data.length;
-    document.getElementById("activityLabel").classList.toggle("hidden", volume < 10);
+    document.getElementById("activityLabel").style.display = volume > 10 ? "block" : "none";
     requestAnimationFrame(checkVolume);
   }
-
   checkVolume();
 }
 
 function startConnection() {
   peerConnection = new RTCPeerConnection(config);
+  if (localStream) localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
+  peerConnection.ontrack = e => document.getElementById("remoteVideo").srcObject = e.streams[0];
+  peerConnection.onicecandidate = e => { if (e.candidate) socket.emit("ice_candidate", { room, candidate: e.candidate }); };
 
-  if (localStream) {
-    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-  }
-
-  peerConnection.ontrack = event => {
-    document.getElementById("remoteVideo").srcObject = event.streams[0];
-  };
-
-  peerConnection.onicecandidate = event => {
-    if (event.candidate) {
-      socket.emit("ice_candidate", { candidate: event.candidate });
-    }
-  };
-
-  peerConnection.createOffer().then(offer => {
-    return peerConnection.setLocalDescription(offer);
-  }).then(() => {
-    socket.emit("offer", { offer: peerConnection.localDescription });
-  });
+  peerConnection.createOffer().then(offer => peerConnection.setLocalDescription(offer))
+    .then(() => socket.emit("offer", { room, offer: peerConnection.localDescription }));
 }
 
 socket.on("offer", data => {
   if (!peerConnection) startConnection();
-
-  peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer)).then(() => {
-    return peerConnection.createAnswer();
-  }).then(answer => {
-    return peerConnection.setLocalDescription(answer);
-  }).then(() => {
-    socket.emit("answer", { answer: peerConnection.localDescription });
-  });
+  peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
+    .then(() => peerConnection.createAnswer())
+    .then(answer => peerConnection.setLocalDescription(answer))
+    .then(() => socket.emit("answer", { room, answer: peerConnection.localDescription }));
 });
 
 socket.on("answer", data => {
@@ -316,7 +177,7 @@ socket.on("ice_candidate", data => {
 function sendMessage() {
   const msg = document.getElementById("messageInput").value.trim();
   if (!msg) return;
-  socket.emit("send_message", { from: username, text: msg });
+  socket.emit("send_message", { room, from: username, text: msg });
   document.getElementById("messageInput").value = '';
 }
 
@@ -327,43 +188,25 @@ socket.on("receive_message", data => {
 });
 
 function sendFile() {
-  const fileInput = document.getElementById("fileInput");
-  const file = fileInput.files[0];
-  if (!file) return alert("Chọn một file để gửi.");
-
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) return alert("Chọn file!");
   const reader = new FileReader();
   reader.onload = () => {
-    socket.emit("send_file", {
-      from: username,
-      name: file.name,
-      type: file.type,
-      data: reader.result
-    });
+    socket.emit("send_file", { room, from: username, name: file.name, type: file.type, data: reader.result });
   };
   reader.readAsDataURL(file);
 }
 
 socket.on("receive_file", data => {
   const chat = document.getElementById("chatBox");
-  const { from, name, type, data: fileData } = data;
-
-  let html = `<p><strong>${from}:</strong><br/>`;
-  if (type.startsWith("image/")) {
-    html += `<img src="${fileData}" alt="${name}" class="max-h-32 mt-1 rounded-md"/>`;
-  } else if (type.startsWith("video/")) {
-    html += `<video controls src="${fileData}" class="max-h-48 mt-1 rounded-md"></video>`;
-  } else {
-    html += `<a href="${fileData}" download="${name}" class="text-blue-500 underline">📎 ${name}</a>`;
-  }
-  html += `</p>`;
-
-  chat.innerHTML += html;
+  let html = `<p><strong>${data.from}:</strong><br/>`;
+  if (data.type.startsWith("image/")) html += `<img src="${data.data}" class="max-h-32 mt-1 rounded"/>`;
+  else if (data.type.startsWith("video/")) html += `<video controls src="${data.data}" class="max-h-48 mt-1 rounded"></video>`;
+  else html += `<a href="${data.data}" download="${data.name}" class="text-blue-500 underline">📎 ${data.name}</a>`;
+  chat.innerHTML += html + `</p>`;
   chat.scrollTop = chat.scrollHeight;
 });
 </script>
 
 </body>
- 
-
 </html>
-```
