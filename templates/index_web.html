@@ -391,7 +391,7 @@
     s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
      // ✅ Thêm xử lý dạng 1/(x-2) hoặc 1/(x−2) thành \frac{1}{x - 2}
     s = s.replace(/1\/\(\s*x\s*[\-−]\s*([\d]+)\s*\)/g, (_, num) => `\\frac{1}{x - ${num}}`);
-	s = s.replace(/π/g, '\\pi');
+	
    
    
     // Đảm bảo bọc các biểu thức toán học trong \( ... \)
