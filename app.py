@@ -8,6 +8,8 @@ from flask_limiter.util import get_remote_address
 import re
 import json, os
 from flask_socketio import SocketIO, emit
+from flask import send_file
+
 
 
 
@@ -19,9 +21,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 QUESTION_DIR = os.path.join(BASE_DIR, "questions")
 QUESTIONS_FILE = os.path.join(QUESTION_DIR, "questions.json")
-from flask_cors import CORS
-CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+socketio = SocketIO(app, async_mode="threading")
+
+
 # CSRF
 csrf = CSRFProtect(app)
 
@@ -98,14 +100,14 @@ def tinh_diem_va_luu_bai_lam(bai_lam, de_thi):
         "tong_cau_trac_nghiem": tong_cau_trac_nghiem,
         "bai_lam_chi_tiet": ket_qua
     }
-@socketio.on("send_file")
-def handle_file(data):
-    emit("receive_file", data, broadcast=True)
 
 
 @app.route('/alochat')
 def alochat():
     return render_template('alochat.html')
+@socketio.on("send_file")
+def handle_file(data):
+    emit("receive_file", data, broadcast=True, include_self=False)
 
 @socketio.on('send_message')
 def handle_message(data):
@@ -114,7 +116,13 @@ def handle_message(data):
 @socketio.on('signal')
 def handle_signal(data):
     emit('signal', data, broadcast=True, include_self=False)
+@socketio.on("user_online")
+def handle_user_online(data):
+    emit("peer_online", data, broadcast=True, include_self=False)
 
+@socketio.on("typing")
+def handle_typing(data):
+    emit("typing", data, broadcast=True, include_self=False)
 
 # --- Routes (views) ---
 @app.route('/favicon.ico')
@@ -234,6 +242,17 @@ def api_list_made():
         if code.isdigit():
             made_list.append(code)
     return jsonify(sorted(made_list))
+
+
+
+@app.route('/questions/<path:filename>')
+def serve_questions_file(filename):
+    filepath = QUESTIONS_DIR / filename
+    if filepath.exists():
+        return send_file(filepath)
+    else:
+        return jsonify({"error": "File not found"}), 404
+
 
 # --- Lấy đề thi ---
 @app.route("/questions")
