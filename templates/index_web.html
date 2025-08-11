@@ -392,26 +392,7 @@
      // ✅ Thêm xử lý dạng 1/(x-2) hoặc 1/(x−2) thành \frac{1}{x - 2}
     s = s.replace(/1\/\(\s*x\s*[\-−]\s*([\d]+)\s*\)/g, (_, num) => `\\frac{1}{x - ${num}}`);
 	s = s.replace(/π/g, '\\pi');
-    s = s.replace(/∫\s*từ\s*(.+?)\s*đến\s*(.+?)\s*của\s*\(([^)]+)\)\s*dx/gi,
-    (_, a, b, expr) => `\\(\\int_{${a.trim()}}^{${b.trim()}} ${expr.trim()} \\, dx\\)`);
-    s = s.replace(/\^[(]([^()]+)[)]/g, '^{$1}');
-    s = s.replace(/∫\(([^)]+)\)\s*dx/gi,
-    (_, expr) => `\\(\\int ${expr.trim()} \\, dx\\)`);
-    s = s.replace(/([a-zA-Z])(\d+)/g, '$1^{$2}');
-    // Thay phân số 1/(x^{2}) thành \frac{1}{x^{2}}
-    s = s.replace(/1\/\(([^)]+)\)/g, '\\frac{1}{$1}');
-      if (!s.includes('\\(') && !s.includes('$$')) {
-    s = `\\(${s}\\)`;
-}
-	s = s.replace(/([a-zA-Z])(\d+)/g, '$1^{$2}');
-    s = s.replace(/1\/\(([^)]+)\)/g, '\\frac{1}{ $1 }');
-    s = s.replace(/∫\(([^)]+)\)\s*dx/gi, (_, expr) => `\\(\\int ${expr.trim()} \\, dx\\)`);
-    s = s.replace(/([a-zA-Z])(\d+)/g, '$1^{$2}');
-    s = s.replace(/1\/\(([^)]+)\)/g, '\\frac{1}{ $1 }');
-    s = s.replace(/∫\(([^)]+)\)\s*dx/gi, (_, expr) => `\\(\\int ${expr.trim()} \\, dx\\)`);
-    s = s.replace(/([^\s\/]+)\/([^\s]+)/g, '\\frac{$1}{$2}');
    
-
    
     // Đảm bảo bọc các biểu thức toán học trong \( ... \)
     function isInsideMath(str, offset) {
