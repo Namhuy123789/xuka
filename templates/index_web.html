@@ -357,82 +357,169 @@
     localStorage.setItem("savedTime", time);
   }
 
-  function processExamContent(content) {
-    let s = String(content || "");
-    
-    // Xử lý các ký tự toán học cơ bản
-    s = s.replace(/\blog(\d+)\(([^)]+)\)/gi, (_, base, arg) => `\\log_{${base}}(${arg.trim()})`);
-    s = s.replace(/\blog\(([^)]+)\)/gi, (_, arg) => `\\log(${arg.trim()})`);
-    s = s.replace(/ln\(([^)]+)\)/gi, (_, arg) => `\\ln(${arg.trim()})`);
-    s = s.replace(/frac\(([^,]+),([^)]+)\)/gi, (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
-    s = s.replace(/\b([A-Za-z0-9]+)\/([A-Za-z0-9]+)\b/g, (_, a, b) => `\\frac{${a}}{${b}}`);
-    s = s.replace(/sqrt\[(\d+)\]\(([^)]+)\)/gi, (_, n, val) => `\\sqrt[${n}]{${val.trim()}}`);
-    s = s.replace(/sqrt\(([^)]+)\)/gi, (_, val) => `\\sqrt{${val.trim()}}`);
-    s = s.replace(/([A-Za-z])_(\d+)/g, (_, base, sub) => `${base}_{${sub}}`);
-    s = s.replace(/([A-Za-z0-9])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
-    
-    // Xử lý các ký hiệu toán học nâng cao
-    s = s.replace(/int_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) => 
-      `\\int${from ? `_{${from}}` : ''}${to ? `^{${to}}` : ''}${body.trim()}`);
-    s = s.replace(/sum_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) => 
-      `\\sum${from ? `_{${from}}` : ''}${to ? `^{${to}}` : ''}${body.trim()}`);
-    s = s.replace(/lim_([^_]+)([^]*?)(?=\s|$)/gi, (_, limit, body) => `\\lim_{${limit}}${body.trim()}`);
-    s = s.replace(/d\/dx\(([^)]+)\)/gi, (_, expr) => `\\frac{d}{dx}(${expr.trim()})`);
-    s = s.replace(/vec\{(\w+)\}/gi, (_, varName) => `\\vec{${varName}}`);
-    s = s.replace(/\|vec\{(\w+)\}\|/gi, (_, varName) => `|\\vec{${varName}}|`);
-    
-    // Xử lý ký hiệu vật lý và hóa học
-    s = s.replace(/Delta/g, '\\Delta');
-    s = s.replace(/nabla/g, '\\nabla');
-    s = s.replace(/(\w+)_(\w+)/g, (_, base, sub) => `${base}_{${sub}}`);
-    s = s.replace(/(\w+)\^(\w+)/g, (_, base, sup) => `${base}^{${sup}}`);
-    s = s.replace(/H_2O/g, '\\ce{H2O}');
-    s = s.replace(/CO_2/g, '\\ce{CO2}');
-    s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
-     // ✅ Thêm xử lý dạng 1/(x-2) hoặc 1/(x−2) thành \frac{1}{x - 2}
-    s = s.replace(/1\/\(\s*x\s*[\-−]\s*([\d]+)\s*\)/g, (_, num) => `\\frac{1}{x - ${num}}`);
-	
-   
-   
-    // Đảm bảo bọc các biểu thức toán học trong \( ... \)
-    function isInsideMath(str, offset) {
-      const upto = str.slice(0, offset);
-      const lastOpen = upto.lastIndexOf('\\(');
-      const lastClose = upto.lastIndexOf('\\)');
-      return lastOpen > lastClose;
-    }
 
-    const patterns = [
-      /\\frac\{[^}]+\}\{[^}]+\}/g,
-      /\\sqrt(?:\[[^\]]+\])?\{[^}]+\}/g,
-      /\\log_\{\d+\}\([^)]*\)/g,
-      /\b(?:log\d*|log|ln|sin|cos|tan|exp|int|sum|lim|d\/dx|vec)\([^)]*\)/gi,
-      /[A-Za-z0-9]+_\{\d+\}/g,
-      /[A-Za-z0-9]\^\{\d+\}/g,
-      /\\ce\{[^}]+\}/g,
-      /\\Delta/g,
-      /\\nabla/g
-    ];
 
-    patterns.forEach(pattern => {
-      s = s.replace(pattern, function(match, ...args) {
-        const offset = args[args.length - 2];
-        const str = args[args.length - 1];
-        if (isInsideMath(str, offset)) return match;
-        if (/^\\\(.*\\\)$/.test(match)) return match;
-        const beforeChar = offset > 0 ? str[offset - 1] : '';
-        const afterChar = str[offset + match.length] || '';
-        const needPreSpace = beforeChar && !/[\s\(\[{,;:!?\-]/.test(beforeChar);
-        const needPostSpace = afterChar && !/[\s\)\]\},;:!?.]/.test(afterChar);
-        const pre = needPreSpace ? ' ' : '';
-        const post = needPostSpace ? ' ' : '';
-        return pre + `\\(${match}\\)` + post;
-      });
-    });
+function processExamContent(content) {
+  let s = String(content || "");
 
-    return s;
+  // ===== B0. Chuẩn hóa ký tự đặc biệt =====
+  s = s.replace(/−/g, "-");           // minus unicode -> '-'
+  s = s.replace(/π/g, "\\pi");         // π -> \pi
+
+  // ===== B1. Gộp các dòng bị tách sai =====
+  s = s.replace(/(\d+)\s*\n\s*(\+|\-|\)|\*|\/|\^)/g, "$1 $2");
+  s = s.replace(/(\^)\s*\n\s*(\d+)/g, "$1$2");
+  s = s.replace(/([a-zA-Z])\s*\n\s*([a-zA-Z])/g, "$1 $2");
+  s = s.replace(/\n+/g, " ");
+
+  // ===== B2. Chuẩn hóa khoảng trắng cơ bản =====
+  s = s.replace(/Câu\s*(\d+)\s*\.(?!\s)/gi, "Câu $1. ");
+  s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
+  s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
+  s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
+
+  // ===== B2.1. Thêm khoảng trắng quanh toán tử & ký hiệu toán =====
+  s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");     // + - * / =
+  s = s.replace(/([^\s])∫/g, "$1 ∫");             // trước ∫
+  s = s.replace(/∫([^\s])/g, "∫ $1");             // sau ∫
+  s = s.replace(/([^\s])dx\b/gi, "$1 dx");        // trước dx
+  // sinx -> sin x, log2x -> log2 x, ...
+  s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos|ln|log)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
+
+  // Một số cụm TV bị dính
+  s = s.replace(/\bGiảihệbấtphươngtrình\b/gi, "Giải hệ bất phương trình");
+  s = s.replace(/\bGiảibấtphươngtrình\b/gi, "Giải bất phương trình");
+
+  // Gọn khoảng trắng thừa
+  s = s.replace(/\s{2,}/g, " ").trim();
+
+  // ===== B3. Chuẩn hóa toán cơ bản =====
+  s = s.replace(/\blog(\d+)\(([^)]+)\)/gi, (_, base, arg) => `\\log_{${base}}(${arg.trim()})`);
+  s = s.replace(/\blog\(([^)]+)\)/gi, (_, arg) => `\\log(${arg.trim()})`);
+  s = s.replace(/ln\(([^)]+)\)/gi, (_, arg) => `\\ln(${arg.trim()})`);
+  s = s.replace(/frac\(([^,]+),([^)]+)\)/gi, (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
+  s = s.replace(/\b([A-Za-z0-9]+)\/([A-Za-z0-9]+)\b/g, (_, a, b) => `\\frac{${a}}{${b}}`);
+  s = s.replace(/sqrt\[(\d+)\]\(([^)]+)\)/gi, (_, n, val) => `\\sqrt[${n}]{${val.trim()}}`);
+  s = s.replace(/sqrt\(([^)]+)\)/gi, (_, val) => `\\sqrt{${val.trim()}}`);
+  s = s.replace(/([A-Za-z])_(\d+)/g, (_, base, sub) => `${base}_{${sub}}`);
+  s = s.replace(/([A-Za-z0-9])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
+
+  // ===== B4. Toán nâng cao =====
+  s = s.replace(/int_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
+    `\\int${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
+  );
+  s = s.replace(/sum_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
+    `\\sum${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
+  );
+  s = s.replace(/lim_([^_]+)([^]*?)(?=\s|$)/gi, (_, limit, body) => `\\lim_{${limit}}${body.trim()}`);
+  s = s.replace(/d\/dx\(([^)]+)\)/gi, (_, expr) => `\\frac{d}{dx}(${expr.trim()})`);
+  s = s.replace(/vec\{(\w+)\}/gi, (_, v) => `\\vec{${v}}`);
+  s = s.replace(/\|vec\{(\w+)\}\|/gi, (_, v) => `|\\vec{${v}}|`);
+
+  // ===== B5. Vật lý/hóa học =====
+  s = s.replace(/Delta/g, "\\Delta");
+  s = s.replace(/nabla/g, "\\nabla");
+  s = s.replace(/(\w+)_(\w+)/g, (_, base, sub) => `${base}_{${sub}}`);
+  s = s.replace(/(\w+)\^(\w+)/g, (_, base, sup) => `${base}^{${sup}}`);
+  s = s.replace(/H_2O/g, "\\ce{H2O}");
+  s = s.replace(/CO_2/g, "\\ce{CO2}");
+  s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
+  
+  
+ 
+
+    // ===== B0. Chuẩn hóa ký tự đặc biệt =====
+    s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
+
+    // ===== B1. Gộp dòng bị tách sai =====
+    s = s.replace(/(\d+)\s*\n\s*([+\-*/^])/g, "$1 $2");
+    s = s.replace(/([+\-*/^])\s*\n\s*(\d+)/g, "$1 $2");
+
+    // ===== B2. e(2x) hoặc e^(2 x) -> e^{2x} =====
+    s = s.replace(/\be\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
+    s = s.replace(/\be\^\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
+
+    // ===== B3. Đổi x2 -> x^{2}, kể cả có khoảng trắng =====
+    s = s.replace(/([a-zA-Z])\s*(\d+)/g, "$1^{$2}");
+
+
+    // ===== B4. 1/x -> \frac{1}{x} =====
+    s = s.replace(/(?<!\\frac\{)1\s*\/\s*([a-zA-Z0-9\\pi\+\-\*\/]+)/g, "\\frac{1}{$1}");
+
+    // ===== B5. Dạng tích phân tiếng Việt =====
+    s = s.replace(
+        /∫\s*từ\s*([^\s]+)\s*đến\s*([^\s]+)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
+        (_, a, b, expr) => `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`
+    );
+
+    // ∫từ0đếnπ/2của(sinx)dx
+	s = s.replace(
+	  /∫\s*từ\s*([^\s]+?)\s*đến\s*([^\s]+?)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
+	  (_, a, b, expr) => {
+		a = a.replace(/π/g, "\\pi");
+		b = b.replace(/π/g, "\\pi");
+		return `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`;
+	  }
+	);
+
+
+    // ===== B7. ∫ expr dx =====
+    s = s.replace(/∫\s*([^\n\r]+?)\s*dx\b/gi, (_, expr) => `\\int ${expr.trim()} \\, dx`);
+
+    // ===== B8. sin/cos/tan... =====
+    s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
+
+    // ===== B9. Bọc công thức toán =====
+    s = s.replace(/(\\frac\{[^}]+\}\{[^}]+\}|\\int[^;\n]+|e\^\{[^}]+\}|[a-zA-Z]+\^\{[^}]+\}|\\pi|\\log_[^; \n]+|\\sqrt\{[^}]+\})/g, "\\($1\\)");
+
+
+  
+  // ===== B7. Chỉ bọc TỪNG biểu thức, không bọc cả chuỗi =====
+  function isInsideMath(str, offset) {
+    const upto = str.slice(0, offset);
+    const lastOpen = upto.lastIndexOf("\\(");
+    const lastClose = upto.lastIndexOf("\\)");
+    return lastOpen > lastClose;
   }
 
+  const patterns = [
+    /\\int[\s\S]*?\\,\s*dx/g,               // tích phân
+    /\\frac\{[^}]+\}\{[^}]+\}/g,
+    /\\sqrt(?:\[[^\]]+\])?\{[^}]+\}/g,
+    /\\log_\{\d+\}\([^)]*\)/g,
+    /\b(?:log\d*|log|ln|sin|cos|tan|exp)\([^)]*\)/gi,
+    /[A-Za-z0-9]+_\{\d+\}/g,
+    /[A-Za-z0-9]\^\{\d+\}/g,
+    /\\ce\{[^}]+\}/g,
+    /\\Delta/g,
+    /\\nabla/g
+  ];
+
+  patterns.forEach((pattern) => {
+    s = s.replace(pattern, function (match, ...args) {
+      const offset = args[args.length - 2];
+      const str = args[args.length - 1];
+      if (isInsideMath(str, offset)) return match;
+      if (/^\\\(.*\\\)$/.test(match)) return match;
+
+      const beforeChar = offset > 0 ? str[offset - 1] : "";
+      const afterChar = str[offset + match.length] || "";
+      const needPreSpace = beforeChar && !/[\s\(\[{,;:!?\-]/.test(beforeChar);
+      const needPostSpace = afterChar && !/[\s\)\]\},;:!?.]/.test(afterChar);
+      const pre = needPreSpace ? " " : "";
+      const post = needPostSpace ? " " : "";
+      return pre + `\\(${match}\\)` + post;
+    });
+  });
+
+  // ===== B8. Gọn khoảng trắng cuối =====
+  s = s.replace(/\s{2,}/g, " ").trim();
+  return s;
+}
+
+
+
+	
   function processAllQuestions(questions) {
     return questions.map(q => {
       q.noi_dung = processExamContent(q.noi_dung);
