@@ -196,366 +196,456 @@
     Bản quyền © 2025 <span class="font-bold text-red-600">PHẠM HUY TUÂN</span> · ĐT: <a href="tel:0389897989" class="text-blue-600 hover:underline">0389 897 989</a>
   </footer>
 
-  <script>
+ <script>
+  const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    ? "http://127.0.0.1:5000"
+    : "https://xuka.com.vn";
+
+  const MASTER_PASSPHRASE = "thay-bang-chuoi-bi-mat";
+  const te = new TextEncoder();
+  const td = new TextDecoder();
+
+  let time = 3600; // 60 phút
+  let timer;
   let questionData = [];
-    const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-      ? "http://127.0.0.1:5000"
-      : "https://xuka.com.vn";
 
-    const MASTER_PASSPHRASE = "thay-bang-chuoi-bi-mat"; 
-    const te = new TextEncoder();
-    const td = new TextDecoder();
+  function b64ToU8(b64) {
+    return new Uint8Array([...atob(b64)].map(c => c.charCodeAt(0)));
+  }
 
-    function b64ToU8(b64) {
-      return new Uint8Array([...atob(b64)].map(c => c.charCodeAt(0)));
-    }
+  async function deriveAesKey(passphrase, salt) {
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      te.encode(passphrase),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
 
-    async function deriveAesKey(passphrase, salt) {
-      const keyMaterial = await crypto.subtle.importKey(
-        'raw',
-        te.encode(passphrase),
-        { name: 'PBKDF2' },
-        false,
-        ['deriveKey']
-      );
-      return crypto.subtle.deriveKey(
-        { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
-        keyMaterial,
-        { name: 'AES-GCM', length: 256 },
-        false,
-        ['encrypt', 'decrypt']
-      );
-    }
+  async function decryptWithPassphrase(qrText, passphrase) {
+    const parts = qrText.split(".");
+    if (parts.length !== 4 || parts[0] !== "v1") throw new Error("QR không hợp lệ!");
+    const salt = b64ToU8(parts[1]);
+    const iv = b64ToU8(parts[2]);
+    const cipher = b64ToU8(parts[3]);
+    const key = await deriveAesKey(passphrase, salt);
+    const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
+    return td.decode(plainBuf);
+  }
 
-    async function decryptWithPassphrase(qrText, passphrase) {
-      const parts = qrText.split(".");
-      if (parts.length !== 4 || parts[0] !== "v1") throw new Error("QR không hợp lệ!");
-      const salt = b64ToU8(parts[1]);
-      const iv = b64ToU8(parts[2]);
-      const cipher = b64ToU8(parts[3]);
-      const key = await deriveAesKey(passphrase, salt);
-      const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
-      return td.decode(plainBuf);
-    }
+  for (let i = 101; i <= 124; i++) {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = i;
+    document.getElementById("made").appendChild(opt);
+  }
 
-    for (let i = 101; i <= 124; i++) {
-      const opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = i;
-      document.getElementById("made").appendChild(opt);
-    }
-
+  document.addEventListener("DOMContentLoaded", () => {
     const qrScanner = new Html5Qrcode("reader");
     qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decoded) => {
       decryptWithPassphrase(decoded, MASTER_PASSPHRASE)
         .then(() => {
           qrScanner.stop().then(() => {
-            document.getElementById('qr-login')?.classList.add('hidden');
-            document.getElementById('button-group')?.classList.add('hidden');
-            document.getElementById('left-column')?.classList.add('hidden');
-            document.getElementById('right-column')?.classList.add('hidden');
-            document.getElementById('account-login')?.classList.remove('hidden');
-
-          });
+            document.getElementById('qr-login').classList.add('hidden');
+            document.getElementById('button-group').classList.add('hidden');
+            document.getElementById('left-column').classList.add('hidden');
+            document.getElementById('right-column').classList.add('hidden');
+            document.getElementById('account-login').classList.remove('hidden');
+          }).catch(err => console.error("Lỗi khi dừng QR Scanner:", err));
         })
         .catch(() => {
           document.getElementById('qr-error').classList.remove('hidden');
         });
+    }, (error) => {
+      console.error("Lỗi quét QR:", error);
+      document.getElementById('qr-error').classList.remove('hidden');
     });
+  });
 
-    function checkLogin() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-      fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "success") {
-          document.getElementById('account-login').classList.add('hidden');
-          document.getElementById('login-form').classList.remove('hidden');
-        } else {
-          document.getElementById('login-error').classList.remove('hidden');
-        }
-      })
-      .catch(err => {
-        console.error("Lỗi API login:", err);
-        alert("Không thể kết nối server!");
+  function checkLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    // Giả lập đăng nhập thành công cho thử nghiệm cục bộ
+    document.getElementById('account-login').classList.add('hidden');
+    document.getElementById('login-form').classList.remove('hidden');
+  }
+
+  function updateCountdown() {
+    const m = Math.floor(time / 60).toString().padStart(2, '0');
+    const s = (time % 60).toString().padStart(2, '0');
+    document.getElementById("countdown").innerText = `Thời gian: ${m}:${s}`;
+    if (time <= 0) {
+      clearInterval(timer);
+      let unanswered = 0;
+      questionData.forEach((q, i) => {
+        const selected = getAnswerValue(i);
+        if (!selected) unanswered++;
       });
-    }
-
-    function updateCountdown() {
-      const m = Math.floor(time / 60).toString().padStart(2, '0');
-      const s = (time % 60).toString().padStart(2, '0');
-      document.getElementById("countdown").innerText = `Thời gian: ${m}:${s}`;
-      if (time <= 0) {
-        clearInterval(timer);
+      if (unanswered > 0) {
+        if (confirm(`Thời gian đã hết! Bạn còn ${unanswered} câu chưa trả lời. Bạn có muốn nộp bài không?`)) {
+          submitExam();
+        } else {
+          alert("Vui lòng hoàn thành các câu hỏi còn lại!");
+          time = 300; // Gia hạn thêm 5 phút
+          timer = setInterval(updateCountdown, 1000);
+        }
+      } else {
         submitExam();
       }
-      time--;
-      localStorage.setItem("savedTime", time);
     }
-
-    function startExam() {
-  const name = document.getElementById('hoten').value.trim();
-  const sbd = document.getElementById('sbd').value.trim();
-  const dob = document.getElementById("ngaysinh").value;
-  const made = document.getElementById('made').value;
-
-  if (!name || !sbd || !dob || !made) {
-    return alert("Vui lòng nhập đầy đủ Họ tên, SBD, Ngày sinh và Mã đề!");
+    time--;
+    localStorage.setItem("savedTime", time);
   }
 
-  document.getElementById("login-form").classList.add("hidden");
-  document.getElementById("exam-container").classList.remove("hidden");
+    function processExamContent(content) {
+  let s = String(content || "");
 
-  const savedTime = localStorage.getItem("savedTime");
-  time = savedTime ? parseInt(savedTime) : 3600;
-  timer = setInterval(updateCountdown, 1000);
+  // ===== B0. Chuẩn hóa ký tự đặc biệt =====
+  s = s.replace(/−/g, "-");           // minus unicode -> '-'
+  s = s.replace(/π/g, "\\pi");         // π -> \pi
 
-  fetch(`${API_BASE}/questions?made=${made}`)
-    .then(res => res.ok ? res.json() : Promise.reject())
-    .then(data => {
-      if (!Array.isArray(data)) throw new Error("Dữ liệu đề thi không hợp lệ");
+  // ===== B1. Gộp các dòng bị tách sai =====
+  s = s.replace(/(\d+)\s*\n\s*(\+|\-|\)|\*|\/|\^)/g, "$1 $2");
+  s = s.replace(/(\^)\s*\n\s*(\d+)/g, "$1$2");
+  s = s.replace(/([a-zA-Z])\s*\n\s*([a-zA-Z])/g, "$1 $2");
+  s = s.replace(/\n+/g, " ");
 
-      questionData = data;
-      const questionsDiv = document.getElementById("questions");
-      questionsDiv.innerHTML = "";
+  // ===== B2. Chuẩn hóa khoảng trắng cơ bản =====
+  s = s.replace(/Câu\s*(\d+)\s*\.(?!\s)/gi, "Câu $1. ");
+  s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
+  s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
+  s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
 
-      questionData.forEach((q, i) => {
-        const div = document.createElement('div');
-        div.classList.add("mb-6");
+  // ===== B2.1. Thêm khoảng trắng quanh toán tử & ký hiệu toán =====
+  s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");     // + - * / =
+  s = s.replace(/([^\s])∫/g, "$1 ∫");             // trước ∫
+  s = s.replace(/∫([^\s])/g, "∫ $1");             // sau ∫
+  s = s.replace(/([^\s])dx\b/gi, "$1 dx");        // trước dx
+  // sinx -> sin x, log2x -> log2 x, ...
+  s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos|ln|log)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
 
-        div.innerHTML = `<label class="block font-semibold mb-2">Câu ${i + 1}: ${q.noi_dung}</label>`;
+  // Một số cụm TV bị dính
+  s = s.replace(/\bGiảihệbấtphươngtrình\b/gi, "Giải hệ bất phương trình");
+  s = s.replace(/\bGiảibấtphươngtrình\b/gi, "Giải bất phương trình");
 
-        // Nếu là tự luận
-        if (q.kieu_cau_hoi === "tu_luan") {
-          div.innerHTML += `
-            <textarea id="q${i}" rows="4" class="border p-2 w-full" placeholder="Nhập câu trả lời..."></textarea>
-          `;
-        } 
-        // Nếu là trắc nghiệm
-        else if (q.lua_chon) {
-          const options = Object.entries(q.lua_chon).map(
-            ([k, v]) => `<option value="${k}">${k}. ${v}</option>`
-          ).join("");
+  // Gọn khoảng trắng thừa
+  s = s.replace(/\s{2,}/g, " ").trim();
 
-          div.innerHTML += `
-            <select id="q${i}" class="border p-2 w-full">
-              <option value="">-- Chọn --</option>
-              ${options}
-            </select>
-          `;
-        }
+  // ===== B3. Chuẩn hóa toán cơ bản =====
+  s = s.replace(/\blog(\d+)\(([^)]+)\)/gi, (_, base, arg) => `\\log_{${base}}(${arg.trim()})`);
+  s = s.replace(/\blog\(([^)]+)\)/gi, (_, arg) => `\\log(${arg.trim()})`);
+  s = s.replace(/ln\(([^)]+)\)/gi, (_, arg) => `\\ln(${arg.trim()})`);
+  s = s.replace(/frac\(([^,]+),([^)]+)\)/gi, (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
+  s = s.replace(/\b([A-Za-z0-9]+)\/([A-Za-z0-9]+)\b/g, (_, a, b) => `\\frac{${a}}{${b}}`);
+  s = s.replace(/sqrt\[(\d+)\]\(([^)]+)\)/gi, (_, n, val) => `\\sqrt[${n}]{${val.trim()}}`);
+  s = s.replace(/sqrt\(([^)]+)\)/gi, (_, val) => `\\sqrt{${val.trim()}}`);
+  s = s.replace(/([A-Za-z])_(\d+)/g, (_, base, sub) => `${base}_{${sub}}`);
+  s = s.replace(/([A-Za-z0-9])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
 
-        questionsDiv.appendChild(div);
-      });
-    })
-    .catch(() => alert("Không thể tải file đề thi."));
+  // ===== B4. Toán nâng cao =====
+  s = s.replace(/int_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
+    `\\int${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
+  );
+  s = s.replace(/sum_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
+    `\\sum${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
+  );
+  s = s.replace(/lim_([^_]+)([^]*?)(?=\s|$)/gi, (_, limit, body) => `\\lim_{${limit}}${body.trim()}`);
+  s = s.replace(/d\/dx\(([^)]+)\)/gi, (_, expr) => `\\frac{d}{dx}(${expr.trim()})`);
+  s = s.replace(/vec\{(\w+)\}/gi, (_, v) => `\\vec{${v}}`);
+  s = s.replace(/\|vec\{(\w+)\}\|/gi, (_, v) => `|\\vec{${v}}|`);
+
+  // ===== B5. Vật lý/hóa học =====
+  s = s.replace(/Delta/g, "\\Delta");
+  s = s.replace(/nabla/g, "\\nabla");
+  s = s.replace(/(\w+)_(\w+)/g, (_, base, sub) => `${base}_{${sub}}`);
+  s = s.replace(/(\w+)\^(\w+)/g, (_, base, sup) => `${base}^{${sup}}`);
+  s = s.replace(/H_2O/g, "\\ce{H2O}");
+  s = s.replace(/CO_2/g, "\\ce{CO2}");
+  s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
+  
+  
+ 
+
+    // ===== B0. Chuẩn hóa ký tự đặc biệt =====
+    s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
+
+    // ===== B1. Gộp dòng bị tách sai =====
+    s = s.replace(/(\d+)\s*\n\s*([+\-*/^])/g, "$1 $2");
+    s = s.replace(/([+\-*/^])\s*\n\s*(\d+)/g, "$1 $2");
+
+    // ===== B2. e(2x) hoặc e^(2 x) -> e^{2x} =====
+    s = s.replace(/\be\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
+    s = s.replace(/\be\^\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
+
+    // ===== B3. Đổi x2 -> x^{2}, kể cả có khoảng trắng =====
+    s = s.replace(/([a-zA-Z])\s*(\d+)/g, "$1^{$2}");
+
+
+    // ===== B4. 1/x -> \frac{1}{x} =====
+    s = s.replace(/(?<!\\frac\{)1\s*\/\s*([a-zA-Z0-9\\pi\+\-\*\/]+)/g, "\\frac{1}{$1}");
+
+    // ===== B5. Dạng tích phân tiếng Việt =====
+    s = s.replace(
+        /∫\s*từ\s*([^\s]+)\s*đến\s*([^\s]+)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
+        (_, a, b, expr) => `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`
+    );
+
+    // ∫từ0đếnπ/2của(sinx)dx
+	s = s.replace(
+	  /∫\s*từ\s*([^\s]+?)\s*đến\s*([^\s]+?)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
+	  (_, a, b, expr) => {
+		a = a.replace(/π/g, "\\pi");
+		b = b.replace(/π/g, "\\pi");
+		return `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`;
+	  }
+	);
+
+
+    // ===== B7. ∫ expr dx =====
+    s = s.replace(/∫\s*([^\n\r]+?)\s*dx\b/gi, (_, expr) => `\\int ${expr.trim()} \\, dx`);
+
+    // ===== B8. sin/cos/tan... =====
+    s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
+
+    // ===== B9. Bọc công thức toán =====
+    s = s.replace(/(\\frac\{[^}]+\}\{[^}]+\}|\\int[^;\n]+|e\^\{[^}]+\}|[a-zA-Z]+\^\{[^}]+\}|\\pi|\\log_[^; \n]+|\\sqrt\{[^}]+\})/g, "\\($1\\)");
+
+   
+
+     
+  
+  
+  
+  // ===== B7. Chỉ bọc TỪNG biểu thức, không bọc cả chuỗi =====
+  function isInsideMath(str, offset) {
+    const upto = str.slice(0, offset);
+    const lastOpen = upto.lastIndexOf("\\(");
+    const lastClose = upto.lastIndexOf("\\)");
+    return lastOpen > lastClose;
+  }
+
+  const patterns = [
+    /\\int[\s\S]*?\\,\s*dx/g,               // tích phân
+    /\\frac\{[^}]+\}\{[^}]+\}/g,
+    /\\sqrt(?:\[[^\]]+\])?\{[^}]+\}/g,
+    /\\log_\{\d+\}\([^)]*\)/g,
+    /\b(?:log\d*|log|ln|sin|cos|tan|exp)\([^)]*\)/gi,
+    /[A-Za-z0-9]+_\{\d+\}/g,
+    /[A-Za-z0-9]\^\{\d+\}/g,
+    /\\ce\{[^}]+\}/g,
+    /\\Delta/g,
+    /\\nabla/g
+  ];
+
+  patterns.forEach((pattern) => {
+    s = s.replace(pattern, function (match, ...args) {
+      const offset = args[args.length - 2];
+      const str = args[args.length - 1];
+      if (isInsideMath(str, offset)) return match;
+      if (/^\\\(.*\\\)$/.test(match)) return match;
+
+      const beforeChar = offset > 0 ? str[offset - 1] : "";
+      const afterChar = str[offset + match.length] || "";
+      const needPreSpace = beforeChar && !/[\s\(\[{,;:!?\-]/.test(beforeChar);
+      const needPostSpace = afterChar && !/[\s\)\]\},;:!?.]/.test(afterChar);
+      const pre = needPreSpace ? " " : "";
+      const post = needPostSpace ? " " : "";
+      return pre + `\\(${match}\\)` + post;
+    });
+  });
+
+  // ===== B8. Gọn khoảng trắng cuối =====
+  s = s.replace(/\s{2,}/g, " ").trim();
+  return s;
 }
 
 
-    function clearTempStorage() {
-      localStorage.removeItem("savedAnswers");
-      localStorage.removeItem("hoten");
-      localStorage.removeItem("made");
-      localStorage.removeItem("savedTime");
-    }
 
-  function submitExam() {
-  clearInterval(timer);
-  const name = document.getElementById('hoten').value.trim();
-  const made = document.getElementById('made').value;
-  const sbd = document.getElementById('sbd').value.trim();
-  const dob = document.getElementById("ngaysinh").value;
+  
 
-  const answers = [];
-  let score = 0;
 
-  questionData.forEach((q, i) => {
-  const select = document.getElementById(`q${i}`);
-  const selected = select ? select.value.trim() : "";
-  const correct = q.dap_an_dung ? q.dap_an_dung.trim() : "";
-  const kieu = q.kieu_cau_hoi || "trac_nghiem";
-
-  const isCorrect =
-    kieu === "trac_nghiem" &&
-    selected.toUpperCase() === correct.toUpperCase();
-
-  if (isCorrect) {
-    score++;
-  }
-
-  answers.push({
-    cau: i + 1,
-    noi_dung: q.noi_dung,
-    da_chon: selected || "(chưa chọn)",
-    dung_chinh_xac: correct,
-    dung: isCorrect,
-    kieu: kieu,
-    goi_y_dap_an: q.goi_y_dap_an || ""
-  });
-});
-
-  const finalScore = (score / questionData.length * 10).toFixed(2);
-
-  fetch(`${API_BASE}/save_result`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      hoten: name,
-      sbd: sbd,
-      ngaysinh: dob,
-      made: made,
-      diem: finalScore,
-      answers: answers
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === "saved") {
-      clearTempStorage();
-      const now = new Date();
-      const formattedDate = now.toLocaleString("vi-VN", {
-        hour12: false,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
-      });
-
-      let fileContent = `KẾT QUẢ BÀI THI\n`;
-      fileContent += `Họ tên: ${name}\nSBD: ${sbd}\nNgày sinh: ${dob}\nMã đề: ${made}\nĐiểm: ${finalScore}/10\n`;
-      fileContent += `Nộp lúc: ${formattedDate}\n\n`;
-
-      answers.forEach(ans => {
-        fileContent += `Câu ${ans.cau}: ${ans.noi_dung}\n`;
-        fileContent += `  Bạn chọn: ${ans.da_chon}`;
-
-        if (ans.kieu === "trac_nghiem") {
-          fileContent += ` ${ans.dung ? "- ĐÚNG" : "- SAI"}\n`;
-          if (ans.dung_chinh_xac) {
-            fileContent += `  Đáp án đúng: ${ans.dung_chinh_xac}\n`;
+  function processAllQuestions(questions) {
+    return questions.map(q => {
+      q.noi_dung = processExamContent(q.noi_dung);
+      if (q.lua_chon && typeof q.lua_chon === 'object') {
+        for (let key in q.lua_chon) {
+          if (q.lua_chon.hasOwnProperty(key)) {
+            q.lua_chon[key] = processExamContent(q.lua_chon[key]);
           }
-        } else if (ans.kieu === "tu_luan") {
-          fileContent += `\n`;
-          if (ans.goi_y_dap_an) {
-            fileContent += `  Gợi ý đáp án: ${ans.goi_y_dap_an}\n`;
-          }
-        } else {
-          fileContent += `\n`;
-        }
-
-        fileContent += `\n`;
-      });
-
-      const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
-              xmlns:w='urn:schemas-microsoft-com:office:word'
-              xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset='utf-8'><title>Kết quả</title></head><body>`;
-      const footer = "</body></html>";
-      const wordContent = header + fileContent.replace(/\n/g, "<br>") + footer;
-      const blob = new Blob(['\ufeff', wordContent], { type: 'application/msword' });
-      const url = URL.createObjectURL(blob);
-      const fileName = `KQ_${name.replace(/\s+/g, "_")}_${made}.doc`;
-
-      const resultDiv = document.getElementById("result-container");
-      resultDiv.classList.remove("hidden");
-      resultDiv.innerHTML = `
-        <h1 class="text-2xl font-bold text-green-600 mb-4">✅ KẾT QUẢ BÀI THI !</h1>
-        <p class="text-sm text-gray-500 mb-4">🕒 Nộp lúc: ${formattedDate}</p>
-        <pre class="whitespace-pre-wrap text-sm bg-gray-100 p-4 rounded mb-4">${fileContent}</pre>
-        <div class="flex gap-4">
-          <a href="${url}" download="${fileName}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-            ⬇️ Tải kết quả .Doc
-          </a>
-          <button onclick="downloadPDF()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-            ⬇️ Tải kết quả .PDF
-          </button>
-        </div>
-      `;
-      document.getElementById("exam-container").classList.add("hidden");
-    } else {
-      alert("❌ Lỗi khi lưu kết quả!");
-    }
-  })
-  .catch(err => {
-    console.error("Lỗi khi gửi dữ liệu:", err);
-    alert("❌ Đã xảy ra lỗi khi nộp bài!");
-  });
-}
-
-
-    function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const text = document.querySelector("#result-container pre").innerText;
-      const splitText = doc.splitTextToSize(text, 180);
-      doc.setFont("Times", "Normal");
-      doc.setFontSize(12);
-      doc.text(splitText, 10, 10);
-      const pdfName = `KQ_${document.getElementById('hoten').value.replace(/\s+/g, "_")}_${document.getElementById('made').value}.pdf`;
-      doc.save(pdfName);
-    }
-  </script>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const url = window.location.href.toLowerCase();
-      const left = document.getElementById("left-column");
-      const right = document.getElementById("right-column");
-      const main = document.getElementById("main-column");
-
-      const hideOnPages = ["dangnhap", "tracnghiem", "thisinh"];
-
-      if (hideOnPages.some(page => url.includes(page))) {
-        if (left) left.classList.add("hidden");
-        if (right) right.classList.add("hidden");
-        if (main) {
-          main.classList.remove("md:w-1/3", "md:w-1/2", "md:w-1/4");
-          main.classList.add("w-full");
         }
       }
+      q.dap_an_dung = q.dap_an_dung ? q.dap_an_dung : "";
+      q.goi_y_dap_an = q.goi_y_dap_an ? processExamContent(q.goi_y_dap_an) : "";
+      return q;
     });
-  </script>
-  <script>
-  let time = parseInt(localStorage.getItem("savedTime")) || 900; // 15 phút mặc định
+  }
+
+  function getAnswerValue(index) {
+    const q = questionData[index];
+    if (q.kieu_cau_hoi === "tu_luan") {
+      const textarea = document.getElementById(`q${index}`);
+      return textarea ? textarea.value.trim() : "";
+    } else {
+      const radios = document.getElementsByName(`q${index}`);
+      for (const radio of radios) {
+        if (radio.checked) {
+          return radio.value;
+        }
+      }
+      return "";
+    }
+  }
+
+  function renderQuestions(questions) {
+    const container = document.getElementById("questions");
+    container.innerHTML = "";
+    
+    const unansweredLabel = document.createElement("p");
+    unansweredLabel.id = "unanswered-count";
+    unansweredLabel.classList.add("text-red-600", "font-bold", "mb-4");
+    container.appendChild(unansweredLabel);
+
+    questions.forEach((q, i) => {
+      const div = document.createElement('div');
+      div.classList.add("mb-6", "p-4", "bg-gray-50", "rounded-lg");
+      div.innerHTML = `
+        <label class="block font-semibold mb-2 text-lg">
+          Câu ${i + 1}: ${q.noi_dung}
+        </label>
+      `;
+      if (q.kieu_cau_hoi === "tu_luan") {
+        div.innerHTML += `
+          <textarea id="q${i}" rows="4" 
+            class="border p-2 w-full rounded-md" 
+            placeholder="Nhập câu trả lời..."></textarea>
+        `;
+      } else if (q.lua_chon) {
+        const optionsHtml = Object.entries(q.lua_chon).map(([k, v]) => {
+          return `
+            <div class="flex items-start space-x-2 min-w-max">
+              <input type="radio" name="q${i}" id="q${i}_${k}" value="${k}" class="mt-1">
+              <label for="q${i}_${k}" class="overflow-x-auto block" style="max-width: calc(100% - 30px);">
+                ${k}. ${v}
+              </label>
+            </div>
+          `;
+        }).join("");
+        div.innerHTML += `
+          <div class="border rounded-md p-2 max-h-40 overflow-y-auto space-y-2">
+            ${optionsHtml}
+          </div>
+        `;
+      }
+      container.appendChild(div);
+    });
+
+    function updateUnansweredCount() {
+      let unanswered = 0;
+      questions.forEach((q, i) => {
+        const selected = getAnswerValue(i);
+        if (!selected) unanswered++;
+      });
+      unansweredLabel.innerText = `Câu chưa trả lời: ${unanswered}`;
+    }
+
+    questions.forEach((q, i) => {
+      if (q.kieu_cau_hoi === "tu_luan") {
+        const textarea = document.getElementById(`q${i}`);
+        if (textarea) {
+          textarea.addEventListener("input", () => {
+            const current = JSON.parse(localStorage.getItem("savedAnswers") || "{}");
+            current[`q${i}`] = textarea.value;
+            localStorage.setItem("savedAnswers", JSON.stringify(current));
+            updateUnansweredCount();
+          });
+        }
+      } else {
+        const radios = document.getElementsByName(`q${i}`);
+        radios.forEach(radio => {
+          radio.addEventListener("change", () => {
+            const current = JSON.parse(localStorage.getItem("savedAnswers") || "{}");
+            current[`q${i}`] = radio.value;
+            localStorage.setItem("savedAnswers", JSON.stringify(current));
+            updateUnansweredCount();
+          });
+        });
+      }
+    });
+
+    updateUnansweredCount();
+    if (typeof MathJax !== 'undefined') {
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]);
+    }
+  }
+
+  function startExam() {
+    const name = document.getElementById('hoten').value.trim();
+    const sbd = document.getElementById('sbd').value.trim();
+    const dob = document.getElementById("ngaysinh").value;
+    const made = document.getElementById('made').value;
+
+    if (!name || !sbd || !dob || !made) {
+      return alert("Vui lòng nhập đầy đủ Họ tên, SBD, Ngày sinh và Mã đề!");
+    }
+
+    document.getElementById("login-form").classList.add("hidden");
+    document.getElementById("exam-container").classList.remove("hidden");
+
+    const savedTime = localStorage.getItem("savedTime");
+    time = savedTime ? parseInt(savedTime) : 3600; // 60 phút
+    timer = setInterval(updateCountdown, 1000);
+
+    const jsonFile = `/questions/questions${made}.json`;
+    fetch(jsonFile, {
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Không thể tải file câu hỏi: ${res.status} ${res.statusText} (File: ${jsonFile})`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (!Array.isArray(data)) {
+          throw new Error("Dữ liệu câu hỏi không phải là mảng");
+        }
+        questionData = processAllQuestions(data);
+        renderQuestions(questionData);
+        restoreAnswers();
+      })
+      .catch(err => {
+        console.error("Lỗi chi tiết:", err);
+        alert(`Không thể tải file câu hỏi: ${err.message}. Vui lòng kiểm tra file ${jsonFile} và server Flask.`);
+      });
+  }
 
   function restoreAnswers() {
     const saved = JSON.parse(localStorage.getItem("savedAnswers") || "{}");
     for (const [key, value] of Object.entries(saved)) {
-      const select = document.getElementById(key);
-      if (select) {
-        select.value = value;
+      const index = parseInt(key.replace('q', ''));
+      const q = questionData[index];
+      if (q.kieu_cau_hoi === "tu_luan") {
+        const textarea = document.getElementById(key);
+        if (textarea) {
+          textarea.value = value;
+        }
       } else {
-        console.warn(`Không tìm thấy phần tử: ${key}`);
+        const radio = document.getElementById(`${key}_${value}`);
+        if (radio) {
+          radio.checked = true;
+        }
       }
     }
   }
 
-  function setupAnswerTracking() {
-    questionData.forEach((q, i) => {
-      const select = document.getElementById(`q${i}`);
-      const key = `q${i}`;
-      if (select) {
-        select.addEventListener("change", () => {
-          const current = JSON.parse(localStorage.getItem("savedAnswers") || "{}");
-          current[key] = select.value;
-          localStorage.setItem("savedAnswers", JSON.stringify(current));
-        });
-      }
-    });
-  }
-
-  // Tự động lưu thời gian còn lại mỗi giây
-  setInterval(() => {
-    localStorage.setItem("savedTime", time);
-  }, 1000);
-
-  // Xóa bộ nhớ tạm sau khi nộp bài
   function clearTempStorage() {
     localStorage.removeItem("savedAnswers");
     localStorage.removeItem("hoten");
@@ -563,14 +653,163 @@
     localStorage.removeItem("savedTime");
   }
 
-  // Kích hoạt khi DOM đã sẵn sàng
-  document.addEventListener("DOMContentLoaded", () => {
-    restoreAnswers();
-    setupAnswerTracking();
-  });
+  function submitExam() {
+    let unanswered = 0;
+    questionData.forEach((q, i) => {
+      const selected = getAnswerValue(i);
+      if (!selected) unanswered++;
+    });
+
+    if (unanswered > 0) {
+      if (!confirm(`Bạn còn ${unanswered} câu chưa trả lời. Bạn có chắc muốn nộp bài không?`)) {
+        return;
+      }
+    }
+
+    clearInterval(timer);
+    const name = document.getElementById('hoten').value.trim();
+    const made = document.getElementById('made').value;
+    const sbd = document.getElementById('sbd').value.trim();
+    const dob = document.getElementById("ngaysinh").value;
+
+    const answers = [];
+    let score = 0;
+
+    questionData.forEach((q, i) => {
+      const selected = getAnswerValue(i);
+      const correctKey = q.dap_an_dung ? q.dap_an_dung.trim() : "";
+      const kieu = q.kieu_cau_hoi ? q.kieu_cau_hoi.toLowerCase() : "trac_nghiem";
+
+      let selectedContent = "";
+      let correctContent = "";
+
+      if (kieu === "trac_nghiem") {
+        selectedContent = selected && q.lua_chon ? q.lua_chon[selected] : "(chưa chọn)";
+        correctContent = correctKey && q.lua_chon ? q.lua_chon[correctKey] : "";
+      } else {
+        selectedContent = selected || "(chưa trả lời)";
+        correctContent = "";
+      }
+
+      const isCorrect =
+        kieu === "trac_nghiem" &&
+        selected.toUpperCase() === correctKey.toUpperCase();
+
+      if (isCorrect) {
+        score++;
+      }
+
+      answers.push({
+        cau: i + 1,
+        noi_dung: q.noi_dung,
+        da_chon: processExamContent(selectedContent),
+        dap_an_dung: processExamContent(correctContent),
+        dung: isCorrect,
+        kieu: kieu,
+        goi_y_dap_an: q.goi_y_dap_an || ""
+      });
+    });
+
+    const finalScore = (score / questionData.length * 10).toFixed(2);
+
+    clearTempStorage();
+    const now = new Date();
+    const formattedDate = now.toLocaleString("vi-VN", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+
+    let fileContent = `<div>KẾT QUẢ BÀI THI</div>`;
+    fileContent += `<div>Họ tên: ${name}</div>`;
+    fileContent += `<div>SBD: ${sbd}</div>`;
+    fileContent += `<div>Ngày sinh: ${dob}</div>`;
+    fileContent += `<div>Mã đề: ${made}</div>`;
+    fileContent += `<div>Điểm: ${finalScore}/10</div>`;
+    fileContent += `<div>Nộp lúc: ${formattedDate}</div><br>`;
+
+    answers.forEach(ans => {
+      fileContent += `<div style="margin-bottom: 1rem;">Câu ${ans.cau}: <span>${ans.noi_dung}</span></div>`;
+      fileContent += `<div>Bạn chọn: <span>${ans.da_chon}</span>`;
+      if (ans.kieu === "trac_nghiem") {
+        fileContent += ` ${ans.dung ? "- ĐÚNG" : "- SAI"}</div>`;
+        if (ans.dap_an_dung) {
+          fileContent += `<div>Đáp án đúng: <span>${ans.dap_an_dung}</span></div>`;
+        }
+      } else {
+        fileContent += `</div>`;
+        if (ans.goi_y_dap_an) {
+          fileContent += `<div>Gợi ý đáp án: <span>${ans.goi_y_dap_an}</span></div>`;
+        }
+      }
+      fileContent += `<br>`;
+    });
+
+    const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' 
+    xmlns:w='urn:schemas-microsoft-com:office:word' 
+    xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'>
+    <title>Kết quả</title></head><body>`;
+    const footer = "</body></html>";
+    const wordContent = header + fileContent + footer;
+    const blob = new Blob(['\ufeff', wordContent], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const fileName = `KQ_${name.replace(/\s+/g, "_")}_${made}.doc`;
+
+    const resultDiv = document.getElementById("result-container");
+    resultDiv.classList.remove("hidden");
+    resultDiv.innerHTML = `
+      <h1 class="text-2xl font-bold text-green-600 mb-4">✅ KẾT QUẢ BÀI THI !</h1>
+      <p class="text-sm text-gray-500 mb-4">🕒 Nộp lúc: ${formattedDate}</p>
+      <div class="result-scrollable">${fileContent}</div>
+      <div class="flex gap-4 mt-4">
+        <a href="${url}" download="${fileName}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          ⬇️ Tải kết quả .Doc
+        </a>
+        <button onclick="downloadPDF()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+          ⬇️ Tải kết quả .PDF
+        </button>
+      </div>
+    `;
+    document.getElementById("exam-container").classList.add("hidden");
+
+    if (typeof MathJax !== 'undefined') {
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub, resultDiv]);
+    } else {
+      console.error("MathJax is not loaded!");
+    }
+
+    fetch(`${API_BASE}/save_result`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        hoten: name,
+        sbd: sbd,
+        ngaysinh: dob,
+        made: made,
+        diem: finalScore,
+        answers: answers
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log("Kết quả đã được lưu vào backend:", data);
+      })
+      .catch(err => {
+        console.error("Lỗi khi lưu kết quả vào backend:", err);
+      });
+  }
+
+  function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const resultDiv = document.getElementById("result-container").innerText;
+    doc.text(resultDiv, 10, 10);
+    doc.save(`KQ_${document.getElementById('hoten').value.replace(/\s+/g, "_")}_${document.getElementById('made').value}.pdf`);
+  }
 </script>
-
-<script src="{{ url_for('static', filename='fix-svg-viewbox.js') }}"></script>
-
 </body>
 </html>
