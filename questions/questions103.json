@@ -1,193 +1,142 @@
 [
   {
-    "noi_dung": "Câu 1. Công thức nào dưới đây là công thức của động năng?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "mgh",
-      "B": "mv^2",
-      "C": "1/2mv^2",
-      "D": "Fds"
-    },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Câu 2. Đơn vị nào sau đây là của công suất điện?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Joule",
-      "B": "Watt",
-      "C": "Newton",
-      "D": "Volt"
-    },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Câu 3. Đại lượng nào sau đây không phải là đại lượng vectơ?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Vận tốc",
-      "B": "Lực",
-      "C": "Khối lượng",
-      "D": "Gia tốc"
-    },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Câu 4. Đơn vị của cường độ điện trường là gì?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "V/m",
-      "B": "C/m²",
-      "C": "N/C",
-      "D": "Cả A và C đều đúng"
-    },
-    "dap_an_dung": "D"
-  },
-  {
-    "noi_dung": "Câu 5. Biến thiên của năng lượng nội của một hệ khí lý tưởng trong một quá trình đẳng nhiệt là gì?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Tăng",
-      "B": "Giảm",
-      "C": "Không đổi",
-      "D": "Không xác định"
-    },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Câu 6. Công thức nào sau đây là định luật II Newton?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "F = ma",
-      "B": "F = mv",
-      "C": "F = mgh",
-      "D": "F = qE"
-    },
+    "noi_dung": "Tính ∫(2x + 3) dx",
+    "lua_chon": {"A": "x^2 + 3x + C", "B": "x^2 + 3 + C", "C": "2x^2 + 3x + C", "D": "x^2 + x + C"},
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 7. Đơn vị nào sau đây là của điện tích?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Volt",
-      "B": "Watt",
-      "C": "Coulomb",
-      "D": "Ohm"
-    },
+    "noi_dung": "Tính ∫(x^2) dx",
+    "lua_chon": {"A": "x^3 + C", "B": "x^3/3 + C", "C": "3x^2 + C", "D": "x^2/2 + C"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Tính ∫(sin x) dx",
+    "lua_chon": {"A": "-cos x + C", "B": "cos x + C", "C": "sin x + C", "D": "-sin x + C"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Tính ∫(e^x) dx",
+    "lua_chon": {"A": "e^x + C", "B": "e^x/x + C", "C": "ln|x| + C", "D": "x e^x + C"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Tính ∫(1/x) dx",
+    "lua_chon": {"A": "x + C", "B": "ln|x| + C", "C": "1/(x^2) + C", "D": "e^x + C"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Tính ∫(3x^2 + 2x + 1) dx",
+    "lua_chon": {"A": "x^3 + x^2 + x + C", "B": "x^3 + x^2 + x/3 + C", "C": "x^3 + x^2 + C", "D": "x^3/3 + x^2/2 + x + C"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Tính ∫(cos x) dx",
+    "lua_chon": {"A": "-sin x + C", "B": "sin x + C", "C": "cos x + C", "D": "-cos x + C"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Tính ∫(sec^2 x) dx",
+    "lua_chon": {"A": "tan x + C", "B": "sec x + C", "C": "cot x + C", "D": "-tan x + C"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Tính ∫(1/(1+x^2)) dx",
+    "lua_chon": {"A": "tan x + C", "B": "arctan x + C", "C": "ln|x| + C", "D": "-arctan x + C"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Tính ∫(e^(2x)) dx",
+    "lua_chon": {"A": "e^(2x)/2 + C", "B": "2e^(2x) + C", "C": "e^(x) + C", "D": "x e^(2x) + C"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Tính ∫ từ 0 đến 1 của (2x) dx",
+    "lua_chon": {"A": "1", "B": "2", "C": "0", "D": "3"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Tính ∫ từ 1 đến 2 của (x^2) dx",
+    "lua_chon": {"A": "7/3", "B": "9/3", "C": "8/3", "D": "5/3"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Tính ∫ từ 0 đến 1 của (e^x) dx",
+    "lua_chon": {"A": "e - 1", "B": "1", "C": "e", "D": "1 - e"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Giải bất phương trình: 2x - 5 > 1",
+    "lua_chon": {"A": "x > 3", "B": "x > 2", "C": "x < 3", "D": "x < 2"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Giải bất phương trình: 3x + 4 ≤ 10",
+    "lua_chon": {"A": "x ≤ 2", "B": "x ≥ 2", "C": "x ≤ 3", "D": "x ≥ 3"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Giải bất phương trình: x^2 - 4 < 0",
+    "lua_chon": {"A": "-2 < x < 2", "B": "x < -2 hoặc x > 2", "C": "x ≤ -2", "D": "x ≥ 2"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Giải bất phương trình: (x - 1)(x + 2) ≥ 0",
+    "lua_chon": {"A": "x ≤ -2 hoặc x ≥ 1", "B": "-2 < x < 1", "C": "x ≥ -2 và x ≤ 1", "D": "x > -2 hoặc x < 1"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Giải bất phương trình: 5 - 2x > 1",
+    "lua_chon": {"A": "x < 2", "B": "x > 2", "C": "x < 1", "D": "x > 1"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Giải bất phương trình: 4x + 7 < 3",
+    "lua_chon": {"A": "x < -1", "B": "x > -1", "C": "x < -2", "D": "x > -2"},
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "Câu 8. Khi một vật rơi tự do, đại lượng nào sau đây không đổi?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Vận tốc",
-      "B": "Gia tốc",
-      "C": "Cơ năng",
-      "D": "Động năng"
-    },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Câu 9. Độ lớn lực hấp dẫn giữa hai vật tỉ lệ nghịch với?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Khối lượng hai vật",
-      "B": "Bình phương khoảng cách",
-      "C": "Khoảng cách",
-      "D": "Tổng khối lượng"
-    },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Câu 10. Vật chuyển động tròn đều thì đại lượng nào sau đây không đổi?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Vận tốc hướng",
-      "B": "Gia tốc",
-      "C": "Tốc độ dài",
-      "D": "Lực hướng tâm"
-    },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Câu 11. Khi điện trở tăng thì cường độ dòng điện giảm (nếu hiệu điện thế không đổi).",
-    "kieu_cau_hoi": "dung_sai",
-    "lua_chon": {
-      "A": "đúng",
-      "B": "sai"
-    },
+    "noi_dung": "Giải bất phương trình: x^2 + x - 6 ≤ 0",
+    "lua_chon": {"A": "-3 ≤ x ≤ 2", "B": "x ≤ -3 hoặc x ≥ 2", "C": "x < -3 hoặc x > 2", "D": "x ≥ -3 và x ≤ 2"},
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 12. Một vật ở trạng thái đứng yên thì không có động năng.",
-    "kieu_cau_hoi": "dung_sai",
-    "lua_chon": {
-      "A": "đúng",
-      "B": "sai"
-    },
+    "noi_dung": "Giải bất phương trình: 2(x - 1) ≥ 4",
+    "lua_chon": {"A": "x ≥ 3", "B": "x ≤ 3", "C": "x ≥ 2", "D": "x ≤ 2"},
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 13. Điện thế là đại lượng vô hướng.",
-    "kieu_cau_hoi": "dung_sai",
-    "lua_chon": {
-      "A": "đúng",
-      "B": "sai"
-    },
+    "noi_dung": "Giải bất phương trình: -3x + 9 ≤ 0",
+    "lua_chon": {"A": "x ≥ 3", "B": "x ≤ 3", "C": "x > 3", "D": "x < 3"},
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 14. Lực và gia tốc luôn ngược hướng nhau theo định luật II Newton.",
-    "kieu_cau_hoi": "dung_sai",
-    "lua_chon": {
-      "A": "đúng",
-      "B": "sai"
-    },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Câu 15. Điện trường đều có đường sức cong.",
-    "kieu_cau_hoi": "dung_sai",
-    "lua_chon": {
-      "A": "đúng",
-      "B": "sai"
-    },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Câu 16. Động năng luôn dương hoặc bằng 0.",
-    "kieu_cau_hoi": "dung_sai",
-    "lua_chon": {
-      "A": "đúng",
-      "B": "sai"
-    },
+    "noi_dung": "Giải bất phương trình: (x - 4)^2 ≤ 0",
+    "lua_chon": {"A": "x = 4", "B": "x ≥ 4", "C": "x ≤ 4", "D": "x > 4"},
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 17. Một vật có khối lượng lớn hơn thì luôn có động năng lớn hơn khi chuyển động.",
-    "kieu_cau_hoi": "dung_sai",
-    "lua_chon": {
-      "A": "đúng",
-      "B": "sai"
-    },
-    "dap_an_dung": "B"
+    "noi_dung": "Giải hệ bất phương trình: { x + y ≤ 4; x ≥ 0; y ≥ 0 }",
+    "lua_chon": {"A": "Miền tam giác giới hạn bởi các trục tọa độ và đường x+y=4", "B": "Miền vô nghiệm", "C": "Miền nửa mặt phẳng x+y≥4", "D": "Miền hình chữ nhật"},
+    "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 18. Hãy trình bày định luật bảo toàn cơ năng và lấy ví dụ minh họa.",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Trong một hệ kín không chịu tác dụng của ma sát và lực cản, cơ năng được bảo toàn. Ví dụ: một con lắc đơn dao động trong chân không, tại mọi thời điểm tổng động năng và thế năng là không đổi."
+    "noi_dung": "Giải hệ bất phương trình: { x - y ≥ 1; x ≤ 3 }",
+    "lua_chon": {"A": "Miền giữa 2 đường x-y=1 và x=3", "B": "Miền giữa 2 đường x+y=1 và x=3", "C": "Miền nửa mặt phẳng x-y<1", "D": "Miền vô nghiệm"},
+    "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 19. Hãy nêu sự khác nhau giữa dòng điện xoay chiều và dòng điện một chiều.",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Dòng điện một chiều có chiều không đổi theo thời gian, còn dòng điện xoay chiều đổi chiều liên tục theo thời gian. Ví dụ: Pin tạo ra dòng điện một chiều; nguồn điện lưới tạo ra dòng xoay chiều."
+    "noi_dung": "Giải hệ bất phương trình: { 2x + y ≤ 5; x ≥ 0; y ≥ 0 }",
+    "lua_chon": {"A": "Miền tam giác giới hạn bởi trục tọa độ và đường 2x+y=5", "B": "Miền vô nghiệm", "C": "Miền hình chữ nhật", "D": "Miền nửa mặt phẳng 2x+y≥5"},
+    "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 20. Trình bày mối liên hệ giữa công và năng lượng, lấy ví dụ minh họa.",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Công là đại lượng biểu thị cho sự truyền năng lượng. Khi một lực thực hiện công lên vật, năng lượng của vật thay đổi. Ví dụ: khi ta kéo một vật đi trên mặt phẳng, lực kéo sinh công và truyền năng lượng cho vật."
+    "noi_dung": "Giải hệ bất phương trình: { x ≥ 1; y ≤ 2; x + y ≤ 5 }",
+    "lua_chon": {"A": "Miền tứ giác giới hạn bởi x=1, y=2, và x+y=5", "B": "Miền vô nghiệm", "C": "Miền hình chữ nhật", "D": "Miền tam giác"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Giải hệ bất phương trình: { x ≥ 0; y ≥ 0; x + 2y ≤ 6 }",
+    "lua_chon": {"A": "Miền tam giác giới hạn bởi trục tọa độ và đường x+2y=6", "B": "Miền vô nghiệm", "C": "Miền hình chữ nhật", "D": "Miền nửa mặt phẳng x+2y≥6"},
+    "dap_an_dung": "A"
   }
 ]
