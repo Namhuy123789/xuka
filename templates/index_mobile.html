@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>XUKA 4.0</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -98,14 +100,26 @@
   <!-- QR + 2 bên bài viết hiển thị DỌC -->
   <div class="flex flex-col md:flex-row justify-center items-start gap-12 px-12 mt-1">
     <div id="left-column" class="flex flex-col gap-2 w-full md:w-1/4">
+      
       </div>
     </div>
     <div id="main-column" class="flex flex-col gap-4 w-full max-w-md mx-auto">
-      <div id="qr-login" class="bg-white p-6 rounded-xl shadow text-center">
-        <h1 class="text-1xl font-bold text-pink-500 mb-4">QUÉT MÃ QR</h1>
-        <div id="reader" class="mx-auto" style="width: 100%; max-width: 300px;"></div>
-        <p id="qr-error" class="text-red-600 mt-2 font-semibold hidden"></p>
-      </div>
+  <div id="qr-login" class="bg-white p-6 rounded-xl shadow text-center">
+    <h1 class="text-1xl font-bold text-pink-500 mb-4">QUÉT MÃ QR</h1>
+    <div id="reader" class="mx-auto" style="width: 100%; max-width: 300px;"></div>
+
+    <div class="flex gap-2 mt-4 justify-center">
+      <button id="flip-camera" class="px-3 py-1 bg-blue-500 text-white rounded">Đổi camera</button>
+      <button id="upload-qr" class="px-3 py-1 bg-green-500 text-white rounded">Chọn ảnh QR</button>
+      <input type="file" id="qr-file" accept="image/*" class="hidden">
+    </div>
+
+    <p id="qr-error" class="text-red-600 mt-2 font-semibold hidden"></p>
+  </div>
+</div>
+
+<br>
+
       <div id="button-group" class="flex flex-wrap justify-center gap-4">
       <a href="/tronde" 
          class="px-5 py-2.5 rounded-xl bg-gradient-to-b from-blue-500 to-blue-700 text-white font-semibold text-base 
@@ -133,7 +147,9 @@
       </a>
     </div>
     </div>
-	<div id="right-column" class="flex flex-col gap-2 w-full md:w-1/4">
+
+     <div id="right-column" class="flex flex-col gap-2 w-full md:w-1/4">
+     
       
     </div>
   </div>
@@ -194,17 +210,15 @@
     Bản quyền © 2025 <span class="font-bold text-red-600">PHẠM HUY TUÂN</span> · ĐT: <a href="tel:0389897989" class="text-blue-600 hover:underline">0389 897 989</a>
   </footer>
 <script>
+
+  // ====== CÁC BIẾN CHUNG ĐÃ CÓ Ở TRÊN ======
   const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
     ? "http://127.0.0.1:5000"
     : "https://xuka.com.vn";
 
-  const MASTER_PASSPHRASE = "thay-bang-chuoi-bi-mat";
+  const MASTER_PASSPHRASE = "thay-bang-chuoi-bi-mat"; // phải khớp server
   const te = new TextEncoder();
   const td = new TextDecoder();
-
-  let time = 3600; // 60 phút
-  let timer;
-  let questionData = [];
 
   function b64ToU8(b64) {
     return new Uint8Array([...atob(b64)].map(c => c.charCodeAt(0)));
@@ -212,60 +226,181 @@
 
   async function deriveAesKey(passphrase, salt) {
     const keyMaterial = await crypto.subtle.importKey(
-      'raw',
-      te.encode(passphrase),
-      { name: 'PBKDF2' },
-      false,
-      ['deriveKey']
+      "raw", te.encode(passphrase), { name: "PBKDF2" }, false, ["deriveKey"]
     );
     return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
       keyMaterial,
-      { name: 'AES-GCM', length: 256 },
+      { name: "AES-GCM", length: 256 },
       false,
-      ['encrypt', 'decrypt']
+      ["encrypt", "decrypt"]
     );
   }
 
-  async function decryptWithPassphrase(qrText, passphrase) {
-    const parts = qrText.split(".");
-    if (parts.length !== 4 || parts[0] !== "v1") throw new Error("QR không hợp lệ!");
-    const salt = b64ToU8(parts[1]);
-    const iv = b64ToU8(parts[2]);
-    const cipher = b64ToU8(parts[3]);
+  // === GIỮ đúng phiên bản AES-GCM, loại bỏ bản "giả lập" ===
+  async function decryptWithPassphrase(encryptedData, passphrase) {
+    const [version, saltB64, ivB64, dataB64] = encryptedData.split(".");
+    if (version !== "v1" || !saltB64 || !ivB64 || !dataB64) {
+      throw new Error("Định dạng mã QR không hợp lệ");
+    }
+    const salt = b64ToU8(saltB64);
+    const iv = b64ToU8(ivB64);
+    const data = b64ToU8(dataB64);
     const key = await deriveAesKey(passphrase, salt);
-    const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
-    return td.decode(plainBuf);
+    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
+    return JSON.parse(td.decode(decrypted));
   }
 
-  for (let i = 101; i <= 124; i++) {
-    const opt = document.createElement("option");
-    opt.value = i;
-    opt.textContent = i;
-    document.getElementById("made").appendChild(opt);
+  // ====== LIÊN KẾT ĐÚNG CÁC PHẦN TỬ TRONG HTML ======
+  const qrCard        = document.getElementById("qr-login");   // thẻ card chứa QR
+  const readerElem    = document.getElementById("reader");     // khung camera
+  const qrFileInput   = document.getElementById("qr-file");    // đúng ID trong HTML
+  const qrErrorElem   = document.getElementById("qr-error");
+  const flipBtn       = document.getElementById("flip-camera");
+  const uploadBtn     = document.getElementById("upload-qr");
+
+  let html5QrCode = null;
+  let devices = [];
+  let camIndex = 0;
+
+  async function verifyAndLogin(qrText) {
+    qrErrorElem.classList.add("hidden");
+    try {
+      if (qrText.startsWith("v1.")) {
+        const decoded = await decryptWithPassphrase(qrText, MASTER_PASSPHRASE);
+        if (!decoded.username || !decoded.password) throw new Error("Dữ liệu giải mã không hợp lệ");
+        qrText = `${decoded.username}:${decoded.password}`;
+      }
+
+      const res = await fetch("/api/decrypt_qr", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": (document.querySelector('meta[name="csrf-token"]')||{}).content || ""
+        },
+        body: JSON.stringify({ qr_value: qrText.trim() })
+      });
+
+      const data = await res.json();
+      if (data.status === "success") {
+		// Ẩn UI quét QR
+		if (qrCard)      qrCard.style.display = "none";
+		if (readerElem)  readerElem.style.display = "none";
+		if (qrErrorElem) qrErrorElem.style.display = "none";
+		if (qrFileInput) qrFileInput.style.display = "none";
+
+		// ✅ Hiện module đăng nhập
+		document.getElementById('account-login').classList.remove('hidden');
+		document.getElementById('account-login').scrollIntoView({ behavior: "smooth" });
+
+		// Hoặc nếu muốn chuyển hẳn sang trang /login:
+		// window.location.href = "/login";
+	}
+	  else {
+        qrErrorElem.textContent = data.msg || "Mã QR không hợp lệ!";
+        qrErrorElem.classList.remove("hidden");
+      }
+    } catch (err) {
+      console.error("Lỗi giải mã/kết nối:", err);
+      qrErrorElem.textContent = err.message || "Lỗi kết nối máy chủ!";
+      qrErrorElem.classList.remove("hidden");
+    }
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const qrScanner = new Html5Qrcode("reader");
-    qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decoded) => {
-      decryptWithPassphrase(decoded, MASTER_PASSPHRASE)
-        .then(() => {
-          qrScanner.stop().then(() => {
-            document.getElementById('qr-login').classList.add('hidden');
-            document.getElementById('button-group').classList.add('hidden');
-            document.getElementById('left-column').classList.add('hidden');
-            document.getElementById('right-column').classList.add('hidden');
-            document.getElementById('account-login').classList.remove('hidden');
-          }).catch(err => console.error("Lỗi khi dừng QR Scanner:", err));
-        })
-        .catch(() => {
-          document.getElementById('qr-error').classList.remove('hidden');
-        });
-    }, (error) => {
-      console.error("Lỗi quét QR:", error);
-      document.getElementById('qr-error').classList.remove('hidden');
+  // ====== CAMERA SCAN ======
+  function startQrScanner() {
+    if (!readerElem) return;
+    html5QrCode = new Html5Qrcode("reader");
+
+    Html5Qrcode.getCameras()
+      .then(list => {
+        devices = list || [];
+        const camId = devices.length ? devices[camIndex].id : { facingMode: "environment" };
+        return html5QrCode.start(
+          camId,
+          { fps: 10, qrbox: 250 },
+          (decodedText) => {
+            html5QrCode.stop().then(() => verifyAndLogin(decodedText));
+          },
+          () => {}
+        );
+      })
+      .catch(err => {
+        console.error(err);
+        qrErrorElem.textContent = "Lỗi khi truy cập camera!";
+        qrErrorElem.classList.remove("hidden");
+      });
+  }
+
+  // Đổi camera (nếu có nhiều)
+  if (flipBtn) {
+    flipBtn.addEventListener("click", async () => {
+      if (!devices.length || !html5QrCode) return;
+      camIndex = (camIndex + 1) % devices.length;
+      try {
+        await html5QrCode.stop();
+        await html5QrCode.start(
+          devices[camIndex].id,
+          { fps: 10, qrbox: 250 },
+          (decodedText) => {
+            html5QrCode.stop().then(() => verifyAndLogin(decodedText));
+          },
+          () => {}
+        );
+      } catch (e) {
+        console.error("Không đổi được camera:", e);
+      }
     });
-  });
+  }
+
+  // Quét từ ảnh
+  if (uploadBtn && qrFileInput) {
+    uploadBtn.addEventListener("click", () => qrFileInput.click());
+    qrFileInput.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      // Dùng instance riêng để scan file
+      const qrCode = new Html5Qrcode("reader");
+      try {
+        const decoded = await qrCode.scanFile(file, true);
+        if (html5QrCode) { try { await html5QrCode.stop(); } catch(_){} }
+        verifyAndLogin(decoded);
+      } catch (err) {
+        console.error(err);
+        qrErrorElem.textContent = "Không thể đọc mã QR từ ảnh!";
+        qrErrorElem.classList.remove("hidden");
+      }
+    });
+  }
+
+  // Khởi động quét
+  startQrScanner();
+
+ 
+function sendQR(qrValue) {
+    fetch("/api/decrypt_qr", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ qr_value: qrValue })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect;
+        } else {
+            alert(data.message || "Mã QR không hợp lệ!");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Lỗi kết nối tới server!");
+    });
+}
+
+
+
 
   function checkLogin() {
     const username = document.getElementById('username').value.trim();
@@ -274,6 +409,10 @@
     document.getElementById('account-login').classList.add('hidden');
     document.getElementById('login-form').classList.remove('hidden');
   }
+
+
+
+
 
   function updateCountdown() {
     const m = Math.floor(time / 60).toString().padStart(2, '0');
@@ -302,7 +441,12 @@
     localStorage.setItem("savedTime", time);
   }
 
-    function processExamContent(content) {
+
+
+
+
+
+  function processExamContent(content) {
   let s = String(content || "");
 
   // ===== B0. Chuẩn hóa ký tự đặc biệt =====
@@ -467,7 +611,6 @@
 
 
   
-
 
   function processAllQuestions(questions) {
     return questions.map(q => {
@@ -775,8 +918,6 @@
 
     if (typeof MathJax !== 'undefined') {
       MathJax.Hub.Queue(["Typeset", MathJax.Hub, resultDiv]);
-    } else {
-      console.error("MathJax is not loaded!");
     }
 
     fetch(`${API_BASE}/save_result`, {
@@ -807,6 +948,53 @@
     doc.text(resultDiv, 10, 10);
     doc.save(`KQ_${document.getElementById('hoten').value.replace(/\s+/g, "_")}_${document.getElementById('made').value}.pdf`);
   }
+  document.addEventListener("DOMContentLoaded", function() {
+    const select = document.getElementById("made"); // Correct ID
+    if (!select) {
+        console.error("Không tìm thấy phần tử <select> với ID 'made'");
+        return;
+    }
+
+    fetch("/get_exam_codes", {
+        method: "GET",
+        headers: {
+            "Accept": "application/json",
+            "X-CSRFToken": document.querySelector('meta[name="csrf-token"]').content || ""
+        }
+    })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`Lỗi HTTP: ${res.status} ${res.statusText}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log("Dữ liệu mã đề nhận được:", data); // Debug response
+            // Handle both array and {codes: [...]}
+            const codes = Array.isArray(data) ? data : (data.codes || []);
+            if (!codes.length) {
+                console.warn("Không có mã đề nào từ server");
+                select.innerHTML = '<option value="">-- Không có mã đề --</option>';
+                return;
+            }
+            // Populate dropdown
+            select.innerHTML = '<option value="">-- Chọn mã đề --</option>';
+            codes.forEach(code => {
+                const opt = document.createElement("option");
+                opt.value = code;
+                opt.textContent = code;
+                select.appendChild(opt);
+            });
+        })
+        .catch(err => {
+            console.error("Lỗi khi tải mã đề:", err);
+            const errorMessage = document.createElement("p");
+            errorMessage.className = "text-red-600 mt-2 font-semibold";
+            errorMessage.textContent = "Không thể tải danh sách mã đề. Vui lòng thử lại!";
+            select.parentElement.appendChild(errorMessage);
+        });
+});
+
 </script>
 </body>
 </html>
