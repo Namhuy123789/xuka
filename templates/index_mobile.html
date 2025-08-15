@@ -108,11 +108,28 @@
     <h1 class="text-1xl font-bold text-pink-500 mb-4">QUÉT MÃ QR</h1>
     <div id="reader" class="mx-auto" style="width: 100%; max-width: 300px;"></div>
 
-    <div class="flex gap-2 mt-4 justify-center">
-      <button id="flip-camera" class="px-3 py-1 bg-blue-500 text-white rounded">Đổi camera</button>
-      <button id="upload-qr" class="px-3 py-1 bg-green-500 text-white rounded">Chọn ảnh QR</button>
-      <input type="file" id="qr-file" accept="image/*" class="hidden">
-    </div>
+     <div class="flex gap-4 mt-4 justify-center">
+  <!-- Nút Đổi camera -->
+  <button id="flip-camera" 
+    class="px-5 py-2 rounded-xl text-white font-semibold 
+           bg-gradient-to-r from-blue-500 to-blue-700 
+           shadow-lg transform transition-all duration-200 
+           hover:scale-105 hover:shadow-xl active:scale-95 active:shadow-inner">
+    Đổi camera
+  </button>
+
+  <!-- Nút Chọn ảnh QR -->
+  <button id="upload-qr" 
+    class="px-5 py-2 rounded-xl text-white font-semibold 
+           bg-gradient-to-r from-green-500 to-green-700 
+           shadow-lg transform transition-all duration-200 
+           hover:scale-105 hover:shadow-xl active:scale-95 active:shadow-inner">
+    Chọn ảnh
+  </button>
+
+  <input type="file" id="qr-file" accept="image/*" class="hidden">
+</div>
+
 
     <p id="qr-error" class="text-red-600 mt-2 font-semibold hidden"></p>
   </div>
