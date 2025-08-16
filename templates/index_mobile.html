@@ -110,25 +110,39 @@
 
      <div class="flex gap-4 mt-4 justify-center">
     <!-- Nút Đổi camera -->
-  <button id="flip-camera" 
-    class="px-4 py-2 rounded-xl text-white font-semibold 
-           bg-gradient-to-r from-blue-500 to-blue-700 
-           shadow-lg transform transition-all duration-200 
-           hover:scale-105 hover:shadow-xl active:scale-95 active:shadow-inner text-3xl">
-    🔄
-	
-</button>
+   <button id="flip-camera" 
+		class="px-4 py-2 rounded-xl text-white font-semibold 
+			   bg-gradient-to-r from-blue-500 to-blue-700 
+			   shadow-lg transform transition-all duration-200 
+			   hover:scale-105 hover:shadow-xl active:scale-95 active:shadow-inner 
+			   flex items-center justify-center gap-2">
+		<svg width="32" height="32" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+			<!-- Vòng tròn viền -->
+			<circle cx="32" cy="32" r="28" fill="none" stroke="#fff" stroke-width="4"/>
+			<!-- Mũi tên cong lên -->
+			<path d="M32 10 A22 22 0 0 1 54 32" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+			<polygon points="52,24 54,32 46,28" fill="#fff"/>
+			<!-- Mũi tên cong xuống -->
+			<path d="M32 54 A22 22 0 0 1 10 32" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+			<polygon points="12,40 10,32 18,36" fill="#fff"/>
+		</svg>
+	   
+	</button>
 
-  </button>
-
-  <!-- Nút Chọn ảnh QR -->
-  <button id="upload-qr" 
-    class="px-4 py-2 rounded-xl text-white font-semibold 
-           bg-gradient-to-r from-green-500 to-green-700 
-           shadow-lg transform transition-all duration-200 
-           hover:scale-105 hover:shadow-xl active:scale-95 active:shadow-inner text-3xl">
-    📸
-  </button>
+	<!-- Nút Chọn ảnh QR -->
+	<button id="upload-qr" 
+		class="px-4 py-2 rounded-xl text-white font-semibold 
+				bg-gradient-to-r from-blue-500 to-blue-700 
+			   shadow-lg transform transition-all duration-200 
+			   hover:scale-105 hover:shadow-xl active:scale-95 active:shadow-inner 
+			   flex items-center justify-center gap-2">
+		<svg width="40" height="40" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+			<rect x="10" y="18" width="44" height="28" rx="5" ry="5" fill="none" stroke="#fff" stroke-width="4"/>
+			<circle cx="32" cy="32" r="10" fill="none" stroke="#fff" stroke-width="4"/>
+			<rect x="22" y="12" width="8" height="6" rx="1" ry="1" fill="#fff"/>
+		</svg>
+		
+	</button>
 
   <input type="file" id="qr-file" accept="image/*" class="hidden">
 </div>
