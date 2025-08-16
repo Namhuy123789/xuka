@@ -109,25 +109,34 @@
     <div id="reader" class="mx-auto" style="width: 100%; max-width: 300px;"></div>
 
      <div class="flex gap-4 mt-4 justify-center">
-    <!-- Nút Đổi camera -->
-   <button id="flip-camera" 
-		class="px-4 py-2 rounded-xl text-white font-semibold 
-			   bg-gradient-to-r from-blue-500 to-blue-700 
-			   shadow-lg transform transition-all duration-200 
-			   hover:scale-105 hover:shadow-xl active:scale-95 active:shadow-inner 
-			   flex items-center justify-center gap-2">
-		<svg width="32" height="32" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-			<!-- Vòng tròn viền -->
-			<circle cx="32" cy="32" r="28" fill="none" stroke="#fff" stroke-width="4"/>
-			<!-- Mũi tên cong lên -->
-			<path d="M32 10 A22 22 0 0 1 54 32" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-			<polygon points="52,24 54,32 46,28" fill="#fff"/>
-			<!-- Mũi tên cong xuống -->
-			<path d="M32 54 A22 22 0 0 1 10 32" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-			<polygon points="12,40 10,32 18,36" fill="#fff"/>
-		</svg>
-	   
+    			<!-- Nút Đổi camera -->
+	<button id="flip-camera" 
+		class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
+			   bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
+			   shadow-lg transform transition-all duration-200
+			   hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner">
+		<span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+			<!-- SVG icon xoay vòng -->
+			<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M4 14a8 8 0 0116 0 8 8 0 01-16 0z"/>
+			</svg>
+		</span>
 	</button>
+
+	<button id="upload-qr" 
+		class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
+			   bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
+			   shadow-lg transform transition-all duration-200
+			   hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner">
+		<span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+			<!-- SVG icon máy ảnh -->
+			<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M3 7h4l3-3h4l3 3h4v14H3V7z" />
+				<circle cx="12" cy="13" r="4" stroke="white" stroke-width="2" />
+			</svg>
+		</span>
+	</button>
+
 
 	<!-- Nút Chọn ảnh QR -->
 	<button id="upload-qr" 
