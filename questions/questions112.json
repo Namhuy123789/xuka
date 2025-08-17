@@ -1,102 +1,103 @@
+
 [
   {
-    "noi_dung": "问题1：重力的公式是什么？",
-    "lua_chon": { "A": "F = ma", "B": "F = mg", "C": "F = mv", "D": "F = mgh" },
+    "noi_dung": "Chiến tranh thế giới thứ hai diễn ra trong bao nhiêu năm?",
+    "lua_chon": {"A": "4 năm", "B": "5 năm", "C": "6 năm", "D": "7 năm"},
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Cách mạng tháng Mười Nga thành công vào năm bao nhiêu?",
+    "lua_chon": {"A": "1915", "B": "1917", "C": "1919", "D": "1920"},
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "问题2：国际单位制中，力的单位是什么？",
-    "lua_chon": { "A": "焦耳", "B": "牛顿", "C": "瓦特", "D": "帕斯卡" },
+    "noi_dung": "Bao nhiêu năm kể từ ngày thành lập Đảng Cộng sản Việt Nam đến năm 2020?",
+    "lua_chon": {"A": "85", "B": "90", "C": "95", "D": "100"},
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "问题3：欧姆定律的表达式是？",
-    "lua_chon": { "A": "U = IR", "B": "F = ma", "C": "E = mc^2", "D": "P = IV" },
+    "noi_dung": "Hiệp định Genève về chấm dứt chiến tranh ở Việt Nam được ký kết vào năm nào?",
+    "lua_chon": {"A": "1952", "B": "1954", "C": "1956", "D": "1960"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Thời gian tồn tại của Liên Xô từ khi thành lập đến khi tan rã là bao lâu?",
+    "lua_chon": {"A": "69 năm", "B": "71 năm", "C": "73 năm", "D": "75 năm"},
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "问题4：以下哪一个是标量？",
-    "lua_chon": { "A": "速度", "B": "力", "C": "加速度", "D": "温度" },
-    "dap_an_dung": "D"
-  },
-  {
-    "noi_dung": "问题5：物理中的 g 表示什么？",
-    "lua_chon": { "A": "速度", "B": "质量", "C": "重力加速度", "D": "摩擦力" },
+    "noi_dung": "Cách mạng Tân Hợi (1911) ở Trung Quốc diễn ra cách Cách mạng Tháng Tám Việt Nam (1945) bao nhiêu năm?",
+    "lua_chon": {"A": "34 năm", "B": "35 năm", "C": "36 năm", "D": "37 năm"},
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "问题6：“作用力与反作用力相等”的定律是哪个？",
-    "lua_chon": { "A": "牛顿第一定律", "B": "牛顿第二定律", "C": "牛顿第三定律", "D": "阿基米德定律" },
+    "noi_dung": "Hồ Chí Minh sinh năm 1890. Đến năm 1969, Bác Hồ đã hưởng thọ bao nhiêu tuổi?",
+    "lua_chon": {"A": "75", "B": "76", "C": "79", "D": "80"},
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "问题7：国际单位制中，功的单位是什么？",
-    "lua_chon": { "A": "瓦特", "B": "牛顿", "C": "焦耳", "D": "安培" },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "问题8：欧姆是哪个物理量的单位？",
-    "lua_chon": { "A": "功率", "B": "电流", "C": "电阻", "D": "能量" },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "问题9：用于测量电压的仪器是？",
-    "lua_chon": { "A": "电流表", "B": "电压表", "C": "温度计", "D": "电阻表" },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "问题10：动能的公式是？",
-    "lua_chon": { "A": "E = mgh", "B": "E = mc^2", "C": "E = 1/2mv^2", "D": "E = qU" },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "问题11：哪种传热方式涉及流体运动？",
-    "lua_chon": { "A": "传导", "B": "辐射", "C": "对流", "D": "扩散" },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "问题12：测量气压的仪器是？",
-    "lua_chon": { "A": "电压表", "B": "气压计", "C": "电流表", "D": "显微计" },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "问题13：频率的单位是什么？",
-    "lua_chon": { "A": "赫兹", "B": "欧姆", "C": "瓦特", "D": "焦耳" },
+    "noi_dung": "Việt Nam gia nhập Liên Hợp Quốc vào năm 1977. Đến năm 2022 là bao nhiêu năm thành viên?",
+    "lua_chon": {"A": "45", "B": "44", "C": "43", "D": "46"},
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "问题14：哪个公式体现了能量守恒定律？",
-    "lua_chon": { "A": "E总 = E势 + E动", "B": "P = IV", "C": "F = ma", "D": "U = IR" },
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "问题15：哪种透镜可以汇聚光线？",
-    "lua_chon": { "A": "凹透镜", "B": "凸透镜", "C": "平面透镜", "D": "反射镜" },
+    "noi_dung": "Chiến dịch Điện Biên Phủ kéo dài bao nhiêu ngày?",
+    "lua_chon": {"A": "45", "B": "54", "C": "60", "D": "63"},
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "问题16：液体变成气体的过程称为？",
-    "lua_chon": { "A": "凝结", "B": "蒸发", "C": "熔化", "D": "凝固" },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "问题17：以下哪个是矢量量？",
-    "lua_chon": { "A": "温度", "B": "质量", "C": "加速度", "D": "能量" },
+    "noi_dung": "Từ năm 1930 đến năm 1945, Đảng Cộng sản Việt Nam đã lãnh đạo cách mạng trong bao nhiêu năm?",
+    "lua_chon": {"A": "13", "B": "14", "C": "15", "D": "16"},
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "问题18：阿基米德原理的公式是？",
-    "lua_chon": { "A": "F = ρgV", "B": "F = ma", "C": "F = qE", "D": "P = IV" },
+    "noi_dung": "Cuộc kháng chiến chống Pháp của nhân dân Việt Nam kéo dài trong bao lâu?",
+    "lua_chon": {"A": "8 năm", "B": "9 năm", "C": "10 năm", "D": "11 năm"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Cuộc Tổng tiến công và nổi dậy Xuân Mậu Thân diễn ra vào năm nào?",
+    "lua_chon": {"A": "1967", "B": "1968", "C": "1969", "D": "1970"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Năm 2023 là kỷ niệm bao nhiêu năm Ngày Quốc khánh nước CHXHCN Việt Nam?",
+    "lua_chon": {"A": "77 năm", "B": "78 năm", "C": "79 năm", "D": "80 năm"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Bao nhiêu năm từ chiến thắng Điện Biên Phủ đến khi giải phóng miền Nam, thống nhất đất nước?",
+    "lua_chon": {"A": "20 năm", "B": "21 năm", "C": "22 năm", "D": "23 năm"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Từ năm 1862 đến năm 1945, Việt Nam bị Pháp đô hộ trong bao nhiêu năm?",
+    "lua_chon": {"A": "80", "B": "83", "C": "85", "D": "90"},
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Bao nhiêu năm kể từ Cách mạng Tháng Tám 1945 đến khi diễn ra Cải cách ruộng đất (1953)?",
+    "lua_chon": {"A": "6", "B": "7", "C": "8", "D": "9"},
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Hội nghị Ianta diễn ra vào năm 1945. Đến năm 2023 là bao nhiêu năm?",
+    "lua_chon": {"A": "76", "B": "77", "C": "78", "D": "79"},
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Bao nhiêu năm kể từ Hiệp định Paris (1973) đến ngày Việt Nam gia nhập WTO (2007)?",
+    "lua_chon": {"A": "33", "B": "34", "C": "35", "D": "36"},
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Đại hội Đảng lần thứ VI diễn ra vào năm 1986. Tính đến năm 2021 là bao nhiêu năm?",
+    "lua_chon": {"A": "35", "B": "36", "C": "37", "D": "38"},
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "问题19：压力的公式是？",
-    "lua_chon": { "A": "P = F/A", "B": "P = mv", "C": "P = qU", "D": "P = E/t" },
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "问题20：万有引力定律是谁提出的？",
-    "lua_chon": { "A": "爱因斯坦", "B": "牛顿", "C": "伽利略", "D": "阿基米德" },
+    "noi_dung": "Hiệp định Giơ-ne-vơ được ký vào tháng 7/1954. Đến năm 2024 là bao nhiêu năm?",
+    "lua_chon": {"A": "69", "B": "70", "C": "71", "D": "72"},
     "dap_an_dung": "B"
   }
 ]
