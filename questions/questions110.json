@@ -1,6 +1,6 @@
 [
   {
-    "noi_dung": "Câu 1. Công thức nào dưới đây là công thức của động năng?",
+    "noi_dung": "Công thức nào dưới đây là công thức của động năng?",
     "kieu_cau_hoi": "trac_nghiem",
     "lua_chon": {
       "A": "mgh",
@@ -11,7 +11,7 @@
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "Câu 2. Đơn vị nào sau đây là của công suất điện?",
+    "noi_dung": "Đơn vị nào sau đây là của công suất điện?",
     "kieu_cau_hoi": "trac_nghiem",
     "lua_chon": {
       "A": "Joule",
@@ -22,7 +22,7 @@
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Câu 3. Đại lượng nào sau đây không phải là đại lượng vectơ?",
+    "noi_dung": "Đại lượng nào sau đây không phải là đại lượng vectơ?",
     "kieu_cau_hoi": "trac_nghiem",
     "lua_chon": {
       "A": "Vận tốc",
@@ -33,7 +33,7 @@
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "Câu 4. Đơn vị của cường độ điện trường là gì?",
+    "noi_dung": "Đơn vị của cường độ điện trường là gì?",
     "kieu_cau_hoi": "trac_nghiem",
     "lua_chon": {
       "A": "V/m",
@@ -44,7 +44,7 @@
     "dap_an_dung": "D"
   },
   {
-    "noi_dung": "Câu 5. Biến thiên của năng lượng nội của một hệ khí lý tưởng trong một quá trình đẳng nhiệt là gì?",
+    "noi_dung": "Biến thiên của năng lượng nội của một hệ khí lý tưởng trong một quá trình đẳng nhiệt là gì?",
     "kieu_cau_hoi": "trac_nghiem",
     "lua_chon": {
       "A": "Tăng",
@@ -55,7 +55,7 @@
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "Câu 6. Công thức nào sau đây là định luật II Newton?",
+    "noi_dung": "Công thức nào sau đây là định luật II Newton?",
     "kieu_cau_hoi": "trac_nghiem",
     "lua_chon": {
       "A": "F = ma",
@@ -66,7 +66,7 @@
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 7. Đơn vị nào sau đây là của điện tích?",
+    "noi_dung": "Đơn vị nào sau đây là của điện tích?",
     "kieu_cau_hoi": "trac_nghiem",
     "lua_chon": {
       "A": "Volt",
@@ -77,7 +77,7 @@
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "Câu 8. Khi một vật rơi tự do, đại lượng nào sau đây không đổi?",
+    "noi_dung": "Khi một vật rơi tự do, đại lượng nào sau đây không đổi?",
     "kieu_cau_hoi": "trac_nghiem",
     "lua_chon": {
       "A": "Vận tốc",
@@ -88,7 +88,7 @@
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Câu 9. Độ lớn lực hấp dẫn giữa hai vật tỉ lệ nghịch với?",
+    "noi_dung": "Độ lớn lực hấp dẫn giữa hai vật tỉ lệ nghịch với?",
     "kieu_cau_hoi": "trac_nghiem",
     "lua_chon": {
       "A": "Khối lượng hai vật",
@@ -99,7 +99,7 @@
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Câu 10. Vật chuyển động tròn đều thì đại lượng nào sau đây không đổi?",
+    "noi_dung": "Vật chuyển động tròn đều thì đại lượng nào sau đây không đổi?",
     "kieu_cau_hoi": "trac_nghiem",
     "lua_chon": {
       "A": "Vận tốc hướng",
@@ -110,7 +110,7 @@
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "Câu 11. Khi điện trở tăng thì cường độ dòng điện giảm (nếu hiệu điện thế không đổi).",
+    "noi_dung": "Khi điện trở tăng thì cường độ dòng điện giảm (nếu hiệu điện thế không đổi).",
     "kieu_cau_hoi": "dung_sai",
     "lua_chon": {
       "A": "đúng",
@@ -119,7 +119,7 @@
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 12. Một vật ở trạng thái đứng yên thì không có động năng.",
+    "noi_dung": "Một vật ở trạng thái đứng yên thì không có động năng.",
     "kieu_cau_hoi": "dung_sai",
     "lua_chon": {
       "A": "đúng",
@@ -128,7 +128,7 @@
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 13. Điện thế là đại lượng vô hướng.",
+    "noi_dung": "Điện thế là đại lượng vô hướng.",
     "kieu_cau_hoi": "dung_sai",
     "lua_chon": {
       "A": "đúng",
@@ -137,7 +137,7 @@
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 14. Lực và gia tốc luôn ngược hướng nhau theo định luật II Newton.",
+    "noi_dung": "Lực và gia tốc luôn ngược hướng nhau theo định luật II Newton.",
     "kieu_cau_hoi": "dung_sai",
     "lua_chon": {
       "A": "đúng",
@@ -146,7 +146,7 @@
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Câu 15. Điện trường đều có đường sức cong.",
+    "noi_dung": "Điện trường đều có đường sức cong.",
     "kieu_cau_hoi": "dung_sai",
     "lua_chon": {
       "A": "đúng",
@@ -155,7 +155,7 @@
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Câu 16. Động năng luôn dương hoặc bằng 0.",
+    "noi_dung": "Động năng luôn dương hoặc bằng 0.",
     "kieu_cau_hoi": "dung_sai",
     "lua_chon": {
       "A": "đúng",
@@ -164,7 +164,7 @@
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Câu 17. Một vật có khối lượng lớn hơn thì luôn có động năng lớn hơn khi chuyển động.",
+    "noi_dung": "Một vật có khối lượng lớn hơn thì luôn có động năng lớn hơn khi chuyển động.",
     "kieu_cau_hoi": "dung_sai",
     "lua_chon": {
       "A": "đúng",
@@ -173,19 +173,19 @@
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Câu 18. Hãy trình bày định luật bảo toàn cơ năng và lấy ví dụ minh họa.",
+    "noi_dung": "Hãy trình bày định luật bảo toàn cơ năng và lấy ví dụ minh họa.",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
     "goi_y_dap_an": "Trong một hệ kín không chịu tác dụng của ma sát và lực cản, cơ năng được bảo toàn. Ví dụ: một con lắc đơn dao động trong chân không, tại mọi thời điểm tổng động năng và thế năng là không đổi."
   },
   {
-    "noi_dung": "Câu 19. Hãy nêu sự khác nhau giữa dòng điện xoay chiều và dòng điện một chiều.",
+    "noi_dung": "Hãy nêu sự khác nhau giữa dòng điện xoay chiều và dòng điện một chiều.",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
     "goi_y_dap_an": "Dòng điện một chiều có chiều không đổi theo thời gian, còn dòng điện xoay chiều đổi chiều liên tục theo thời gian. Ví dụ: Pin tạo ra dòng điện một chiều; nguồn điện lưới tạo ra dòng xoay chiều."
   },
   {
-    "noi_dung": "Câu 20. Trình bày mối liên hệ giữa công và năng lượng, lấy ví dụ minh họa.",
+    "noi_dung": "Trình bày mối liên hệ giữa công và năng lượng, lấy ví dụ minh họa.",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
     "goi_y_dap_an": "Công là đại lượng biểu thị cho sự truyền năng lượng. Khi một lực thực hiện công lên vật, năng lượng của vật thay đổi. Ví dụ: khi ta kéo một vật đi trên mặt phẳng, lực kéo sinh công và truyền năng lượng cho vật."
