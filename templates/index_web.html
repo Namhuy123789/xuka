@@ -591,7 +591,9 @@
     s = s.replace(/([+\-*/^])\s*\n\s*(\d+)/g, "$1 $2");
     s = s.replace(/\be\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
     s = s.replace(/\be\^\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
-    s = s.replace(/([a-zA-Z])\s*(\d+)/g, "$1^{$2}");
+    // Thay dòng sai bằng:
+    s = s.replace(/([A-Z][a-z]?)(\d+)/g, "\\ce{$1_$2}");
+
     s = s.replace(/(?<!\\frac\{)1\s*\/\s*([a-zA-Z0-9\\pi\+\-\*\/]+)/g, "\\frac{1}{$1}");
     s = s.replace(
       /∫\s*từ\s*([^\s]+)\s*đến\s*([^\s]+)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
@@ -608,7 +610,10 @@
     s = s.replace(/∫\s*([^\n\r]+?)\s*dx\b/gi, (_, expr) => `\\int ${expr.trim()} \\, dx`);
     s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
     s = s.replace(/(\\frac\{[^}]+\}\{[^}]+\}|\\int[^;\n]+|e\^\{[^}]+\}|[a-zA-Z]+\^\{[^}]+\}|\\pi|\\log_[^; \n]+|\\sqrt\{[^}]+\})/g, "\\($1\\)");
-    function isInsideMath(str, offset) {
+    
+	
+	
+	function isInsideMath(str, offset) {
       const upto = str.slice(0, offset);
       const lastOpen = upto.lastIndexOf("\\(");
       const lastClose = upto.lastIndexOf("\\)");
