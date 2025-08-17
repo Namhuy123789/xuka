@@ -1,112 +1,103 @@
+
 [
   {
-    "noi_dung": "Question 1. Quelle est l’unité de base de la vie ?",
-    "lua_chon": {"A": "Atome", "B": "Tissu", "C": "Organe", "D": "Cellule"},
+    "noi_dung": "What is the value of 7 × 8?",
+    "lua_chon": {"A": "54", "B": "56", "C": "58", "D": "64"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "What is the square root of 144?",
+    "lua_chon": {"A": "10", "B": "12", "C": "14", "D": "16"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Solve: 3x - 5 = 10. What is x?",
+    "lua_chon": {"A": "3", "B": "5", "C": "7", "D": "10"},
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "What is the perimeter of a square with side length 6 cm?",
+    "lua_chon": {"A": "24 cm", "B": "36 cm", "C": "12 cm", "D": "18 cm"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "What is 15% of 200?",
+    "lua_chon": {"A": "25", "B": "30", "C": "35", "D": "40"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Which number is a prime number?",
+    "lua_chon": {"A": "9", "B": "15", "C": "17", "D": "21"},
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "What is 3/4 of 80?",
+    "lua_chon": {"A": "50", "B": "55", "C": "60", "D": "65"},
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "If a triangle has angles 60° and 90°, what is the third angle?",
+    "lua_chon": {"A": "20°", "B": "30°", "C": "60°", "D": "90°"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "What is the result of 2^5?",
+    "lua_chon": {"A": "32", "B": "16", "C": "64", "D": "48"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "How many degrees are there in a straight angle?",
+    "lua_chon": {"A": "90°", "B": "120°", "C": "180°", "D": "360°"},
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Which of the following is a multiple of both 3 and 5?",
+    "lua_chon": {"A": "10", "B": "15", "C": "20", "D": "25"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "If the radius of a circle is 7 cm, what is the diameter?",
+    "lua_chon": {"A": "7 cm", "B": "14 cm", "C": "21 cm", "D": "28 cm"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "What is the mean of the numbers: 4, 8, 12, 16?",
+    "lua_chon": {"A": "8", "B": "10", "C": "12", "D": "14"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Solve: (5 + 3) × 2.",
+    "lua_chon": {"A": "11", "B": "13", "C": "15", "D": "16"},
     "dap_an_dung": "D"
   },
   {
-    "noi_dung": "Question 2. Quel est le rôle principal de l’ADN ?",
-    "lua_chon": {
-      "A": "Produire de l’énergie",
-      "B": "Stocker l’information génétique",
-      "C": "Transporter l’oxygène",
-      "D": "Combattre les infections"
-    },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 3. Quelle molécule est essentielle à la respiration cellulaire ?",
-    "lua_chon": {"A": "H2O", "B": "CO2", "C": "O2", "D": "Glucose"},
+    "noi_dung": "Which number is not divisible by 2?",
+    "lua_chon": {"A": "18", "B": "22", "C": "25", "D": "30"},
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "Question 4. Où se produit la photosynthèse ?",
-    "lua_chon": {"A": "Mitochondrie", "B": "Chloroplaste", "C": "Noyau", "D": "Cytoplasme"},
+    "noi_dung": "What is the next number in the sequence: 2, 4, 8, 16, ...?",
+    "lua_chon": {"A": "18", "B": "24", "C": "32", "D": "48"},
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "If x = 3 and y = 4, what is the value of x² + y²?",
+    "lua_chon": {"A": "12", "B": "25", "C": "30", "D": "35"},
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Question 5. Quel est le rôle des globules rouges ?",
-    "lua_chon": {"A": "Combattre les infections", "B": "Transporter l’oxygène", "C": "Produire des hormones", "D": "Filtrer le sang"},
-    "dap_an_dung": "B"
+    "noi_dung": "What is 0.25 as a fraction?",
+    "lua_chon": {"A": "1/2", "B": "1/3", "C": "1/4", "D": "3/4"},
+    "dap_an_dung": "C"
   },
   {
-    "noi_dung": "Question 6. Quel organe produit l’insuline ?",
-    "lua_chon": {"A": "Foie", "B": "Pancréas", "C": "Rate", "D": "Rein"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 7. Quelle est la fonction des ribosomes ?",
-    "lua_chon": {"A": "Synthèse des protéines", "B": "Production d’énergie", "C": "Stockage des graisses", "D": "Détoxification"},
+    "noi_dung": "What is the area of a rectangle with length 10 cm and width 4 cm?",
+    "lua_chon": {"A": "40 cm²", "B": "30 cm²", "C": "20 cm²", "D": "50 cm²"},
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Question 8. Quelle structure contrôle les activités de la cellule ?",
-    "lua_chon": {"A": "Réticulum", "B": "Noyau", "C": "Membrane", "D": "Appareil de Golgi"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 9. Combien de chromosomes possède l’être humain ?",
-    "lua_chon": {"A": "23", "B": "46", "C": "22", "D": "48"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 10. Quel est l’organite responsable de la production d’énergie ?",
-    "lua_chon": {"A": "Lysosome", "B": "Noyau", "C": "Mitochondrie", "D": "Chloroplaste"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Question 11. Quelle est la fonction du système immunitaire ?",
-    "lua_chon": {
-      "A": "Digérer les aliments",
-      "B": "Transporter le sang",
-      "C": "Protéger contre les agents pathogènes",
-      "D": "Produire des globules rouges"
-    },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Question 12. Comment s’appelle le processus par lequel une cellule se divise ?",
-    "lua_chon": {"A": "Photosynthèse", "B": "Mitose", "C": "Méiose", "D": "Fusion"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 13. Quelle glande contrôle la croissance ?",
-    "lua_chon": {"A": "Hypophyse", "B": "Thyroïde", "C": "Surrénale", "D": "Pancréas"},
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Question 14. Quel est le rôle de la moelle osseuse ?",
-    "lua_chon": {"A": "Produire des hormones", "B": "Former des globules sanguins", "C": "Filtrer le sang", "D": "Stocker du calcium"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 15. Quel est l’organe principal du système respiratoire ?",
-    "lua_chon": {"A": "Cœur", "B": "Foie", "C": "Poumons", "D": "Rein"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Question 16. Quelle partie du cerveau contrôle l’équilibre ?",
-    "lua_chon": {"A": "Cerveau", "B": "Hypothalamus", "C": "Cervelet", "D": "Tronc cérébral"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Question 17. Quelle est la principale fonction des enzymes digestives ?",
-    "lua_chon": {"A": "Accélérer la digestion", "B": "Stocker l’énergie", "C": "Transporter les nutriments", "D": "Produire des hormones"},
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Question 18. Comment les plantes absorbent-elles l’eau ?",
-    "lua_chon": {"A": "Par les feuilles", "B": "Par les racines", "C": "Par la tige", "D": "Par les fleurs"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 19. Quel est le rôle du plasma sanguin ?",
-    "lua_chon": {"A": "Transporter les nutriments et hormones", "B": "Combattre les infections", "C": "Transporter l’oxygène", "D": "Produire des cellules"},
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Question 20. Quelle vitamine est produite par la peau sous l'effet du soleil ?",
-    "lua_chon": {"A": "Vitamine A", "B": "Vitamine C", "C": "Vitamine D", "D": "Vitamine B12"},
-    "dap_an_dung": "C"
+    "noi_dung": "Which of the following is equal to one million?",
+    "lua_chon": {"A": "10^3", "B": "10^4", "C": "10^5", "D": "10^6"},
+    "dap_an_dung": "D"
   }
 ]
