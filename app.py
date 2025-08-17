@@ -17,7 +17,7 @@ from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Util.Padding import unpad
 from werkzeug.exceptions import NotFound
 from flask import Flask, jsonify
-
+from Crypto.Hash import SHA256
 
 
 
@@ -76,27 +76,90 @@ def list_exam_codes():
                 codes.append(code)
     return sorted(set(codes), key=lambda x: int(x))
 
-# --- Giải mã AES-GCM ---
-MASTER_PASSPHRASE = os.environ.get("MASTER_PASSPHRASE", "thay-bang-chuoi-bi-mat")  # Lấy từ biến môi trường
+# Khóa bí mật để giải mã QR (nên để trong biến môi trường khi chạy thực tế)
+MASTER_PASSPHRASE = os.environ.get("MASTER_PASSPHRASE", "thay-bang-chuoi-bi-mat")
 
-def decrypt_qr_data(encrypted_data):
+# --- Giải mã AES-GCM ---
+def decrypt_qr_data(encrypted_data: str):
     try:
         parts = encrypted_data.split('.')
         if len(parts) != 4 or parts[0] != 'v1':
-            raise ValueError("Định dạng mã QR không hợp lệ")
+            raise ValueError("Định dạng mã QR không hợp lệ (phải là v1.<salt>.<iv>.<ciphertext+tag>)")
 
-        salt = base64.b64decode(parts[1])
-        iv = base64.b64decode(parts[2])
-        ciphertext = base64.b64decode(parts[3])
+        # Giải mã base64
+        try:
+            salt = base64.b64decode(parts[1])
+            iv = base64.b64decode(parts[2])
+            ct_and_tag = base64.b64decode(parts[3])
+        except Exception:
+            raise ValueError("QR chứa dữ liệu base64 không hợp lệ")
 
-        # Sửa lỗi: sử dụng hashlib.sha256() thay vì hashlib.sha256
-        key = PBKDF2(MASTER_PASSPHRASE.encode(), salt, dkLen=32, count=100000, hmac_hash_module=hashlib.sha256())
+        if len(ct_and_tag) < 16:
+            raise ValueError("Ciphertext không hợp lệ (thiếu tag)")
+
+        # Ciphertext và Tag (tag AES-GCM = 16 bytes cuối)
+        ciphertext, tag = ct_and_tag[:-16], ct_and_tag[-16:]
+
+        # Tạo key bằng PBKDF2 + SHA256
+        key = PBKDF2(
+            MASTER_PASSPHRASE.encode("utf-8"),
+            salt,
+            dkLen=32,
+            count=100000,
+            hmac_hash_module=SHA256
+        )
+
+        # Giải mã AES-GCM
         cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
-        plaintext = cipher.decrypt(ciphertext)
-        return json.loads(plaintext.decode('utf-8'))
+        plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+
+        # Parse JSON
+        data = json.loads(plaintext.decode("utf-8"))
+        app.logger.info(f"Giải mã QR thành công: {data}")
+        return data
+
+    except (ValueError, KeyError, json.JSONDecodeError) as e:
+        app.logger.error(f"Lỗi định dạng dữ liệu QR: {e}")
+        raise
     except Exception as e:
         app.logger.error(f"Lỗi giải mã QR: {e}")
         raise
+
+
+
+
+@app.post("/login")
+@csrf.exempt
+def login():
+    try:
+        data = request.get_json(silent=True) or {}
+        username = data.get("username", "").strip()
+        password = data.get("password", "").strip()
+
+        if not username or not password:
+            return jsonify({"status": "error", "msg": "Thiếu tên đăng nhập hoặc mật khẩu"}), 400
+
+        # Nếu bạn chỉ muốn cho vào luôn (không cần check file user.json)
+        return jsonify({
+            "status": "success",
+            "role": "user",
+            "user": {
+                "username": username,
+                "password": password
+            },
+            "redirect": url_for("index")
+        }), 200
+
+    except Exception as e:
+        app.logger.error(f"Lỗi /login: {e}")
+        return jsonify({"status": "error", "msg": "Lỗi server"}), 500
+
+
+
+
+
+
+
 
 # --- Route: Save answers and calculate score ---
 def tinh_diem_va_luu_bai_lam(bai_lam, de_thi):
@@ -508,23 +571,20 @@ def save_result():
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-# --- Giải mã QR ---
+# --- API: Giải mã QR ---
 @app.post("/api/decrypt_qr")
 @csrf.exempt
 def api_decrypt_qr():
     try:
         data = request.get_json(silent=True)
         if not data:
-            app.logger.error("Không nhận được dữ liệu JSON")
             return jsonify({"status": "error", "msg": "Dữ liệu JSON không hợp lệ"}), 400
 
         qr_value = str(data.get("qr_value", "")).strip()
-        app.logger.info(f"Nhận được qr_value: {qr_value}")  # Log giá trị nhận được
         if not qr_value:
-            app.logger.error("Thiếu trường qr_value trong yêu cầu")
             return jsonify({"status": "error", "msg": "Thiếu dữ liệu QR"}), 400
 
-        # Kiểm tra định dạng mã hóa v1.<salt>.<iv>.<data>
+        # Nếu mã QR là loại AES mã hóa (v1)
         if qr_value.startswith('v1.'):
             try:
                 decoded_data = decrypt_qr_data(qr_value)
@@ -533,60 +593,42 @@ def api_decrypt_qr():
                 hoten = decoded_data.get("hoten", "").strip()
                 sbd = decoded_data.get("sbd", "").strip()
                 ngaysinh = decoded_data.get("ngaysinh", "").strip()
-                app.logger.info(f"Giải mã thành công: username={username}, password={password}")
             except Exception as e:
-                app.logger.error(f"Lỗi giải mã QR: {e}")
                 return jsonify({"status": "error", "msg": f"Lỗi giải mã QR: {str(e)}"}), 400
         else:
-            # Kiểm tra định dạng username:password
+            # Nếu mã QR dạng username:password
             if ":" not in qr_value:
-                app.logger.error(f"Mã QR không hợp lệ: {qr_value}")
-                return jsonify({"status": "error", "msg": "Mã QR không hợp lệ, phải có định dạng username:password hoặc v1.<salt>.<iv>.<data>"}), 400
+                return jsonify({
+                    "status": "error",
+                    "msg": "Mã QR không hợp lệ, phải có dạng username:password hoặc v1.<salt>.<iv>.<data>"
+                }), 400
             username, password = qr_value.split(":", 1)
-            hoten = ""
-            sbd = ""
-            ngaysinh = ""
-            app.logger.info(f"Phân tách thành công: username={username}, password={password}")
+            hoten, sbd, ngaysinh = "", "", ""
 
         # Kiểm tra admin
         admins = load_users(ADMIN_FILE)
-        app.logger.info(f"Số lượng admin: {len(admins)}")
         for user in admins:
             if user.get("username") == username and user.get("password") == password:
-                app.logger.info(f"Đăng nhập admin thành công: {username}")
                 return jsonify({
                     "status": "success",
                     "role": "admin",
-                    "user": {
-                        "username": user.get("username", ""),
-                        "hoten": user.get("hoten", ""),
-                        "sbd": user.get("sbd", ""),
-                        "ngaysinh": user.get("ngaysinh", "")
-                    },
+                    "user": user,
                     "redirect": url_for('index')
                 }), 200
 
-        # Kiểm tra user thường
+        # Kiểm tra user
         users = load_users(USERS_FILE)
-        app.logger.info(f"Số lượng user: {len(users)}")
         for user in users:
             if user.get("username") == username and user.get("password") == password:
-                app.logger.info(f"Đăng nhập user thành công: {username}")
                 return jsonify({
                     "status": "success",
                     "role": "user",
-                    "user": {
-                        "username": user.get("username", ""),
-                        "hoten": user.get("hoten", ""),
-                        "sbd": user.get("sbd", ""),
-                        "ngaysinh": user.get("ngaysinh", "")
-                    },
+                    "user": user,
                     "redirect": url_for('index')
                 }), 200
 
-        # Nếu mã QR chứa thông tin nhưng không khớp với users.json, trả về thông tin từ QR
+        # Nếu không tìm thấy trong DB nhưng QR có dữ liệu
         if qr_value.startswith('v1.') and username and password:
-            app.logger.info(f"Trả về thông tin từ QR: username={username}")
             return jsonify({
                 "status": "success",
                 "role": "user",
@@ -599,15 +641,16 @@ def api_decrypt_qr():
                 "redirect": url_for('index')
             }), 200
 
-        app.logger.error(f"Đăng nhập thất bại: {username}")
         return jsonify({"status": "fail", "msg": "Mã QR không hợp lệ hoặc tài khoản không tồn tại"}), 401
 
     except ValueError as ve:
-        app.logger.error(f"Lỗi định dạng QR: {ve} - Giá trị: {qr_value}")
-        return jsonify({"status": "error", "msg": f"Lỗi định dạng QR: {str(ve)}. Định dạng phải là username:password hoặc v1.<salt>.<iv>.<data>"}), 400
+        return jsonify({
+            "status": "error",
+            "msg": f"Lỗi định dạng QR: {str(ve)}. Định dạng phải là username:password hoặc v1.<salt>.<iv>.<data>"
+        }), 400
     except Exception as e:
         app.logger.exception(f"Lỗi giải mã QR: {e}")
-        return jsonify({"status": "error", "msg": f"Lỗi server nội bộ: {str(e)}"}), 500
+        return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
 # --- Error handler ---
 @app.errorhandler(Exception)
