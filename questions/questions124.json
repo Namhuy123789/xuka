@@ -1,102 +1,203 @@
+
 [
   {
-    "noi_dung": "Question 1. What is the largest continent by area?",
-    "lua_chon": {"A": "Africa", "B": "Asia", "C": "Europe", "D": "North America"},
+    "noi_dung": "Thuế thu nhập cá nhân là khoản tiền mà:",
+    "lua_chon": {
+      "A": "Công ty trả cho nhân viên", 
+      "B": "Người lao động phải nộp cho nhà nước", 
+      "C": "Ngân hàng trừ tự động", 
+      "D": "Không ai phải nộp"
+    },
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Question 2. Which country has the longest coastline in the world?",
-    "lua_chon": {"A": "Australia", "B": "Canada", "C": "Russia", "D": "USA"},
+    "noi_dung": "Cơ quan nào có thẩm quyền ban hành luật ở Việt Nam?",
+    "lua_chon": {
+      "A": "Chính phủ", 
+      "B": "Quốc hội", 
+      "C": "Tòa án Nhân dân Tối cao", 
+      "D": "Bộ Tư pháp"
+    },
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Question 3. What is the capital city of Brazil?",
-    "lua_chon": {"A": "Rio de Janeiro", "B": "Brasília", "C": "São Paulo", "D": "Salvador"},
+    "noi_dung": "Trong kinh tế thị trường, yếu tố nào quyết định giá cả hàng hóa?",
+    "lua_chon": {
+      "A": "Chính phủ", 
+      "B": "Cung và cầu", 
+      "C": "Thuế", 
+      "D": "Tiền lương"
+    },
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Question 4. Which river is the longest in the world?",
-    "lua_chon": {"A": "Amazon", "B": "Yangtze", "C": "Nile", "D": "Mississippi"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Question 5. Mount Everest is located in which mountain range?",
-    "lua_chon": {"A": "Rockies", "B": "Andes", "C": "Alps", "D": "Himalayas"},
+    "noi_dung": "Vi phạm pháp luật hình sự có thể dẫn đến:",
+    "lua_chon": {
+      "A": "Phạt cảnh cáo", 
+      "B": "Phạt tiền", 
+      "C": "Phạt tù", 
+      "D": "Cả A, B, C"
+    },
     "dap_an_dung": "D"
   },
   {
-    "noi_dung": "Question 6. Which is the smallest country in the world by area?",
-    "lua_chon": {"A": "Monaco", "B": "San Marino", "C": "Vatican City", "D": "Liechtenstein"},
+    "noi_dung": "Một doanh nghiệp bán được 100 sản phẩm với giá 200.000đ/sp. Doanh thu của doanh nghiệp là:",
+    "lua_chon": {
+      "A": "200.000đ", 
+      "B": "2 triệu đồng", 
+      "C": "20 triệu đồng", 
+      "D": "200 triệu đồng"
+    },
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "Question 7. Which desert is the largest in the world?",
-    "lua_chon": {"A": "Sahara", "B": "Gobi", "C": "Kalahari", "D": "Antarctic Desert"},
+    "noi_dung": "Quyền tự do kinh doanh của công dân được quy định trong:",
+    "lua_chon": {
+      "A": "Bộ luật Lao động", 
+      "B": "Hiến pháp", 
+      "C": "Luật Doanh nghiệp", 
+      "D": "Luật Dân sự"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Đặc điểm của nền kinh tế thị trường là:",
+    "lua_chon": {
+      "A": "Không có sự quản lý của nhà nước", 
+      "B": "Do nhà nước điều hành toàn bộ", 
+      "C": "Dựa trên quan hệ cung cầu", 
+      "D": "Không có cạnh tranh"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Một sản phẩm giảm giá 25% so với giá gốc 800.000đ. Giá mới là:",
+    "lua_chon": {
+      "A": "600.000đ", 
+      "B": "650.000đ", 
+      "C": "700.000đ", 
+      "D": "750.000đ"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Hành vi nào sau đây được xem là vi phạm hành chính?",
+    "lua_chon": {
+      "A": "Trộm cắp tài sản", 
+      "B": "Không đội mũ bảo hiểm", 
+      "C": "Buôn bán ma túy", 
+      "D": "Giết người"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Lãi suất ngân hàng là gì?",
+    "lua_chon": {
+      "A": "Tiền khách hàng nộp vào", 
+      "B": "Khoản tiền ngân hàng trả khi gửi tiết kiệm", 
+      "C": "Tiền phạt khi rút sớm", 
+      "D": "Thuế đánh vào tài khoản"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Khi ký hợp đồng lao động, người lao động và người sử dụng lao động cần:",
+    "lua_chon": {
+      "A": "Cam kết bằng miệng", 
+      "B": "Có mặt đầy đủ", 
+      "C": "Tuân thủ pháp luật lao động", 
+      "D": "Không cần thỏa thuận rõ ràng"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Một người gửi ngân hàng 50 triệu với lãi suất 6%/năm. Sau 1 năm nhận được:",
+    "lua_chon": {
+      "A": "53 triệu", 
+      "B": "52 triệu", 
+      "C": "51 triệu", 
+      "D": "53 triệu"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Quyền sở hữu tài sản là:",
+    "lua_chon": {
+      "A": "Chỉ có ở doanh nghiệp", 
+      "B": "Chỉ có ở nhà nước", 
+      "C": "Mọi công dân đều có", 
+      "D": "Chỉ người giàu mới có"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Tư liệu sản xuất bao gồm:",
+    "lua_chon": {
+      "A": "Tiền và vàng", 
+      "B": "Đất đai và lao động", 
+      "C": "Máy móc, nhà xưởng", 
+      "D": "Sản phẩm tiêu dùng"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Hình thức sở hữu chủ yếu trong nền kinh tế Việt Nam hiện nay là:",
+    "lua_chon": {
+      "A": "Sở hữu tư nhân", 
+      "B": "Sở hữu toàn dân", 
+      "C": "Sở hữu hỗn hợp", 
+      "D": "Sở hữu nước ngoài"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Tăng trưởng kinh tế được hiểu là:",
+    "lua_chon": {
+      "A": "Tăng giá hàng hóa", 
+      "B": "Tăng tổng sản phẩm quốc nội (GDP)", 
+      "C": "Tăng tỷ lệ thất nghiệp", 
+      "D": "Tăng thuế thu nhập"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Pháp luật có vai trò gì trong đời sống xã hội?",
+    "lua_chon": {
+      "A": "Kiểm soát nhân dân", 
+      "B": "Đảm bảo công bằng, trật tự", 
+      "C": "Làm khó doanh nghiệp", 
+      "D": "Giới hạn tự do"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Mức lương tối thiểu vùng do ai quy định?",
+    "lua_chon": {
+      "A": "Người sử dụng lao động", 
+      "B": "Người lao động", 
+      "C": "Chính phủ", 
+      "D": "Ngân hàng Nhà nước"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Một sản phẩm có giá vốn 120.000đ và bán với lợi nhuận 25%. Giá bán là:",
+    "lua_chon": {
+      "A": "135.000đ", 
+      "B": "140.000đ", 
+      "C": "145.000đ", 
+      "D": "150.000đ"
+    },
     "dap_an_dung": "D"
   },
   {
-    "noi_dung": "Question 8. Which U.S. state is the largest by area?",
-    "lua_chon": {"A": "Texas", "B": "California", "C": "Alaska", "D": "Montana"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Question 9. What is the capital of Australia?",
-    "lua_chon": {"A": "Sydney", "B": "Melbourne", "C": "Canberra", "D": "Brisbane"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Question 10. The Great Barrier Reef is located off the coast of which country?",
-    "lua_chon": {"A": "India", "B": "USA", "C": "Australia", "D": "South Africa"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Question 11. Which continent has the most countries?",
-    "lua_chon": {"A": "Asia", "B": "Africa", "C": "Europe", "D": "South America"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 12. What is the longest river in Asia?",
-    "lua_chon": {"A": "Mekong", "B": "Yangtze", "C": "Ganges", "D": "Yellow River"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 13. Which ocean is the deepest?",
-    "lua_chon": {"A": "Atlantic", "B": "Indian", "C": "Pacific", "D": "Arctic"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Question 14. Which country is both in Europe and Asia?",
-    "lua_chon": {"A": "Greece", "B": "Russia", "C": "Poland", "D": "Kazakhstan"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 15. What is the capital of Canada?",
-    "lua_chon": {"A": "Toronto", "B": "Ottawa", "C": "Vancouver", "D": "Montreal"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 16. What type of map shows elevation and terrain?",
-    "lua_chon": {"A": "Political map", "B": "Topographic map", "C": "Road map", "D": "Climate map"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 17. What is the name of the imaginary line dividing the Earth into the Northern and Southern Hemispheres?",
-    "lua_chon": {"A": "Prime Meridian", "B": "International Date Line", "C": "Equator", "D": "Tropic of Capricorn"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Question 18. What is the second most spoken language in the world?",
-    "lua_chon": {"A": "English", "B": "Mandarin", "C": "Hindi", "D": "Spanish"},
-    "dap_an_dung": "D"
-  },
-  {
-    "noi_dung": "Question 19. What is the name of the large desert in northern China and Mongolia?",
-    "lua_chon": {"A": "Karakum", "B": "Gobi", "C": "Thar", "D": "Taklamakan"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Question 20. What is the capital of Vietnam?",
-    "lua_chon": {"A": "Ho Chi Minh City", "B": "Hanoi", "C": "Da Nang", "D": "Hue"},
-    "dap_an_dung": "B"
+    "noi_dung": "Quyền biểu quyết trong doanh nghiệp cổ phần phụ thuộc vào:",
+    "lua_chon": {
+      "A": "Số cổ phiếu sở hữu", 
+      "B": "Chức vụ trong công ty", 
+      "C": "Thời gian làm việc", 
+      "D": "Tài sản cá nhân"
+    },
+    "dap_an_dung": "A"
   }
 ]
