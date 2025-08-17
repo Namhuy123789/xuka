@@ -44,101 +44,124 @@
         <li><strong>Tên phần mềm:</strong> XUKA 4.0</li>
         <li><strong>Chức năng chính:</strong>
           <ul class="list-disc list-inside ml-5">
-            <li>Đăng nhập bằng mã QR hoặc tài khoản</li>
-            <li>Thi trắc nghiệm theo mã đề</li>
-            <li>Tự động chấm điểm, hiển thị kết quả</li>
+            <li>Đăng nhập bằng mã QR và tài khoản - Phiên bản 4.3 nhận diện bằng khuôn mặt</li>
+            <li>Thi trắc nghiệm theo mã đề ngẫu nhiên, một phòng thi có 24 mã</li>
+            <li>Tự động chấm điểm, hiển thị kết quả, tải file: docx, pdf</li>
             <li>Tải kết quả về máy, lưu lên server</li>
-            <li>Ngăn gian lận thi cử</li>
+            <li>Ngăn gian lận thi cử: ghi hình, ngắt kết nối mạng, giám sát hành vi, phát hiện điện thoại... </li>
           </ul>
         </li>
-        <li><strong>Đối tượng sử dụng:</strong> Học sinh THPT – Giáo viên</li>
+        <li><strong>Đối tượng sử dụng:</strong> Học sinh – Giáo viên, Thi lý thuyết bằng lái xe..... tất cả các kỳ thi liên quan trắc nghiệm, tự luận, tự luận cộng trắc nghiệm</li>
         <li><strong>Công nghệ:</strong> HTML, CSS (Tailwind), JavaScript, html5-qrcode, backend API</li>
-        <li><strong>Tương thích:</strong> Chrome, Edge, Firefox (máy tính)</li>
+        <li><strong>Tương thích:</strong> Chrome, Edge, Firefox, Cốc Cốc coc, Máy tính, Mobile, Ipad ....</li>
       </ul>
     </section>
     <img src="https://cdn.jsdelivr.net/gh/Namhuy123789/xuka@main/x.jpg" class="w-[850px] h-[400px] inline-block">
-    <!-- 2. Đánh giá chi tiết -->
+    <!-- Báo cáo đánh giá -->
     <section>
-      <h2 class="text-xl font-semibold mb-2">2. Đánh giá chi tiết</h2>
+      <h2 class="text-xl font-semibold mb-4">2. Báo cáo đánh giá</h2>
+      <p class="mb-4">Báo cáo này cung cấp đánh giá chi tiết về hệ thống thi online Xuka 4.0, bao gồm thiết kế giao diện, tính năng, chất lượng code, bảo mật và khả năng mở rộng. Các tiêu chí được chấm điểm và phân tích chuyên sâu.</p>
 
-      <h3 class="font-bold mt-4 mb-1">⚙️ Tính năng (9/10)</h3>
-      <table class="table-auto w-full text-sm border border-gray-300">
-        <thead class="bg-gray-200">
-          <tr><th class="border p-2 text-left">Hạng mục</th><th class="border p-2 text-left">Đánh giá</th></tr>
+      <!-- Bảng điểm -->
+      <h3 class="text-lg font-semibold mb-2">📊 Bảng điểm tổng quan</h3>
+      <table class="w-full table-auto border-collapse border border-gray-300">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="border border-gray-300 px-4 py-2 text-left">Hạng mục</th>
+            <th class="border border-gray-300 px-4 py-2 text-left">Điểm/10</th>
+          </tr>
         </thead>
         <tbody>
-          <tr><td class="border p-2">Thi trắc nghiệm theo mã đề</td><td class="border p-2">✅ Có nhiều mã đề, chọn lọc ngẫu nhiên</td></tr>
-          <tr><td class="border p-2">Tự động chấm điểm</td><td class="border p-2">✅ Chính xác, theo đáp án</td></tr>
-          <tr><td class="border p-2">QR Login</td><td class="border p-2">✅ Hiện đại, tiện dụng</td></tr>
-          <tr><td class="border p-2">Webcam Login</td><td class="border p-2">✅ Nhận diện khuôn mặt, hiện đại, tiện dụng trong bản Xuka 4.3</td></tr>
-          <tr><td class="border p-2">Lưu kết quả</td><td class="border p-2">✅ Gửi server + tải file .txt</td></tr>
-          <tr><td class="border p-2">Ngăn gian lận</td><td class="border p-2">✅ Chặn F12, Ctrl+C, chuyển tab, Ngắt kết nối mạng khi thi, ghi hinh trong quá trình làm bài</td></tr>
-          <tr><td class="border p-2">Lưu tạm, khi mất điện tiếp tục làm bài</td><td class="border p-2">✅ Dùng localStorage</td></tr>
-          <tr><td class="border p-2">Xuất PDF</td><td class="border p-2">✅ Có .txt, Word, Pdf</td></tr>
-          <tr><td class="border p-2">Quản lý người dùng</td><td class="border p-2">✅ Phân quyền quản trị, người dùng</td></tr>
-          <tr><td class="border p-2">Thống kê kết quả</td><td class="border p-2">✅ Thống kê điểm, biểu đồ</td></tr>
+          <tr>
+            <td class="border border-gray-300 px-4 py-2">Thiết kế & Giao diện (UI/UX)</td>
+            <td class="border border-gray-300 px-4 py-2">9/10</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 px-4 py-2">Chức năng & Tính năng (Features)</td>
+            <td class="border border-gray-300 px-4 py-2">9.5/10</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 px-4 py-2">Code & Kiến trúc (Code Quality)</td>
+            <td class="border border-gray-300 px-4 py-2">8.8/10</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 px-4 py-2">Bảo mật (Security)</td>
+            <td class="border border-gray-300 px-4 py-2">8.7/10</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 px-4 py-2">Khả năng mở rộng (Scalability)</td>
+            <td class="border border-gray-300 px-4 py-2">8.5/10</td>
+          </tr>
+		  <tr>
+            <td class="border border-gray-300 px-4 py-2">Điểm đạt (Scalability)</td>
+            <td class="border border-gray-300 px-4 py-2">9.0/10</td>
+          </tr>
         </tbody>
       </table>
 
-      <h3 class="font-bold mt-4 mb-1">🎨 Giao diện người dùng (8/10)</h3>
-      <ul class="list-disc list-inside ml-4">
-        <li>Ưu điểm: Giao diện rõ ràng, hỗ trợ Tailwind, hình nền đẹp</li>
-        <li>Nhược điểm: Thiếu responsive mobile, font và banner cần cải thiện</li>
-      </ul>
+      <!-- Chi tiết đánh giá -->
+      <div class="space-y-4 mt-4">
+        <div>
+          <h4 class="text-md font-semibold text-blue-600">🔹 Thiết kế & Giao diện (UI/UX) (9/10)</h4>
+          <ul class="list-disc list-inside ml-5 space-y-1">
+            <li>Bố cục rõ ràng, dễ dùng (banner, navbar, aside, main, footer).</li>
+            <li>Tailwind giúp giao diện sạch, hiện đại.</li>
+            <li>Responsive tương đối ổn, nhưng có vài đoạn custom CSS hơi thủ công.</li>
+            <li>UX còn đơn giản, thông báo lỗi bằng <code>alert()</code> → chưa thân thiện.</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-md font-semibold text-blue-600">🔹 Chức năng & Tính năng (Features) (9.5/10)</h4>
+          <ul class="list-disc list-inside ml-5 space-y-1">
+            <li>Có đầy đủ quy trình: QR scan → login → thi → countdown → nộp bài → kết quả.</li>
+            <li>Hỗ trợ camera trước/sau, upload ảnh QR, fallback khi không có camera.</li>
+            <li>MathJax + regex xử lý toán/hoá rất mạnh, hiếm dự án thi online có.</li>
+            <li>Lưu <code>localStorage</code> để tránh mất dữ liệu.</li>
+            <li>Auto-submit khi hết giờ → giống thi thật.</li>
+            <li>Điểm cộng: CSRF token, DOMPurify (chống XSS).</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-md font-semibold text-blue-600">🔹 Code & Kiến trúc (Code Quality) (8.8/10)</h4>
+          <ul class="list-disc list-inside ml-5 space-y-1">
+            <li>HTML semantic khá chuẩn.</li>
+            <li>JS có tổ chức, nhiều hàm nhỏ rõ nghĩa.</li>
+            <li>Tuy nhiên file HTML chứa quá nhiều JS & CSS inline → khó bảo trì lâu dài.</li>
+            <li>Hàm <code>processExamContent</code> rất dài, regex dày đặc → dễ lỗi, khó đọc.</li>
+            <li>Backend (Flask) chưa thấy code ở đây, nhưng frontend đã chuẩn bị hook khá tốt.</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-md font-semibold text-blue-600">🔹 Bảo mật (Security) (8.7/10)</h4>
+          <ul class="list-disc list-inside ml-5 space-y-1">
+            <li>Có CSRF meta token, DOMPurify, kiểm tra camera → rất tốt.</li>
+            <li>Tuy nhiên login & session chưa thấy rõ flow xác thực (có lẽ để backend xử lý).</li>
+            <li>Lỗi hiển thị dùng <code>alert()</code> dễ bị bỏ qua.</li>
+            <li>Nên thêm rate-limit ở backend để tránh spam login/exam.</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-md font-semibold text-blue-600">🔹 Khả năng mở rộng (Scalability) (8.5/10)</h4>
+          <ul class="list-disc list-inside ml-5 space-y-1">
+            <li>Cấu trúc hiện tại dễ phát triển cho cá nhân/nhóm nhỏ.</li>
+            <li>Nên tách JS/CSS thành module để dễ bảo trì.</li>
+            <li>Cần chuẩn hoá API giữa frontend ↔ backend.</li>
+            <li>Nếu muốn triển khai nhiều kỳ thi lớn, cần tối ưu lưu trữ (hiện tại lưu TXT hơi yếu).</li>
+          </ul>
+        </div>
+      </div>
 
-      <h3 class="font-bold mt-4 mb-1">🚀 Hiệu suất (9/10)</h3>
-      <ul class="list-disc list-inside ml-4">
-        <li>Load nhanh, JS thuần</li>
-        <li>Dữ liệu xử lý hợp lý</li>
-        <li>Không có bug lớn</li>
-      </ul>
-
-      <h3 class="font-bold mt-4 mb-1">🔐 Bảo mật (8/10)</h3>
-      <ul class="list-disc list-inside ml-4">
-        <li>Ưu điểm: Ngăn phím tắt, không lưu mật khẩu</li>
-        <li>Nhược điểm: Thiếu xác thực</li>
-      </ul>
-
-      <h3 class="font-bold mt-4 mb-1">😃 Trải nghiệm người dùng (8.5/10)</h3>
-      <ul class="list-disc list-inside ml-4">
-        <li>Dễ dùng, rõ ràng, có thông báo lỗi</li>
-        <li>Thiếu xác nhận “Bạn chắc chắn nộp bài?”</li>
-      </ul>
-
-      <h3 class="font-bold mt-4 mb-1">📦 Khả năng mở rộng (8/10)</h3>
-      <ul class="list-disc list-inside ml-4">
-        <li>Dễ tích hợp JS framework</li>
-        <li>Dễ nâng cấp: phân quyền, PDF, thống kê</li>
-      </ul>
-
-      <h3 class="font-bold mt-4 mb-1">🔌 Tích hợp hệ thống (8.5/10)</h3>
-      <ul class="list-disc list-inside ml-4">
-        <li>Có API /login, /questions, /save_result</li>
-        <li>Chưa thấy DB rõ ràng.</li>
-      </ul>
+      <!-- Kết luận -->
+      <div class="mt-6">
+        <h4 class="text-md font-semibold text-blue-600">✅ Kết luận tổng thể</h4>
+        <p>Hệ thống thi online Xuka 4.0 đạt điểm <strong>9.0/10</strong>. Đây là một hệ thống khá hoàn chỉnh, chuyên nghiệp và có tính thực tiễn cao.</p>
+        <ul class="list-disc list-inside ml-5 space-y-1">
+          <li>Mạnh ở UI rõ ràng, tính năng đầy đủ, xử lý Toán – Lý - Hóa thông minh.</li>
+          <li>Cần cải thiện về tổ chức code, UX thông báo lỗi, và chuẩn hoá backend để sẵn sàng mở rộng quy mô.</li>
+        </ul>
+      </div>
     </section>
 
-    <!-- Tổng điểm -->
-    <section class="border-t pt-4">
-      <h2 class="text-lg font-bold text-green-700 mb-2">📊 Tổng điểm đánh giá</h2>
-      <table class="table-auto w-full text-sm border border-gray-300">
-        <thead class="bg-gray-200">
-          <tr><th class="border p-2">Tiêu chí</th><th class="border p-2">Điểm</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="border p-2">Tính năng</td><td class="border p-2">9 / 10</td></tr>
-          <tr><td class="border p-2">Giao diện</td><td class="border p-2">8 / 10</td></tr>
-          <tr><td class="border p-2">Hiệu suất</td><td class="border p-2">9 / 10</td></tr>
-          <tr><td class="border p-2">Bảo mật</td><td class="border p-2">8/ 10</td></tr>
-          <tr><td class="border p-2">Trải nghiệm người dùng</td><td class="border p-2">8.5 / 10</td></tr>
-          <tr><td class="border p-2">Mở rộng</td><td class="border p-2">9 / 10</td></tr>
-          <tr><td class="border p-2">Tích hợp hệ thống</td><td class="border p-2">8.5/ 10</td></tr>
-        </tbody>
-        <tfoot class="font-bold bg-yellow-100">
-          <tr><td class="border p-2">Tổng cộng</td><td class="border p-2">60 / 70 → ~8.5 / 10. Trang web xuka.com.vn bảo mật, an toàn cho người dùng</td></tr>
-        </tfoot>
-      </table>
-    </section>
    <img src="https://cdn.jsdelivr.net/gh/Namhuy123789/xuka@main/do.jpg" class="w-[850px] h-[600px] inline-block">
     <!-- VIDEO -->
     <section class="pt-6 border-t">
