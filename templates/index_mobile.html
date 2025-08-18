@@ -22,7 +22,7 @@
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
 
   <style>
-    body { background-image: url(""); background-size: cover; background-position: center; margin: 0; padding: 0; }
+    body { background-image: url("https://raw.githubusercontent.com/Namhuy123789/xuka/main/h.png"); background-size: cover; background-position: center; margin: 0; padding: 0; }
     .banner { background: linear-gradient(90deg, #4facfe, #00f2fe); color: #fff; padding: 20px; text-align: center; font-size: 25px; text-shadow: 1px 1px 3px rgba(0,0,0,.3); }
     @keyframes marquee { 0% { transform: translateX(-100%);} 100% { transform: translateX(100%);} }
     .animate-marquee { display:inline-block; white-space:nowrap; animation: marquee 10s linear infinite; }
@@ -38,10 +38,32 @@
       .banner h1 span.text-base { font-size: 0.875rem; }
       #button-group a { font-size: 0.75rem; padding: 0.5rem 1rem; }
     }
+    /* Hiệu ứng flash khi quét QR */
+    #flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.7), rgba(16, 185, 129, 0.7));
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transform: scale(1);
+      transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+    }
+    #flash.active {
+      opacity: 1;
+      transform: scale(1.02);
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    }
   </style>
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
 <body class="min-h-screen">
+  <!-- Hiệu ứng flash -->
+  <div id="flash"></div>
+
   <!-- Banner -->
   <div class="banner">
     <h1>
@@ -51,7 +73,8 @@
       <span class="text-base font-semibold">PHẦN MỀM TỔ CHỨC CÁC KỲ THI - KIỂM TRA</span>
     </h1>
   </div>
-<!-- Navbar -->
+
+  <!-- Navbar -->
   <nav class="bg-yellow-300 py-1 shadow-md">
     <div class="flex items-center px-4 space-x-3">
       <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Vietnam.svg/1024px-Flag_of_Vietnam.svg.png"
@@ -64,9 +87,9 @@
     </div>
   </nav>
 
-  <!-- Main content -->
+  <!-- Nội dung chính -->
   <div class="flex flex-col sm:flex-row justify-center items-start gap-6 sm:gap-8 px-4 sm:px-8 mt-2">
-    <!-- Left column (hidden on mobile) -->
+    <!-- Cột trái (ẩn trên mobile) -->
     <aside id="left-column" class="hidden sm:flex flex-col gap-3 w-full sm:w-1/4">
       <div class="card">
         <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">📰 Tin mới từ VnExpress</h2>
@@ -92,9 +115,9 @@
       </div>
     </aside>
 
-    <!-- Main column -->
+    <!-- Cột chính -->
     <main id="main-column" class="flex flex-col gap-4 w-full sm:max-w-md mt-1">
-      <!-- QR Login -->
+      <!-- Đăng nhập bằng QR -->
       <section id="qr-login" class="bg-white p-6 rounded-xl shadow text-center">
         <h1 class="text-xl font-bold text-pink-500 mb-4">QUÉT MÃ QR</h1>
         <div id="reader" class="mx-auto" style="width: 90%; max-width: 320px;"></div>
@@ -124,78 +147,68 @@
               </svg>
             </span>
           </button>
-          
         </div>
       </section>
 
-     <div id="button-group" class="flex flex-wrap justify-center gap-4">
+      <div id="button-group" class="flex flex-wrap justify-center gap-4">
+        <!-- Nút Quản trị -->
+        <a href="/tronde" 
+           class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
+                  bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
+                  shadow-lg transform transition-all duration-200
+                  hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner">
+          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" 
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" 
+                    d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4
+                       4-1.79 4-4-1.79-4-4-4zm8 4a8 8 0 11-16 0 
+                       8 8 0 0116 0z" />
+            </svg>
+          </span>
+        </a>
 
-  <!-- Nút Quản trị -->
-  <a href="/tronde" 
-     class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
-            bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
-            shadow-lg transform transition-all duration-200
-            hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner">
-    <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
-      <!-- Icon settings -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" 
-           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" 
-              d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4
-                 4-1.79 4-4-1.79-4-4-4zm8 4a8 8 0 11-16 0 
-                 8 8 0 0116 0z" />
-      </svg>
-    </span>
-    
-  </a>
+        <!-- Nút Đánh giá -->
+        <a href="/xuka" 
+           class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
+                  bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
+                  shadow-lg transform transition-all duration-200
+                  hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner">
+          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" 
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" 
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.28 3.945a1 
+                       1 0 00.95.69h4.15c.969 0 1.371 1.24.588 
+                       1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.28 
+                       3.945c.3.921-.755 1.688-1.54 1.118l-3.36-2.44a1 
+                       1 0 00-1.175 0l-3.36 2.44c-.785.57-1.84-.197-1.54-1.118l1.28-3.945a1 
+                       1 0 00-.364-1.118l-3.36-2.44c-.783-.57-.38-1.81.588-1.81h4.15a1 
+                       1 0 00.95-.69l1.28-3.945z" />
+            </svg>
+          </span>
+        </a>
 
-  <!-- Nút Đánh giá -->
-  <a href="/xuka" 
-     class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
-            bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
-            shadow-lg transform transition-all duration-200
-            hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner">
-    <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
-      <!-- Icon star -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" 
-           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" 
-              d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.28 3.945a1 
-                 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 
-                 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.28 
-                 3.945c.3.921-.755 1.688-1.54 1.118l-3.36-2.44a1 
-                 1 0 00-1.175 0l-3.36 2.44c-.785.57-1.84-.197-1.54-1.118l1.28-3.945a1 
-                 1 0 00-.364-1.118l-3.36-2.44c-.783-.57-.38-1.81.588-1.81h4.15a1 
-                 1 0 00.95-.69l1.28-3.945z" />
-      </svg>
-    </span>
-   
-  </a>
-
-  <!-- Nút Hướng dẫn -->
-  <a href="/huongdan" 
-     class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
-            bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500
-            shadow-lg transform transition-all duration-200
-            hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner">
-    <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
-      <!-- Icon book -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" 
-           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" 
-              d="M12 6l-2-2H5a2 2 0 00-2 2v14a2 2 0 
-                 002 2h14a2 2 0 002-2V6a2 2 0 
-                 00-2-2h-5l-2 2z" />
-      </svg>
-    </span>
-    
-  </a>
-
-</div>
-
+        <!-- Nút Hướng dẫn -->
+        <a href="/huongdan" 
+           class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
+                  bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500
+                  shadow-lg transform transition-all duration-200
+                  hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner">
+          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" 
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" 
+                    d="M12 6l-2-2H5a2 2 0 00-2 2v14a2 2 0 
+                       002 2h14a2 2 0 002-2V6a2 2 0 
+                       00-2-2h-5l-2 2z" />
+            </svg>
+          </span>
+        </a>
+      </div>
     </main>
 
-    <!-- Right column (hidden on mobile) -->
+    <!-- Cột phải (ẩn trên mobile) -->
     <aside id="right-column" class="hidden sm:flex flex-col gap-3 w-full sm:w-1/4">
       <div class="card">
         <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">📰 SỞ GD&ĐT ĐỒNG NAI</h2>
@@ -219,7 +232,7 @@
     </aside>
   </div>
 
-  <!-- Account Login -->
+  <!-- Đăng nhập tài khoản -->
   <section id="account-login" class="max-w-md mx-auto bg-white p-6 rounded shadow hidden">
     <h1 class="text-2xl font-bold mb-4">Đăng Nhập Tài Khoản</h1>
     <form id="account-login-form">
@@ -236,7 +249,7 @@
     </form>
   </section>
 
-  <!-- Student Info -->
+  <!-- Thông tin thí sinh -->
   <section id="login-form" class="max-w-xl mx-auto bg-white p-6 rounded shadow hidden">
     <h1 class="text-2xl font-bold mb-4">Thông Tin Thí Sinh</h1>
     <div class="mb-4">
@@ -260,7 +273,7 @@
     <button id="btn-start-exam" class="bg-green-600 text-white px-4 py-2 rounded">Bắt đầu thi</button>
   </section>
 
-  <!-- Exam -->
+  <!-- Bài thi -->
   <section id="exam-container" class="max-w-3xl mx-auto bg-white p-6 rounded shadow hidden">
     <h1 class="text-2xl font-bold mb-4 text-center">BÀI THI TRẮC NGHIỆM</h1>
     <p id="countdown" class="text-red-600 font-bold mb-4">Thời gian: --:--</p>
@@ -269,7 +282,7 @@
     <p id="result" class="mt-4 text-green-600 font-bold"></p>
   </section>
 
-  <!-- Result -->
+  <!-- Kết quả -->
   <section id="result-container" class="max-w-2xl mx-auto p-6 bg-white rounded shadow mt-10 hidden"></section>
 
   <footer class="mt-10 py-4 text-center text-gray-700 text-sm font-medium">
@@ -281,11 +294,22 @@
   const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://127.0.0.1:5000' : 'https://xuka.com.vn';
 
   // Trạng thái phiên thi (server kiểm soát deadline)
-  let time = 0;                 // seconds còn lại (client hiển thị)
-  let timer = null;             // interval id
+  let time = 0;                 // số giây còn lại (client hiển thị)
+  let timer = null;             // id của interval
   let questionData = [];        // mảng câu hỏi
-  let examDeadline = null;      // epoch milliseconds (do server trả về)
+  let examDeadline = null;      // thời điểm hết hạn (epoch milliseconds, do server trả về)
   let currentMade = '';
+
+  // ====== HIỆU ỨNG FLASH KHI QUÉT QR ======
+  function flashEffect() {
+    const flash = document.getElementById('flash');
+    if (flash) {
+      flash.classList.add('active'); // Kích hoạt hiệu ứng
+      setTimeout(() => {
+        flash.classList.remove('active'); // Xóa hiệu ứng sau 500ms
+      }, 500);
+    }
+  }
 
   // ====== TIỆN ÍCH ======
   function typeset(el) { if (window.MathJax?.typesetPromise) MathJax.typesetPromise([el]); }
@@ -298,13 +322,12 @@
     return `xuka_${currentMade || 'unknown'}_${key}`;
   }
 
-  // ====== QR SCANNER ======
+  // ====== QUÉT MÃ QR ======
   const readerElem = document.getElementById('reader');
   const qrFileInput = document.getElementById('qr-file');
   const qrErrorElem = document.getElementById('qr-error');
   const flipBtn = document.getElementById('flip-camera');
   const uploadBtn = document.getElementById('upload-qr');
-  const stopBtn = document.getElementById('stop-camera');
 
   let html5QrCode = null;
   let devices = [];
@@ -351,7 +374,7 @@
       }
       const camId = devices[camIndex]?.id || { facingMode: 'environment' };
       await html5QrCode.start(camId, { fps: 10, qrbox: { width: 250, height: 250 } }, async (decodedText) => {
-        console.log('QR code decoded:', decodedText);
+        console.log('Mã QR được giải mã:', decodedText);
         await stopScanner();
         await verifyAndLogin(decodedText);
       });
@@ -368,7 +391,7 @@
       try {
         await html5QrCode.stop();
         await html5QrCode.start(devices[camIndex].id, { fps: 10, qrbox: { width: 250, height: 250 } }, async (dt) => {
-          console.log('QR code decoded (flipped camera):', dt);
+          console.log('Mã QR được giải mã (chuyển camera):', dt);
           await stopScanner();
           await verifyAndLogin(dt);
         });
@@ -407,7 +430,7 @@
           img.onerror = () => reject(new Error('Không thể tải hình ảnh!'));
         });
         const decoded = await html5QrCode.scanFile(file, false);
-        console.log('QR code decoded from file:', decoded);
+        console.log('Mã QR được giải mã từ tệp:', decoded);
         URL.revokeObjectURL(img.src);
         await stopScanner();
         await verifyAndLogin(decoded);
@@ -420,14 +443,6 @@
     });
   }
 
-  if (stopBtn) {
-    stopBtn.addEventListener('click', async () => {
-      await stopScanner();
-      qrErrorElem.textContent = 'Đã dừng camera.';
-      qrErrorElem.classList.remove('hidden');
-    });
-  }
-
   startQrScanner();
 
   async function verifyAndLogin(qrText) {
@@ -437,7 +452,7 @@
       qrErrorElem.classList.remove('hidden');
       return;
     }
-    console.log('Sending QR to server:', qrText, 'CSRF Token:', csrf());
+    console.log('Gửi mã QR đến server:', qrText, 'CSRF Token:', csrf());
     try {
       const res = await fetch('/api/decrypt_qr', {
         method: 'POST',
@@ -453,6 +468,7 @@
       }
       const data = await res.json();
       if (data.status === 'success') {
+        flashEffect(); // Kích hoạt hiệu ứng flash khi quét QR thành công
         qs('#left-column').classList.add('hidden');
         qs('#right-column').classList.add('hidden');
         qs('#button-group').classList.add('hidden');
@@ -586,99 +602,85 @@
 
   function processExamContent(content) {
     let s = String(content || "");
-	s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
-	s = s.replace(/(\d+)\s*\n\s*(\+|\-|\)|\*|\/|\^)/g, "$1 $2");
-	s = s.replace(/(\^)\s*\n\s*(\d+)/g, "$1$2");
-	s = s.replace(/([a-zA-Z])\s*\n\s*([a-zA-Z])/g, "$1 $2");
-	s = s.replace(/^\s+/gm, ""); // Loại bỏ tất cả khoảng trắng đầu dòng
-	s = s.replace(/(^|\.\s+)([^\s])/g, (_, pre, ch) => pre + ch);
+    s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
+    s = s.replace(/(\d+)\s*\n\s*(\+|\-|\)|\*|\/|\^)/g, "$1 $2");
+    s = s.replace(/(\^)\s*\n\s*(\d+)/g, "$1$2");
+    s = s.replace(/([a-zA-Z])\s*\n\s*([a-zA-Z])/g, "$1 $2");
+    s = s.replace(/^\s+/gm, "");
+    s = s.replace(/(^|\.\s+)([^\s])/g, (_, pre, ch) => pre + ch);
     s = s.replace(/\s{2,}/g, " ").trim();
-	s = s.replace(/Câu\s*(\d+)\s*\.(?!\s)/gi, "Câu $1. ");
-	s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
-	s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
-	s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
-	s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");
-	s = s.replace(/([^\s])∫/g, "$1 ∫");
-	s = s.replace(/∫([^\s])/g, "∫ $1");
-	s = s.replace(/([^\s])dx\b/gi, "$1 dx");
-	s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos|ln|log)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
-	s = s.replace(/\bGiảihệbấtphươngtrình\b/gi, "Giải hệ bất phương trình");
-	s = s.replace(/\bGiảibấtphươngtrình\b/gi, "Giải bất phương trình");
-	s = s.replace(/\s{2,}/g, " ").trim();
-	s = s.replace(/\blog(\d+)\(([^)]+)\)/gi, (_, base, arg) => `\\log_{${base}}(${arg.trim()})`);
-	s = s.replace(/\blog\(([^)]+)\)/gi, (_, arg) => `\\log(${arg.trim()})`);
-	s = s.replace(/ln\(([^)]+)\)/gi, (_, arg) => `\\ln(${arg.trim()})`);
-	s = s.replace(/frac\(([^,]+),([^)]+)\)/gi, (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
-	s = s.replace(/\b([A-Za-z0-9]+)\/([A-Za-z0-9]+)\b/g, (_, a, b) => `\\frac{${a}}{${b}}`);
-	s = s.replace(/sqrt\[(\d+)\]\(([^)]+)\)/gi, (_, n, val) => `\\sqrt[${n}]{${val.trim()}}`);
-	s = s.replace(/sqrt\(([^)]+)\)/gi, (_, val) => `\\sqrt{${val.trim()}}`);
-	s = s.replace(/([A-Za-z])_(\d+)/g, (_, base, sub) => `${base}_{${sub}}`);
-	s = s.replace(/([A-Za-z0-9])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
-	s = s.replace(/int_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
-	  `\\int${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
-	);
-	s = s.replace(/sum_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
-	  `\\sum${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
-	);
-	s = s.replace(/lim_([^_]+)([^]*?)(?=\s|$)/gi, (_, limit, body) => `\\lim_{${limit}}${body.trim()}`);
-	s = s.replace(/d\/dx\(([^)]+)\)/gi, (_, expr) => `\\frac{d}{dx}(${expr.trim()})`);
-	s = s.replace(/vec\{(\w+)\}/gi, (_, v) => `\\vec{${v}}`);
-	s = s.replace(/\|vec\{(\w+)\}\|/gi, (_, v) => `|\\vec{${v}}|`);
-	s = s.replace(/Delta/g, "\\Delta");
-	s = s.replace(/nabla/g, "\\nabla");
-	s = s.replace(/(\w+)_(\w+)/g, (_, base, sub) => `${base}_{${sub}}`);
-	s = s.replace(/(\w+)\^(\w+)/g, (_, base, sup) => `${base}^{${sup}}`);
-	s = s.replace(/H_2O/g, "\\ce{H2O}");
-	s = s.replace(/CO_2/g, "\\ce{CO2}");
-	s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
-	s = s.replace(/(\d+)\s*\n\s*([+\-*/^])/g, "$1 $2");
-	s = s.replace(/([+\-*/^])\s*\n\s*(\d+)/g, "$1 $2");
-	s = s.replace(/\be\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
-	s = s.replace(/\be\^\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
-	s = s.replace(/([A-Z][a-z]?)(\d+)/g, "\\ce{$1_$2}");
-	s = s.replace(/(?<!\\frac\{)1\s*\/\s*([a-zA-Z0-9\\pi\+\-\*\/]+)/g, "\\frac{1}{$1}");
-	s = s.replace(
-	  /∫\s*từ\s*([^\s]+)\s*đến\s*([^\s]+)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
-	  (_, a, b, expr) => `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`
-	);
-	s = s.replace(
-	  /∫\s*từ\s*([^\s]+?)\s*đến\s*([^\s]+?)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
-	  (_, a, b, expr) => {
-		a = a.replace(/π/g, "\\pi");
-		b = b.replace(/π/g, "\\pi");
-		return `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`;
-	  }
-	);
-	s = s.replace(/∫\s*([^\n\r]+?)\s*dx\b/gi, (_, expr) => `\\int ${expr.trim()} \\, dx`);
-	s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
-	s = s.replace(/(\\frac\{[^}]+\}\{[^}]+\}|\\int[^;\n]+|e\^\{[^}]+\}|[a-zA-Z]+\^\{[^}]+\}|\\pi|\\log_[^; \n]+|\\sqrt\{[^}]+\})/g, "\\($1\\)");
-		
-
-    // --- Physics replacements ---
+    s = s.replace(/Câu\s*(\d+)\s*\.(?!\s)/gi, "Câu $1. ");
+    s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
+    s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
+    s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
+    s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");
+    s = s.replace(/([^\s])∫/g, "$1 ∫");
+    s = s.replace(/∫([^\s])/g, "∫ $1");
+    s = s.replace(/([^\s])dx\b/gi, "$1 dx");
+    s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos|ln|log)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
+    s = s.replace(/\bGiảihệbấtphươngtrình\b/gi, "Giải hệ bất phương trình");
+    s = s.replace(/\bGiảibấtphươngtrình\b/gi, "Giải bất phương trình");
+    s = s.replace(/\s{2,}/g, " ").trim();
+    s = s.replace(/\blog(\d+)\(([^)]+)\)/gi, (_, base, arg) => `\\log_{${base}}(${arg.trim()})`);
+    s = s.replace(/\blog\(([^)]+)\)/gi, (_, arg) => `\\log(${arg.trim()})`);
+    s = s.replace(/ln\(([^)]+)\)/gi, (_, arg) => `\\ln(${arg.trim()})`);
+    s = s.replace(/frac\(([^,]+),([^)]+)\)/gi, (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
+    s = s.replace(/\b([A-Za-z0-9]+)\/([A-Za-z0-9]+)\b/g, (_, a, b) => `\\frac{${a}}{${b}}`);
+    s = s.replace(/sqrt\[(\d+)\]\(([^)]+)\)/gi, (_, n, val) => `\\sqrt[${n}]{${val.trim()}}`);
+    s = s.replace(/sqrt\(([^)]+)\)/gi, (_, val) => `\\sqrt{${val.trim()}}`);
+    s = s.replace(/([A-Za-z])_(\d+)/g, (_, base, sub) => `${base}_{${sub}}`);
+    s = s.replace(/([A-Za-z0-9])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
+    s = s.replace(/int_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
+      `\\int${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
+    );
+    s = s.replace(/sum_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
+      `\\sum${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
+    );
+    s = s.replace(/lim_([^_]+)([^]*?)(?=\s|$)/gi, (_, limit, body) => `\\lim_{${limit}}${body.trim()}`);
+    s = s.replace(/d\/dx\(([^)]+)\)/gi, (_, expr) => `\\frac{d}{dx}(${expr.trim()})`);
     s = s.replace(/vec\{(\w+)\}/gi, (_, v) => `\\vec{${v}}`);
     s = s.replace(/\|vec\{(\w+)\}\|/gi, (_, v) => `|\\vec{${v}}|`);
     s = s.replace(/Delta/g, "\\Delta");
     s = s.replace(/nabla/g, "\\nabla");
-   
-    // --- Chuyển subscript Unicode sang số thường ---
+    s = s.replace(/(\w+)_(\w+)/g, (_, base, sub) => `${base}_{${sub}}`);
+    s = s.replace(/(\w+)\^(\w+)/g, (_, base, sup) => `${base}^{${sup}}`);
+    s = s.replace(/H_2O/g, "\\ce{H2O}");
+    s = s.replace(/CO_2/g, "\\ce{CO2}");
+    s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
+    s = s.replace(/(\d+)\s*\n\s*([+\-*/^])/g, "$1 $2");
+    s = s.replace(/([+\-*/^])\s*\n\s*(\d+)/g, "$1 $2");
+    s = s.replace(/\be\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
+    s = s.replace(/\be\^\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
+    s = s.replace(/([A-Z][a-z]?)(\d+)/g, "\\ce{$1_$2}");
+    s = s.replace(/(?<!\\frac\{)1\s*\/\s*([a-zA-Z0-9\\pi\+\-\*\/]+)/g, "\\frac{1}{$1}");
+    s = s.replace(
+      /∫\s*từ\s*([^\s]+)\s*đến\s*([^\s]+)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
+      (_, a, b, expr) => `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`
+    );
+    s = s.replace(
+      /∫\s*từ\s*([^\s]+?)\s*đến\s*([^\s]+?)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
+      (_, a, b, expr) => {
+        a = a.replace(/π/g, "\\pi");
+        b = b.replace(/π/g, "\\pi");
+        return `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`;
+      }
+    );
+    s = s.replace(/∫\s*([^\n\r]+?)\s*dx\b/gi, (_, expr) => `\\int ${expr.trim()} \\, dx`);
+    s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
+    s = s.replace(/(\\frac\{[^}]+\}\{[^}]+\}|\\int[^;\n]+|e\^\{[^}]+\}|[a-zA-Z]+\^\{[^}]+\}|\\pi|\\log_[^; \n]+|\\sqrt\{[^}]+\})/g, "\\($1\\)");
+    s = s.replace(/vec\{(\w+)\}/gi, (_, v) => `\\vec{${v}}`);
+    s = s.replace(/\|vec\{(\w+)\}\|/gi, (_, v) => `|\\vec{${v}}|`);
+    s = s.replace(/Delta/g, "\\Delta");
+    s = s.replace(/nabla/g, "\\nabla");
     const subMap = { '₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9' };
     s = s.replace(/[\u2080-\u2089]/g, m => subMap[m] || m);
-
-    // --- Loại bỏ khoảng trắng thừa trong công thức đơn giản ---
     s = s.replace(/([A-Z][a-z]?)[\s]*([0-9]+)/g, (_, elem, num) => `${elem}${num}`);
-
-    // --- Regex nhận diện công thức hóa học phức tạp ---
-    // Match: nguyên tố có/không số, nhóm trong ngoặc với số, nhiều nhóm liên tiếp hoặc cách nhau khoảng trắng
     const chemRegex = /(?:[A-Z][a-z]?\d*|\([A-Z][a-z]?\d*\)\d*)(?:\s*(?:[A-Z][a-z]?\d*|\([A-Z][a-z]?\d*\)\d*))*/g;
-
-    // --- Wrap công thức hóa học hợp lệ vào \ce{} ---
     s = s.replace(chemRegex, match => {
-        // Nếu toàn bộ match chỉ là chữ cái và khoảng trắng bình thường, bỏ qua
-        if (/^[A-Za-z\s]+$/.test(match)) return match;
-        return `\\ce{${match}}`;
+      if (/^[A-Za-z\s]+$/.test(match)) return match;
+      return `\\ce{${match}}`;
     });
-  
-	function isInsideMath(str, offset) {
+    function isInsideMath(str, offset) {
       const upto = str.slice(0, offset);
       const lastOpen = upto.lastIndexOf("\\(");
       const lastClose = upto.lastIndexOf("\\)");
@@ -690,8 +692,8 @@
       /\\sqrt(?:\[[^\]]+\])?\{[^}]+\}/g,
       /\\log_\{\d+\}\([^)]*\)/g,
       /\b(?:log\d*|log|ln|sin|cos|tan|exp)\([^)]*\)/gi,
-      /[A-Za-z0-9]+_\{\d+\}/g,
-      /[A-Za-z0-9]\^\{\d+\}/g,
+      /[a-zA-Z0-9]+_\{\d+\}/g,
+      /[a-zA-Z0-9]\^\{\d+\}/g,
       /\\ce\{[^}]+\}/g,
       /\\Delta/g,
       /\\nabla/g
@@ -714,7 +716,6 @@
     s = s.replace(/\s{2,}/g, " ").trim();
     return s;
   }
-
 
   function processAllQuestions(questions) {
     return questions.map(q => {
@@ -955,12 +956,11 @@
     try {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-      let y = 40; // Starting y position
+      let y = 40;
       const margin = 40;
       const pageHeight = doc.internal.pageSize.height;
       const maxWidth = 500;
 
-      // Helper function to add text and handle page breaks
       function addText(text, x, y, options = {}) {
         if (y > pageHeight - margin) {
           doc.addPage();
@@ -970,11 +970,8 @@
         return y + (options.lineHeight || 20);
       }
 
-      // Set font
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(12);
-
-      // Header
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       y = addText('KẾT QUẢ BÀI THI', margin, y);
@@ -988,14 +985,11 @@
       y = addText(`Nộp lúc: ${formattedDate}`, margin, y);
       y += 10;
 
-      // Questions and Answers
       answers.forEach(ans => {
-        // Simplify LaTeX for PDF (remove MathJax rendering)
         const cleanContent = ans.noi_dung.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2));
         const cleanSelected = ans.da_chon.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2));
         const cleanCorrect = ans.dap_an_dung.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2));
         const cleanHint = ans.goi_y_dap_an.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2));
-
         y = addText(`Câu ${ans.cau}: ${cleanContent}`, margin, y, { maxWidth });
         y = addText(`Bạn chọn: ${cleanSelected}${ans.kieu === 'trac_nghiem' ? (ans.dung ? ' - ĐÚNG' : ' - SAI') : ''}`, margin, y, { maxWidth });
         if (ans.kieu === 'trac_nghiem' && ans.dap_an_dung) {
