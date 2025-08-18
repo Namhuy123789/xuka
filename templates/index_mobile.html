@@ -586,76 +586,98 @@
 
   function processExamContent(content) {
     let s = String(content || "");
-    s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
-    s = s.replace(/(\d+)\s*\n\s*(\+|\-|\)|\*|\/|\^)/g, "$1 $2");
-    s = s.replace(/(\^)\s*\n\s*(\d+)/g, "$1$2");
-    s = s.replace(/([a-zA-Z])\s*\n\s*([a-zA-Z])/g, "$1 $2");
-    s = s.replace(/\n+/g, " ");
-    s = s.replace(/Câu\s*(\d+)\s*\.(?!\s)/gi, "Câu $1. ");
-    s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
-    s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
-    s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
-    s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");
-    s = s.replace(/([^\s])∫/g, "$1 ∫");
-    s = s.replace(/∫([^\s])/g, "∫ $1");
-    s = s.replace(/([^\s])dx\b/gi, "$1 dx");
-    s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos|ln|log)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
-    s = s.replace(/\bGiảihệbấtphươngtrình\b/gi, "Giải hệ bất phương trình");
-    s = s.replace(/\bGiảibấtphươngtrình\b/gi, "Giải bất phương trình");
+	s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
+	s = s.replace(/(\d+)\s*\n\s*(\+|\-|\)|\*|\/|\^)/g, "$1 $2");
+	s = s.replace(/(\^)\s*\n\s*(\d+)/g, "$1$2");
+	s = s.replace(/([a-zA-Z])\s*\n\s*([a-zA-Z])/g, "$1 $2");
+	s = s.replace(/^\s+/gm, ""); // Loại bỏ tất cả khoảng trắng đầu dòng
+	s = s.replace(/(^|\.\s+)([^\s])/g, (_, pre, ch) => pre + ch);
     s = s.replace(/\s{2,}/g, " ").trim();
-    s = s.replace(/\blog(\d+)\(([^)]+)\)/gi, (_, base, arg) => `\\log_{${base}}(${arg.trim()})`);
-    s = s.replace(/\blog\(([^)]+)\)/gi, (_, arg) => `\\log(${arg.trim()})`);
-    s = s.replace(/ln\(([^)]+)\)/gi, (_, arg) => `\\ln(${arg.trim()})`);
-    s = s.replace(/frac\(([^,]+),([^)]+)\)/gi, (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
-    s = s.replace(/\b([A-Za-z0-9]+)\/([A-Za-z0-9]+)\b/g, (_, a, b) => `\\frac{${a}}{${b}}`);
-    s = s.replace(/sqrt\[(\d+)\]\(([^)]+)\)/gi, (_, n, val) => `\\sqrt[${n}]{${val.trim()}}`);
-    s = s.replace(/sqrt\(([^)]+)\)/gi, (_, val) => `\\sqrt{${val.trim()}}`);
-    s = s.replace(/([A-Za-z])_(\d+)/g, (_, base, sub) => `${base}_{${sub}}`);
-    s = s.replace(/([A-Za-z0-9])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
-    s = s.replace(/int_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
-      `\\int${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
-    );
-    s = s.replace(/sum_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
-      `\\sum${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
-    );
-    s = s.replace(/lim_([^_]+)([^]*?)(?=\s|$)/gi, (_, limit, body) => `\\lim_{${limit}}${body.trim()}`);
-    s = s.replace(/d\/dx\(([^)]+)\)/gi, (_, expr) => `\\frac{d}{dx}(${expr.trim()})`);
+	s = s.replace(/Câu\s*(\d+)\s*\.(?!\s)/gi, "Câu $1. ");
+	s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
+	s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
+	s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
+	s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");
+	s = s.replace(/([^\s])∫/g, "$1 ∫");
+	s = s.replace(/∫([^\s])/g, "∫ $1");
+	s = s.replace(/([^\s])dx\b/gi, "$1 dx");
+	s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos|ln|log)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
+	s = s.replace(/\bGiảihệbấtphươngtrình\b/gi, "Giải hệ bất phương trình");
+	s = s.replace(/\bGiảibấtphươngtrình\b/gi, "Giải bất phương trình");
+	s = s.replace(/\s{2,}/g, " ").trim();
+	s = s.replace(/\blog(\d+)\(([^)]+)\)/gi, (_, base, arg) => `\\log_{${base}}(${arg.trim()})`);
+	s = s.replace(/\blog\(([^)]+)\)/gi, (_, arg) => `\\log(${arg.trim()})`);
+	s = s.replace(/ln\(([^)]+)\)/gi, (_, arg) => `\\ln(${arg.trim()})`);
+	s = s.replace(/frac\(([^,]+),([^)]+)\)/gi, (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
+	s = s.replace(/\b([A-Za-z0-9]+)\/([A-Za-z0-9]+)\b/g, (_, a, b) => `\\frac{${a}}{${b}}`);
+	s = s.replace(/sqrt\[(\d+)\]\(([^)]+)\)/gi, (_, n, val) => `\\sqrt[${n}]{${val.trim()}}`);
+	s = s.replace(/sqrt\(([^)]+)\)/gi, (_, val) => `\\sqrt{${val.trim()}}`);
+	s = s.replace(/([A-Za-z])_(\d+)/g, (_, base, sub) => `${base}_{${sub}}`);
+	s = s.replace(/([A-Za-z0-9])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
+	s = s.replace(/int_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
+	  `\\int${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
+	);
+	s = s.replace(/sum_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
+	  `\\sum${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
+	);
+	s = s.replace(/lim_([^_]+)([^]*?)(?=\s|$)/gi, (_, limit, body) => `\\lim_{${limit}}${body.trim()}`);
+	s = s.replace(/d\/dx\(([^)]+)\)/gi, (_, expr) => `\\frac{d}{dx}(${expr.trim()})`);
+	s = s.replace(/vec\{(\w+)\}/gi, (_, v) => `\\vec{${v}}`);
+	s = s.replace(/\|vec\{(\w+)\}\|/gi, (_, v) => `|\\vec{${v}}|`);
+	s = s.replace(/Delta/g, "\\Delta");
+	s = s.replace(/nabla/g, "\\nabla");
+	s = s.replace(/(\w+)_(\w+)/g, (_, base, sub) => `${base}_{${sub}}`);
+	s = s.replace(/(\w+)\^(\w+)/g, (_, base, sup) => `${base}^{${sup}}`);
+	s = s.replace(/H_2O/g, "\\ce{H2O}");
+	s = s.replace(/CO_2/g, "\\ce{CO2}");
+	s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
+	s = s.replace(/(\d+)\s*\n\s*([+\-*/^])/g, "$1 $2");
+	s = s.replace(/([+\-*/^])\s*\n\s*(\d+)/g, "$1 $2");
+	s = s.replace(/\be\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
+	s = s.replace(/\be\^\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
+	s = s.replace(/([A-Z][a-z]?)(\d+)/g, "\\ce{$1_$2}");
+	s = s.replace(/(?<!\\frac\{)1\s*\/\s*([a-zA-Z0-9\\pi\+\-\*\/]+)/g, "\\frac{1}{$1}");
+	s = s.replace(
+	  /∫\s*từ\s*([^\s]+)\s*đến\s*([^\s]+)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
+	  (_, a, b, expr) => `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`
+	);
+	s = s.replace(
+	  /∫\s*từ\s*([^\s]+?)\s*đến\s*([^\s]+?)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
+	  (_, a, b, expr) => {
+		a = a.replace(/π/g, "\\pi");
+		b = b.replace(/π/g, "\\pi");
+		return `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`;
+	  }
+	);
+	s = s.replace(/∫\s*([^\n\r]+?)\s*dx\b/gi, (_, expr) => `\\int ${expr.trim()} \\, dx`);
+	s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
+	s = s.replace(/(\\frac\{[^}]+\}\{[^}]+\}|\\int[^;\n]+|e\^\{[^}]+\}|[a-zA-Z]+\^\{[^}]+\}|\\pi|\\log_[^; \n]+|\\sqrt\{[^}]+\})/g, "\\($1\\)");
+		
+
+    // --- Physics replacements ---
     s = s.replace(/vec\{(\w+)\}/gi, (_, v) => `\\vec{${v}}`);
     s = s.replace(/\|vec\{(\w+)\}\|/gi, (_, v) => `|\\vec{${v}}|`);
     s = s.replace(/Delta/g, "\\Delta");
     s = s.replace(/nabla/g, "\\nabla");
-    s = s.replace(/(\w+)_(\w+)/g, (_, base, sub) => `${base}_{${sub}}`);
-    s = s.replace(/(\w+)\^(\w+)/g, (_, base, sup) => `${base}^{${sup}}`);
-    s = s.replace(/H_2O/g, "\\ce{H2O}");
-    s = s.replace(/CO_2/g, "\\ce{CO2}");
-    s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
-    s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
-    s = s.replace(/(\d+)\s*\n\s*([+\-*/^])/g, "$1 $2");
-    s = s.replace(/([+\-*/^])\s*\n\s*(\d+)/g, "$1 $2");
-    s = s.replace(/\be\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
-    s = s.replace(/\be\^\s*\(\s*([^)]+?)\s*\)/g, (m, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
-    // Thay dòng sai bằng:
-    s = s.replace(/([A-Z][a-z]?)(\d+)/g, "\\ce{$1_$2}");
+   
+    // --- Chuyển subscript Unicode sang số thường ---
+    const subMap = { '₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9' };
+    s = s.replace(/[\u2080-\u2089]/g, m => subMap[m] || m);
 
-    s = s.replace(/(?<!\\frac\{)1\s*\/\s*([a-zA-Z0-9\\pi\+\-\*\/]+)/g, "\\frac{1}{$1}");
-    s = s.replace(
-      /∫\s*từ\s*([^\s]+)\s*đến\s*([^\s]+)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
-      (_, a, b, expr) => `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`
-    );
-    s = s.replace(
-      /∫\s*từ\s*([^\s]+?)\s*đến\s*([^\s]+?)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
-      (_, a, b, expr) => {
-        a = a.replace(/π/g, "\\pi");
-        b = b.replace(/π/g, "\\pi");
-        return `\\int_{${a}}^{${b}} ${expr.trim()} \\, dx`;
-      }
-    );
-    s = s.replace(/∫\s*([^\n\r]+?)\s*dx\b/gi, (_, expr) => `\\int ${expr.trim()} \\, dx`);
-    s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
-    s = s.replace(/(\\frac\{[^}]+\}\{[^}]+\}|\\int[^;\n]+|e\^\{[^}]+\}|[a-zA-Z]+\^\{[^}]+\}|\\pi|\\log_[^; \n]+|\\sqrt\{[^}]+\})/g, "\\($1\\)");
-    
-	
-	
+    // --- Loại bỏ khoảng trắng thừa trong công thức đơn giản ---
+    s = s.replace(/([A-Z][a-z]?)[\s]*([0-9]+)/g, (_, elem, num) => `${elem}${num}`);
+
+    // --- Regex nhận diện công thức hóa học phức tạp ---
+    // Match: nguyên tố có/không số, nhóm trong ngoặc với số, nhiều nhóm liên tiếp hoặc cách nhau khoảng trắng
+    const chemRegex = /(?:[A-Z][a-z]?\d*|\([A-Z][a-z]?\d*\)\d*)(?:\s*(?:[A-Z][a-z]?\d*|\([A-Z][a-z]?\d*\)\d*))*/g;
+
+    // --- Wrap công thức hóa học hợp lệ vào \ce{} ---
+    s = s.replace(chemRegex, match => {
+        // Nếu toàn bộ match chỉ là chữ cái và khoảng trắng bình thường, bỏ qua
+        if (/^[A-Za-z\s]+$/.test(match)) return match;
+        return `\\ce{${match}}`;
+    });
+  
 	function isInsideMath(str, offset) {
       const upto = str.slice(0, offset);
       const lastOpen = upto.lastIndexOf("\\(");
@@ -692,6 +714,7 @@
     s = s.replace(/\s{2,}/g, " ").trim();
     return s;
   }
+
 
   function processAllQuestions(questions) {
     return questions.map(q => {
