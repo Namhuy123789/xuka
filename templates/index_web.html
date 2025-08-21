@@ -1004,113 +1004,60 @@ function isInsideMath(str, offset) {
 
   document.addEventListener('DOMContentLoaded', () => {});
 
-  function restoreAnswers() {
-    const saved = JSON.parse(localStorage.getItem("savedAnswers") || "{}");
-    for (const [key, value] of Object.entries(saved)) {
-      const select = document.getElementById(key);
-      if (select) {
-        select.value = value;
-      } else {
-        console.warn(`Không tìm thấy phần tử: ${key}`);
-      }
-    }
-  }
+ // ====== Lưu & khôi phục đáp án + thời gian ======
 
-  function setupAnswerTracking() {
-    questionData.forEach((q, i) => {
-      const select = document.getElementById(`q${i}`);
-      const key = `q${i}`;
-      if (select) {
-        select.addEventListener("change", () => {
-          const current = JSON.parse(localStorage.getItem("savedAnswers") || "{}");
-          current[key] = select.value;
-          localStorage.setItem("savedAnswers", JSON.stringify(current));
+// Khôi phục dữ liệu khi load lại trang
+function restoreProgress() {
+  // Khôi phục đáp án
+  const savedAnswers = JSON.parse(localStorage.getItem(nsKey("savedAnswers")) || "{}");
+  for (const [key, value] of Object.entries(savedAnswers)) {
+    const input = document.getElementById(key);
+    if (input) {
+      if (input.type === "radio" || input.type === "checkbox") {
+        document.querySelectorAll(`input[name="${input.name}"]`).forEach(el => {
+          el.checked = (el.value === value);
         });
+      } else if (["SELECT", "TEXTAREA", "INPUT"].includes(input.tagName)) {
+        input.value = value;
       }
-    });
-  }
-
-  // Tự động lưu thời gian còn lại mỗi giây
-  setInterval(() => {
-    localStorage.setItem("savedTime", time);
-  }, 1000);
-
-  // Xóa bộ nhớ tạm sau khi nộp bài
-  function clearTempStorage() {
-    localStorage.removeItem("savedAnswers");
-    localStorage.removeItem("hoten");
-    localStorage.removeItem("made");
-    localStorage.removeItem("savedTime");
-  }
-
-  // Kích hoạt khi DOM đã sẵn sàng
-  document.addEventListener("DOMContentLoaded", () => {
-    restoreAnswers();
-    setupAnswerTracking();
-  });
-
-
-
-
-
-
-
-function enableExamLock() {
-  enterFullScreen();
-
-  // ❌ Chặn tất cả phím
-  document.addEventListener("keydown", blockKeys, true);
-  document.addEventListener("keypress", blockKeys, true);
-  document.addEventListener("keyup", blockKeys, true);
-
-  // 📱 Chặn bàn phím ảo (nếu có input/textarea)
-  document.querySelectorAll("input, textarea").forEach(el => {
-    el.setAttribute("readonly", "true");
-  });
-
-  // ⛔ Nếu thoát fullscreen => cảnh báo hoặc auto nộp
-  document.addEventListener("fullscreenchange", checkFullScreen);
-  document.addEventListener("webkitfullscreenchange", checkFullScreen);
-  document.addEventListener("mozfullscreenchange", checkFullScreen);
-  document.addEventListener("MSFullscreenChange", checkFullScreen);
-
-  // ⛔ Trên mobile: nếu ẩn app/đổi tab
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      alert("Bạn đã rời khỏi màn hình thi. Bài sẽ bị nộp!");
-      // submitExam();
     }
+  }
+
+  // Khôi phục thời gian
+  const savedTime = localStorage.getItem(nsKey("savedTime"));
+  if (savedTime !== null) {
+    time = parseInt(savedTime, 10);
+  }
+}
+
+// Theo dõi thay đổi đáp án để lưu
+function setupTracking() {
+  document.querySelectorAll("input, select, textarea").forEach(el => {
+    el.addEventListener("change", () => {
+      const current = JSON.parse(localStorage.getItem(nsKey("savedAnswers")) || "{}");
+      if (el.type === "radio" || el.type === "checkbox") {
+        if (el.checked) current[el.id] = el.value;
+      } else {
+        current[el.id] = el.value;
+      }
+      localStorage.setItem(nsKey("savedAnswers"), JSON.stringify(current));
+    });
   });
+
+  // Lưu thời gian còn lại mỗi giây
+  setInterval(() => {
+    localStorage.setItem(nsKey("savedTime"), time);
+  }, 1000);
 }
 
-function blockKeys(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  return false;
+// Xóa dữ liệu tạm khi nộp bài
+function clearTempStorage() {
+  localStorage.removeItem(nsKey("savedAnswers"));
+  localStorage.removeItem(nsKey("savedTime"));
+  localStorage.removeItem("hoten");
+  localStorage.removeItem("made");
 }
 
-function enterFullScreen() {
-  let elem = document.documentElement;
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-  } else if (elem.mozRequestFullScreen) {
-    elem.mozRequestFullScreen();
-  } else if (elem.webkitRequestFullscreen) {
-    elem.webkitRequestFullscreen();
-  } else if (elem.msRequestFullscreen) {
-    elem.msRequestFullscreen();
-  }
-}
-
-function checkFullScreen() {
-  if (!document.fullscreenElement &&
-      !document.mozFullScreenElement &&
-      !document.webkitFullscreenElement &&
-      !document.msFullscreenElement) {
-    alert("Bạn đã thoát toàn màn hình. Bài sẽ bị nộp!");
-    // submitExam();
-  }
-}
   
 </script>
 </body>
