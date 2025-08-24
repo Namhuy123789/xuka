@@ -58,7 +58,7 @@
     /* Khung camera */
     .camera-box {
       position: relative;
-      width: min(90vw, 310px);
+      width: min(90vw, 295px);
       aspect-ratio: 1/1;
       margin: 12px auto;
       border-radius: 12px;
@@ -118,6 +118,36 @@
     }
 
     /* Responsive adjustments */
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 0 1rem;
+    }
+    #left-column, #right-column {
+      width: 100%;
+      min-height: 400px; /* Chiều cao tối thiểu */
+      max-height: 80vh; /* Chiều cao tối đa, cuộn nếu vượt */
+      overflow-y: auto;
+    }
+    #main-column {
+      width: 100%;
+    }
+    @media (min-width: 641px) {
+      .main-container {
+        flex-direction: row;
+        justify-content: center;
+        padding: 0 2rem;
+      }
+      #left-column, #right-column {
+        width: 300px; /* Chiều ngang cố định trên desktop */
+        min-height: 600px; /* Chiều cao tối thiểu lớn hơn trên desktop */
+        max-height: 90vh;
+      }
+      #main-column {
+        max-width: 448px; /* sm:max-w-md */
+      }
+    }
     @media (max-width: 640px) {
       .banner {
         font-size: 20px;
@@ -128,25 +158,8 @@
       .camera-box {
         width: 80vw;
       }
-      /* Đảm bảo cột trái và phải hiển thị dọc trên mobile */
-      .main-container {
-        flex-direction: column;
-      }
       #left-column, #right-column {
-        width: 100%;
-      }
-    }
-    @media (min-width: 641px) {
-      .main-container {
-        display: flex;
-        flex-direction: row;
-        gap: 1.5rem;
-      }
-      #left-column, #right-column {
-        width: 25%;
-      }
-      #main-column {
-        max-width: 448px; /* sm:max-w-md tương đương 448px */
+        min-height: 300px; /* Chiều cao tối thiểu nhỏ hơn trên mobile */
       }
     }
   </style>
@@ -177,9 +190,9 @@
   </nav>
 
   <!-- Nội dung chính -->
-  <div class="main-container px-4 sm:px-8 mt-3">
+  <div class="flex flex-col sm:flex-row justify-center items-start gap-6 sm:gap-8 px-8 sm:px-8 mt-3">
     <!-- Cột trái -->
-    <aside id="left-column" class="flex flex-col gap-3 w-full">
+    <aside id="left-column" class="flex flex-col gap-3">
       <div class="card">
         <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">📰 Tin mới từ VnExpress</h2>
         <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
@@ -205,10 +218,10 @@
     </aside>
 
     <!-- Cột chính -->
-    <main id="main-column" class="flex flex-col gap-4 w-full">
+    <main id="main-column" class="flex flex-col gap-2">
       <!-- Đăng nhập bằng QR -->
-      <section id="qr-login" class="bg-white p-6 rounded-xl shadow text-center">
-        <h1 class="text-xl font-bold text-pink-500 mb-4">QUÉT MÃ QR</h1>
+      <section id="qr-login" class="bg-white p-1 rounded-xl shadow text-center">
+        
         <div class="camera-box">
           <div id="reader"></div>
           <div class="qr-overlay" id="qrOverlay">
@@ -308,7 +321,7 @@
     </main>
 
     <!-- Cột phải -->
-    <aside id="right-column" class="flex flex-col gap-3 w-full">
+    <aside id="right-column" class="flex flex-col gap-3">
       <div class="card">
         <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">📰 SỞ GD&ĐT ĐỒNG NAI</h2>
         <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
@@ -389,7 +402,7 @@
   </footer>
 
   <script>
-    // JavaScript giữ nguyên từ code trước, chỉ liệt kê để hoàn chỉnh
+    // JavaScript giữ nguyên từ code trước
     const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://127.0.0.1:5000' : 'https://xuka.com.vn';
     let time = 0;
     let timer = null;
