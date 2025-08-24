@@ -4,48 +4,155 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>XUKA 4.0</title>
-  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="csrf-token" content="DUMMY_CSRF_TOKEN">
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- jsPDF (v2) -->
+  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <!-- Html5Qrcode -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-  <!-- DOMPurify để chống XSS -->
+  <!-- DOMPurify -->
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 
-  <!-- MathJax v3 (KHÔNG trộn v2) -->
+  <!-- MathJax -->
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
 
   <style>
-    body { background-image: url("https://raw.githubusercontent.com/Namhuy123789/xuka/main/h.png"); background-size: cover; background-position: center; margin: 0; padding: 0; }
-    .banner { background: linear-gradient(90deg, #4facfe, #00f2fe); color: #fff; padding: 20px; text-align: center; font-size: 25px; text-shadow: 1px 1px 3px rgba(0,0,0,.3); }
-    @keyframes marquee { 0% { transform: translateX(-100%);} 100% { transform: translateX(100%);} }
-    .animate-marquee { display:inline-block; white-space:nowrap; animation: marquee 10s linear infinite; }
-    .card { background:#fff; border-radius:.5rem; box-shadow:0 1px 3px rgba(0,0,0,.1); padding:1.25rem; }
-    .hidden { display: none !important; }
-    .result-scrollable { max-height: 60vh; overflow: auto; border: 1px solid #e5e7eb; padding: 1rem; border-radius: .5rem; }
-    @media (max-width: 639px) {
-      #reader { width: 100% !important; max-width: 280px !important; margin: 0 auto; }
-      #main-column { max-width: 100% !important; width: 100%; }
-      .banner { font-size: 20px; padding: 15px; }
-      .banner h1 span.text-3xl { font-size: 1.5rem; }
-      .banner h1 span.text-lg { font-size: 1rem; }
-      .banner h1 span.text-base { font-size: 0.875rem; }
-      #button-group a { font-size: 0.75rem; padding: 0.5rem 1rem; }
-      #left-column, #right-column { width: 100%; }
+    body {
+      background-image: url("");
+      background-size: cover;
+      background-position: center;
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
     }
-    @media (min-width: 640px) {
-      #left-column, #right-column { width: 25%; }
+    .banner {
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+      font-size: 25px;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .card {
+      background: #fff;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1.25rem;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .result-scrollable {
+      max-height: 70vh;
+      overflow: auto;
+      border: 1px solid #e5e7eb;
+      padding: 1rem;
+      border-radius: 0.5rem;
+    }
+
+    /* Khung camera */
+    .camera-box {
+      position: relative;
+      width: min(90vw, 310px);
+      aspect-ratio: 1/1;
+      margin: 12px auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+      background: rgba(0, 0, 0, 0.6);
+      touch-action: none;
+    }
+    #reader, #reader video, #reader canvas {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    /* Ô định vị QR */
+    .qr-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .qr-frame {
+      width: 250px;
+      height: 250px;
+      border: 2px solid rgba(0, 147, 255, 0.95);
+      border-radius: 10px;
+      box-shadow: 
+        0 0 15px rgba(0, 147, 255, 0.9),
+        0 0 35px rgba(0, 147, 255, 0.7),
+        0 0 60px rgba(0, 147, 255, 0.5),
+        0 0 0 9999px rgba(0, 0, 0, 0.35) inset;
+      position: relative;
+    }
+
+    /* Scan line */
+    .scan-line {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, transparent, #00BFFF, transparent);
+      animation: scanMove 2.2s linear infinite;
+      border-radius: 3px;
+      box-shadow: 
+        0 0 15px rgba(0, 147, 255, 0.9),
+        0 0 35px rgba(0, 147, 255, 0.7),
+        0 0 60px rgba(0, 147, 255, 0.5);
+    }
+    @keyframes scanMove {
+      0% { top: 0; opacity: 0.85; }
+      50% { opacity: 1; }
+      100% { top: calc(100% - 6px); opacity: 0.85; }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      .banner {
+        font-size: 20px;
+      }
+      .result-scrollable {
+        max-height: 50vh;
+      }
+      .camera-box {
+        width: 80vw;
+      }
+      /* Đảm bảo cột trái và phải hiển thị dọc trên mobile */
+      .main-container {
+        flex-direction: column;
+      }
+      #left-column, #right-column {
+        width: 100%;
+      }
+    }
+    @media (min-width: 641px) {
+      .main-container {
+        display: flex;
+        flex-direction: row;
+        gap: 1.5rem;
+      }
+      #left-column, #right-column {
+        width: 25%;
+      }
+      #main-column {
+        max-width: 448px; /* sm:max-w-md tương đương 448px */
+      }
     }
   </style>
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
-<body class="min-h-screen">
+<body>
   <!-- Banner -->
   <div class="banner">
     <h1>
@@ -56,12 +163,12 @@
     </h1>
   </div>
 
- <!-- Navbar -->
+  <!-- Navbar -->
   <nav class="bg-yellow-300 py-1 shadow-md">
     <div class="flex items-center px-4 space-x-3">
       <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Vietnam.svg/1024px-Flag_of_Vietnam.svg.png"
-           alt="VN Flag" class="h-6 w-8 rounded-sm shadow">
-      <div class="w-[800px] h-8 flex items-center">
+           alt="Cờ Việt Nam" class="h-6 w-8 rounded-sm shadow" aria-label="Cờ Việt Nam">
+      <div class="w-full max-w-[800px] h-8 flex items-center">
         <span class="text-blue-500 font-bold text-sm whitespace-nowrap">
           TRƯỜNG THPT PHƯỚC LONG - ĐỒNG NAI
         </span>
@@ -69,10 +176,10 @@
     </div>
   </nav>
 
-  <!-- Main content -->
-  <div class="flex flex-col sm:flex-row justify-center items-start gap-6 sm:gap-8 px-4 sm:px-8 mt-2">
-    <!-- Left column -->
-    <aside id="left-column" class="flex flex-col gap-3 w-full sm:w-1/4">
+  <!-- Nội dung chính -->
+  <div class="main-container px-4 sm:px-8 mt-3">
+    <!-- Cột trái -->
+    <aside id="left-column" class="flex flex-col gap-3 w-full">
       <div class="card">
         <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">📰 Tin mới từ VnExpress</h2>
         <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
@@ -85,7 +192,7 @@
       <div class="card">
         <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
           <li class="flex items-center gap-2">
-            <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" alt="icon" class="w-4 h-4">
+            <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" alt="Biểu tượng Xuka" class="w-4 h-4">
             <a href="https://xuka.com.vn/huongdan" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">xuka.com.vn</a>
           </li>
         </ul>
@@ -97,20 +204,29 @@
       </div>
     </aside>
 
-    <!-- Main column -->
-    <main id="main-column" class="flex flex-col gap-4 w-full sm:max-w-md mt-1">
-      <!-- QR Login -->
+    <!-- Cột chính -->
+    <main id="main-column" class="flex flex-col gap-4 w-full">
+      <!-- Đăng nhập bằng QR -->
       <section id="qr-login" class="bg-white p-6 rounded-xl shadow text-center">
         <h1 class="text-xl font-bold text-pink-500 mb-4">QUÉT MÃ QR</h1>
-        <div id="reader" class="mx-auto" style="width: 90%; max-width: 320px;"></div>
+        <div class="camera-box">
+          <div id="reader"></div>
+          <div class="qr-overlay" id="qrOverlay">
+            <div class="qr-frame">
+              <div class="scan-line"></div>
+            </div>
+          </div>
+        </div>
         <p id="qr-error" class="text-red-600 mt-2 font-semibold hidden">QR không hợp lệ!</p>
         <input type="file" id="qr-file" accept="image/*" class="hidden" />
+
         <div class="flex justify-center gap-4 mt-4">
           <button id="flip-camera" 
-            class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
-                   bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
-                   shadow-lg transform transition-all duration-200
-                   hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner">
+                  class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
+                         bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
+                         shadow-lg transform transition-all duration-200
+                         hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner"
+                  aria-label="Chuyển camera">
             <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M4 14a8 8 0 0116 0 8 8 0 01-16 0z"/>
@@ -118,10 +234,11 @@
             </span>
           </button>
           <button id="upload-qr" 
-            class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
-                   bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
-                   shadow-lg transform transition-all duration-200
-                   hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner">
+                  class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
+                         bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
+                         shadow-lg transform transition-all duration-200
+                         hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner"
+                  aria-label="Tải lên mã QR">
             <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h4l3-3h4l3 3h4v14H3V7z" />
@@ -129,31 +246,69 @@
               </svg>
             </span>
           </button>
-          <button id="stop-camera" 
-            class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
-                   bg-gradient-to-r from-red-400 to-red-600
-                   shadow-lg transform transition-all duration-200
-                   hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner">
-            <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </span>
-          </button>
         </div>
       </section>
 
-      <!-- Button group -->
-      <div id="button-group" class="flex flex-wrap justify-center gap-2">
-        <a href="/tronde" class="px-3 py-1.5 rounded-lg bg-gradient-to-b from-blue-500 to-blue-700 text-white font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-transform">Quản trị</a>
-        <a href="/xuka" class="px-3 py-1.5 rounded-lg bg-gradient-to-b from-green-400 to-green-600 text-white font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-transform">Đánh giá</a>
-        <a href="/alochat" class="px-3 py-1.5 rounded-lg bg-gradient-to-b from-green-400 to-green-600 text-white font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-transform">Alo chat</a>
-        <a href="/huongdan" class="px-3 py-1.5 rounded-lg bg-gradient-to-b from-yellow-400 to-yellow-600 text-white font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-transform">Hướng dẫn</a>
+      <!-- Nhóm nút -->
+      <div id="button-group" class="flex flex-wrap justify-center gap-4">
+        <a href="/tronde" 
+           class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
+                  bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
+                  shadow-lg transform transition-all duration-200
+                  hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner"
+           aria-label="Quản trị">
+          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" 
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" 
+                    d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4
+                       4-1.79 4-4-1.79-4-4-4zm8 4a8 8 0 11-16 0 
+                       8 8 0 0116 0z" />
+            </svg>
+          </span>
+        </a>
+        <a href="/xuka" 
+           class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
+                  bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
+                  shadow-lg transform transition-all duration-200
+                  hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner"
+           aria-label="Đánh giá">
+          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" 
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" 
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.28 3.945a1 
+                       1 0 00.95.69h4.15c.969 0 1.371 1.24.588 
+                       1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.28 
+                       3.945c.3.921-.755 1.688-1.54 1.118l-3.36-2.44a1 
+                       1 0 00-1.175 0l-3.36 2.44c-.785.57-1.84-.197-1.54-1.118l1.28-3.945a1 
+                       1 0 00-.364-1.118l-3.36-2.44c-.783-.57-.38-1.81.588-1.81h4.15a1 
+                       1 0 00.95-.69l1.28-3.945z" />
+            </svg>
+          </span>
+        </a>
+        <a href="/huongdan" 
+           class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
+                  bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500
+                  shadow-lg transform transition-all duration-200
+                  hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner"
+           aria-label="Hướng dẫn">
+          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" 
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" 
+                    d="M12 6l-2-2H5a2 2 0 00-2 2v14a2 2 0 
+                       002 2h14a2 2 0 002-2V6a2 2 0 
+                       00-2-2h-5l-2 2z" />
+            </svg>
+            Hướng dẫn
+          </span>
+        </a>
       </div>
     </main>
 
-    <!-- Right column -->
-    <aside id="right-column" class="flex flex-col gap-3 w-full sm:w-1/4">
+    <!-- Cột phải -->
+    <aside id="right-column" class="flex flex-col gap-3 w-full">
       <div class="card">
         <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">📰 SỞ GD&ĐT ĐỒNG NAI</h2>
         <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
@@ -163,7 +318,7 @@
       <div class="card">
         <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
           <li class="flex items-center gap-2">
-            <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" alt="icon" class="w-4 h-4">
+            <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" alt="Biểu tượng Xuka" class="w-4 h-4">
             <a href="https://xuka.com.vn/huongdan" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">xuka.com.vn</a>
           </li>
         </ul>
@@ -176,7 +331,7 @@
     </aside>
   </div>
 
-  <!-- Account Login -->
+  <!-- Đăng nhập tài khoản -->
   <section id="account-login" class="max-w-md mx-auto bg-white p-6 rounded shadow hidden">
     <h1 class="text-2xl font-bold mb-4">Đăng Nhập Tài Khoản</h1>
     <form id="account-login-form">
@@ -188,12 +343,12 @@
         <label for="password" class="block font-semibold">Mật khẩu:</label>
         <input id="password" name="password" type="password" class="w-full border p-2 rounded" autocomplete="current-password" />
       </div>
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Đăng nhập</button>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Đăng nhập</button>
       <p id="login-error" class="text-red-600 mt-2 font-semibold hidden">Sai tài khoản hoặc mật khẩu!</p>
     </form>
   </section>
 
-  <!-- Student Info -->
+  <!-- Thông tin thí sinh -->
   <section id="login-form" class="max-w-xl mx-auto bg-white p-6 rounded shadow hidden">
     <h1 class="text-2xl font-bold mb-4">Thông Tin Thí Sinh</h1>
     <div class="mb-4">
@@ -214,144 +369,142 @@
         <option value="">-- Chọn mã đề --</option>
       </select>
     </div>
-  <button id="btn-start-exam" onclick="enableExamLock()" class="bg-green-600 text-white px-4 py-2 rounded">Bắt đầu thi</button>
+    <button id="btn-start-exam" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Bắt đầu thi</button>
   </section>
 
-  <!-- Exam -->
+  <!-- Bài thi -->
   <section id="exam-container" class="max-w-3xl mx-auto bg-white p-6 rounded shadow hidden">
     <h1 class="text-2xl font-bold mb-4 text-center">BÀI THI TRẮC NGHIỆM</h1>
     <p id="countdown" class="text-red-600 font-bold mb-4">Thời gian: --:--</p>
     <div id="questions" class="space-y-4 mb-6"></div>
-    <button id="btn-submit" class="bg-blue-600 text-white px-4 py-2 rounded">Nộp bài</button>
+    <button id="btn-submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Nộp bài</button>
     <p id="result" class="mt-4 text-green-600 font-bold"></p>
   </section>
 
-  <!-- Result -->
+  <!-- Kết quả -->
   <section id="result-container" class="max-w-2xl mx-auto p-6 bg-white rounded shadow mt-10 hidden"></section>
 
   <footer class="mt-10 py-4 text-center text-gray-700 text-sm font-medium">
     Bản quyền © 2025 <span class="font-bold text-red-600">PHẠM HUY TUÂN</span> · ĐT: <a href="tel:0389897989" class="text-blue-600 hover:underline">0389 897 989</a>
   </footer>
 
-<script>
-  // ====== CẤU HÌNH & BIẾN TOÀN CỤC ======
-  const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://127.0.0.1:5000' : 'https://xuka.com.vn';
+  <script>
+    // JavaScript giữ nguyên từ code trước, chỉ liệt kê để hoàn chỉnh
+    const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://127.0.0.1:5000' : 'https://xuka.com.vn';
+    let time = 0;
+    let timer = null;
+    let questionData = [];
+    let examDeadline = null;
+    let currentMade = '';
 
-  // Trạng thái phiên thi (server kiểm soát deadline)
-  let time = 0;                 // seconds còn lại (client hiển thị)
-  let timer = null;             // interval id
-  let questionData = [];        // mảng câu hỏi
-  let examDeadline = null;      // epoch milliseconds (do server trả về)
-  let currentMade = '';
-
-  // ====== TIỆN ÍCH ======
-  function typeset(el) { if (window.MathJax?.typesetPromise) MathJax.typesetPromise([el]); }
-  function qs(sel) { return document.querySelector(sel); }
-  function qsa(sel) { return Array.from(document.querySelectorAll(sel)); }
-  function csrf() { return (document.querySelector('meta[name="csrf-token"]') || {}).content || ''; }
-  function safeHTML(html) { return DOMPurify.sanitize(String(html || ''), { USE_PROFILES: { html: true } }); }
-
-  function nsKey(key) { // namespace localStorage theo mã đề
-    return `xuka_${currentMade || 'unknown'}_${key}`;
-  }
-
-  // ====== QR SCANNER ======
-  const readerElem = document.getElementById('reader');
-  const qrFileInput = document.getElementById('qr-file');
-  const qrErrorElem = document.getElementById('qr-error');
-  const flipBtn = document.getElementById('flip-camera');
-  const uploadBtn = document.getElementById('upload-qr');
-  const stopBtn = document.getElementById('stop-camera');
-
-  let html5QrCode = null;
-  let devices = [];
-  let camIndex = 0;
-
-  async function checkCameraPermission() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach(t => t.stop());
-      return true;
-    } catch (err) {
-      qrErrorElem.textContent = 'Vui lòng cấp quyền camera trong cài đặt trình duyệt!';
-      qrErrorElem.classList.remove('hidden');
-      return false;
+    function showSuccessEffect(message = "Quét thành công!") {
+      const div = document.createElement("div");
+      div.innerText = message;
+      div.className = "fixed top-5 right-5 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg animate-bounce z-50";
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 2000);
     }
-  }
 
-  async function ensureScanner() {
-    if (!html5QrCode) html5QrCode = new Html5Qrcode('reader');
-    return html5QrCode;
-  }
-
-  async function stopScanner() {
-    if (html5QrCode) {
-      try { await html5QrCode.stop(); } catch (_) {}
-      try { await html5QrCode.clear(); } catch (_) {}
-      html5QrCode = null;
-    }
-  }
-
-  async function startQrScanner() {
-    if (!readerElem) return;
-    await ensureScanner();
-    const hasPerm = await checkCameraPermission();
-    if (!hasPerm) return;
-
-    try {
-      const list = await Html5Qrcode.getCameras();
-      devices = list || [];
-      if (devices.length === 0) {
-        qrErrorElem.textContent = 'Không tìm thấy camera trên thiết bị!';
-        qrErrorElem.classList.remove('hidden');
-        return;
+    const qs = (sel) => document.querySelector(sel);
+    const qsa = (sel) => Array.from(document.querySelectorAll(sel));
+    const csrf = () => (qs('meta[name="csrf-token"]')?.content || '');
+    const safeHTML = (html) => DOMPurify.sanitize(String(html || ''), { USE_PROFILES: { html: true } });
+    const nsKey = (key) => `xuka_${currentMade || 'unknown'}_${key}`;
+    const typeset = (el) => {
+      if (window.MathJax?.typesetPromise) {
+        MathJax.typesetPromise([el]).catch(err => console.error('MathJax Error:', err));
       }
-      const camId = devices[camIndex]?.id || { facingMode: 'environment' };
-      await html5QrCode.start(camId, { fps: 10, qrbox: { width: 250, height: 250 } }, async (decodedText) => {
-        console.log('QR code decoded:', decodedText);
-        await stopScanner();
-        await verifyAndLogin(decodedText);
-      });
-    } catch (err) {
-      qrErrorElem.textContent = `Lỗi camera: ${err?.message || err}`;
-      qrErrorElem.classList.remove('hidden');
-    }
-  }
+    };
 
-  if (flipBtn) {
-    flipBtn.addEventListener('click', async () => {
+    let html5QrCode = null;
+    let devices = [];
+    let camIndex = 0;
+
+    async function checkCameraPermission() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream.getTracks().forEach(t => t.stop());
+        return true;
+      } catch (err) {
+        qs('#qr-error').textContent = 'Vui lòng cấp quyền camera trong cài đặt trình duyệt!';
+        qs('#qr-error').classList.remove('hidden');
+        return false;
+      }
+    }
+
+    async function ensureScanner() {
+      if (!html5QrCode) html5QrCode = new Html5Qrcode('reader');
+      return html5QrCode;
+    }
+
+    async function stopScanner() {
+      if (html5QrCode) {
+        try { await html5QrCode.stop(); } catch (_) {}
+        try { await html5QrCode.clear(); } catch (_) {}
+        html5QrCode = null;
+      }
+    }
+
+    async function startQrScanner() {
+      const readerElem = qs('#reader');
+      if (!readerElem) return;
+      await ensureScanner();
+      const hasPerm = await checkCameraPermission();
+      if (!hasPerm) return;
+
+      try {
+        const list = await Html5Qrcode.getCameras();
+        devices = list || [];
+        if (devices.length === 0) {
+          qs('#qr-error').textContent = 'Không tìm thấy camera trên thiết bị!';
+          qs('#qr-error').classList.remove('hidden');
+          return;
+        }
+        const camId = devices[camIndex]?.id || { facingMode: 'environment' };
+        await html5QrCode.start(camId, { fps: 10, qrbox: { width: 250, height: 250 } }, async (decodedText) => {
+          console.log('Mã QR được giải mã:', decodedText);
+          await stopScanner();
+          await verifyAndLogin(decodedText);
+        }, () => {});
+      } catch (err) {
+        qs('#qr-error').textContent = `Lỗi camera: ${err?.message || err}`;
+        qs('#qr-error').classList.remove('hidden');
+      }
+    }
+
+    qs('#flip-camera')?.addEventListener('click', async () => {
       if (!devices.length || !html5QrCode) return;
       camIndex = (camIndex + 1) % devices.length;
       try {
         await html5QrCode.stop();
         await html5QrCode.start(devices[camIndex].id, { fps: 10, qrbox: { width: 250, height: 250 } }, async (dt) => {
-          console.log('QR code decoded (flipped camera):', dt);
+          console.log('Mã QR được giải mã (chuyển camera):', dt);
           await stopScanner();
           await verifyAndLogin(dt);
-        });
+        }, () => {});
       } catch (e) {
         console.error('Không đổi được camera:', e);
-        qrErrorElem.textContent = 'Không thể đổi camera!';
-        qrErrorElem.classList.remove('hidden');
+        qs('#qr-error').textContent = 'Không thể đổi camera!';
+        qs('#qr-error').classList.remove('hidden');
       }
     });
-  }
 
-  if (uploadBtn && qrFileInput) {
-    uploadBtn.addEventListener('click', () => {
-      qrErrorElem.classList.add('hidden');
+    const qrFileInput = qs('#qr-file');
+    qs('#upload-qr')?.addEventListener('click', () => {
+      qs('#qr-error').classList.add('hidden');
       qrFileInput.click();
     });
-    qrFileInput.addEventListener('change', async (e) => {
+
+    qrFileInput?.addEventListener('change', async (e) => {
       const file = e.target.files?.[0];
       if (!file) {
-        qrErrorElem.textContent = 'Không có tệp nào được chọn!';
-        qrErrorElem.classList.remove('hidden');
+        qs('#qr-error').textContent = 'Không có tệp nào được chọn!';
+        qs('#qr-error').classList.remove('hidden');
         return;
       }
       if (!file.type.startsWith('image/')) {
-        qrErrorElem.textContent = 'Vui lòng chọn một tệp hình ảnh!';
-        qrErrorElem.classList.remove('hidden');
+        qs('#qr-error').textContent = 'Vui lòng chọn một tệp hình ảnh!';
+        qs('#qr-error').classList.remove('hidden');
         return;
       }
       await stopScanner();
@@ -364,701 +517,585 @@
           img.onerror = () => reject(new Error('Không thể tải hình ảnh!'));
         });
         const decoded = await html5QrCode.scanFile(file, false);
-        console.log('QR code decoded from file:', decoded);
+        console.log('Mã QR được giải mã từ tệp:', decoded);
         URL.revokeObjectURL(img.src);
         await stopScanner();
         await verifyAndLogin(decoded);
       } catch (err) {
-        qrErrorElem.textContent = `Không thể đọc mã QR từ ảnh: ${err.message || err}`;
-        qrErrorElem.classList.remove('hidden');
+        qs('#qr-error').textContent = `Không thể đọc mã QR từ ảnh: ${err.message || err}`;
+        qs('#qr-error').classList.remove('hidden');
       } finally {
         qrFileInput.value = '';
       }
     });
-  }
 
-  if (stopBtn) {
-    stopBtn.addEventListener('click', async () => {
-      await stopScanner();
-      qrErrorElem.textContent = 'Đã dừng camera.';
-      qrErrorElem.classList.remove('hidden');
-    });
-  }
-
-  startQrScanner();
-
-  async function verifyAndLogin(qrText) {
-    qrErrorElem.classList.add('hidden');
-    if (!qrText) {
-      qrErrorElem.textContent = 'Mã QR rỗng!';
-      qrErrorElem.classList.remove('hidden');
-      return;
-    }
-    console.log('Sending QR to server:', qrText, 'CSRF Token:', csrf());
-    try {
-      const res = await fetch('/api/decrypt_qr', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrf()
-        },
-        body: JSON.stringify({ qr_value: qrText.trim() })
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.msg || `Phản hồi máy chủ không thành công: ${res.status} ${res.statusText}`);
+    async function verifyAndLogin(qrText) {
+      qs('#qr-error').classList.add('hidden');
+      if (!qrText) {
+        qs('#qr-error').textContent = 'Mã QR rỗng!';
+        qs('#qr-error').classList.remove('hidden');
+        return;
       }
-      const data = await res.json();
-      if (data.status === 'success') {
-        qs('#left-column').classList.add('hidden');
-        qs('#right-column').classList.add('hidden');
-        qs('#button-group').classList.add('hidden');
-        qs('#qr-login').classList.add('hidden');
-        qs('#account-login').classList.remove('hidden');
-        qs('#account-login').scrollIntoView({ behavior: 'smooth' });
-      } else {
-        throw new Error(data.msg || 'Mã QR không hợp lệ!');
-      }
-    } catch (err) {
-      console.error('Lỗi verifyAndLogin:', err);
-      qrErrorElem.textContent = err.message || 'Lỗi kết nối máy chủ!';
-      qrErrorElem.classList.remove('hidden');
-    }
-  }
-
-  qs('#account-login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = qs('#username').value.trim();
-    const password = qs('#password').value;
-    if (!username || !password) {
-      const x = qs('#login-error');
-      x.textContent = 'Vui lòng nhập đầy đủ tài khoản và mật khẩu!';
-      x.classList.remove('hidden');
-      return;
-    }
-
-    try {
-      const res = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf() },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-      if (data && (data.ok || data.status === 'success')) {
-        qs('#account-login').classList.add('hidden');
-        qs('#login-form').classList.remove('hidden');
-        qs('#login-form').scrollIntoView({ behavior: 'smooth' });
-        loadExamCodes();
-      } else {
-        throw new Error(data?.message || 'Sai tài khoản hoặc mật khẩu!');
-      }
-    } catch (err) {
-      const x = qs('#login-error');
-      x.textContent = err.message;
-      x.classList.remove('hidden');
-    }
-  });
-
-  async function loadExamCodes() {
-    const select = qs('#made');
-    try {
-      const res = await fetch('/get_exam_codes', { headers: { 'Accept': 'application/json', 'X-CSRFToken': csrf() } });
-      const data = await res.json();
-      const codes = Array.isArray(data) ? data : (data.codes || []);
-      select.innerHTML = '<option value="">-- Chọn mã đề --</option>' + codes.map(c => `<option value="${c}">${c}</option>`).join('');
-    } catch (err) {
-      const p = document.createElement('p');
-      p.className = 'text-red-600 mt-2 font-semibold';
-      p.textContent = 'Không thể tải danh sách mã đề. Vui lòng thử lại!';
-      select.parentElement.appendChild(p);
-    }
-  }
-
-  qs('#btn-start-exam').addEventListener('click', startExam);
-
-  async function startExam() {
-    const name = qs('#hoten').value.trim();
-    const sbd = qs('#sbd').value.trim();
-    const dob = qs('#ngaysinh').value;
-    const made = qs('#made').value;
-    if (!name || !sbd || !dob || !made) {
-      alert('Vui lòng nhập đầy đủ Họ tên, SBD, Ngày sinh và Mã đề!');
-      return;
-    }
-
-    currentMade = made;
-    qs('#login-form').classList.add('hidden');
-    qs('#exam-container').classList.remove('hidden');
-
-    try {
-      const res = await fetch(`/exam_session?made=${encodeURIComponent(made)}`, { headers: { 'Accept': 'application/json', 'X-CSRFToken': csrf() } });
-      const data = await res.json();
-      if (data?.deadline) { examDeadline = Number(data.deadline); }
-      const duration = Number(data?.duration_sec || 3600);
-      if (!examDeadline) { examDeadline = Date.now() + duration * 1000; }
-    } catch (_) {
-      examDeadline = Date.now() + 3600 * 1000;
-    }
-
-    updateCountdown();
-    timer = setInterval(updateCountdown, 1000);
-
-    try {
-      const res = await fetch(`/get_questions?made=${encodeURIComponent(made)}`, { headers: { 'Accept': 'application/json' } });
-      const data = await res.json();
-      if (!Array.isArray(data)) throw new Error('Dữ liệu câu hỏi không phải mảng');
-      questionData = processAllQuestions(data);
-      renderQuestions(questionData);
-      restoreAnswers();
-    } catch (err) {
-      const jsonFile = `/questions/questions${made}.json`;
+      console.log('Gửi mã QR đến server:', qrText, 'CSRF Token:', csrf());
       try {
-        const res = await fetch(jsonFile, { headers: { 'Accept': 'application/json' } });
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const res = await fetch(`${API_BASE}/api/decrypt_qr`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrf()
+          },
+          body: JSON.stringify({ qr_value: qrText.trim() })
+        });
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.msg || `Phản hồi máy chủ không thành công: ${res.status} ${res.statusText}`);
+        }
+        const data = await res.json();
+        if (data.status === 'success') {
+          showSuccessEffect();
+          qs('#left-column').classList.add('hidden');
+          qs('#right-column').classList.add('hidden');
+          qs('#button-group').classList.add('hidden');
+          qs('#qr-login').classList.add('hidden');
+          qs('#account-login').classList.remove('hidden');
+          qs('#account-login').scrollIntoView({ behavior: 'smooth' });
+        } else {
+          throw new Error(data.msg || 'Mã QR không hợp lệ!');
+        }
+      } catch (err) {
+        console.error('Lỗi verifyAndLogin:', err);
+        qs('#qr-error').textContent = err.message || 'Lỗi kết nối máy chủ!';
+        qs('#qr-error').classList.remove('hidden');
+      }
+    }
+
+    qs('#account-login-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = qs('#username').value.trim();
+      const password = qs('#password').value;
+      if (!username || !password) {
+        const x = qs('#login-error');
+        x.textContent = 'Vui lòng nhập đầy đủ tài khoản và mật khẩu!';
+        x.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf() },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (data && (data.ok || data.status === 'success')) {
+          qs('#account-login').classList.add('hidden');
+          qs('#login-form').classList.remove('hidden');
+          qs('#login-form').scrollIntoView({ behavior: 'smooth' });
+          loadExamCodes();
+        } else {
+          throw new Error(data?.message || 'Sai tài khoản hoặc mật khẩu!');
+        }
+      } catch (err) {
+        const x = qs('#login-error');
+        x.textContent = err.message;
+        x.classList.remove('hidden');
+      }
+    });
+
+    async function loadExamCodes() {
+      const select = qs('#made');
+      try {
+        const res = await fetch(`${API_BASE}/get_exam_codes`, { headers: { 'Accept': 'application/json', 'X-CSRFToken': csrf() } });
+        const data = await res.json();
+        const codes = Array.isArray(data) ? data : (data.codes || []);
+        select.innerHTML = '<option value="">-- Chọn mã đề --</option>' + codes.map(c => `<option value="${c}">${c}</option>`).join('');
+      } catch (err) {
+        const p = document.createElement('p');
+        p.className = 'text-red-600 mt-2 font-semibold';
+        p.textContent = 'Không thể tải danh sách mã đề. Vui lòng thử lại!';
+        select.parentElement.appendChild(p);
+      }
+    }
+
+    qs('#btn-start-exam')?.addEventListener('click', startExam);
+
+    async function startExam() {
+      const name = qs('#hoten').value.trim();
+      const sbd = qs('#sbd').value.trim();
+      const dob = qs('#ngaysinh').value;
+      const made = qs('#made').value;
+      if (!name || !sbd || !dob || !made) {
+        alert('Vui lòng nhập đầy đủ Họ tên, SBD, Ngày sinh và Mã đề!');
+        return;
+      }
+
+      currentMade = made;
+      qs('#login-form').classList.add('hidden');
+      qs('#exam-container').classList.remove('hidden');
+
+      try {
+        const res = await fetch(`${API_BASE}/exam_session?made=${encodeURIComponent(made)}`, { headers: { 'Accept': 'application/json', 'X-CSRFToken': csrf() } });
+        const data = await res.json();
+        if (data?.deadline) { examDeadline = Number(data.deadline); }
+        const duration = Number(data?.duration_sec || 3600);
+        if (!examDeadline) { examDeadline = Date.now() + duration * 1000; }
+      } catch (_) {
+        examDeadline = Date.now() + 3600 * 1000;
+      }
+
+      updateCountdown();
+      timer = setInterval(updateCountdown, 1000);
+
+      try {
+        const res = await fetch(`${API_BASE}/get_questions?made=${encodeURIComponent(made)}`, { headers: { 'Accept': 'application/json' } });
         const data = await res.json();
         if (!Array.isArray(data)) throw new Error('Dữ liệu câu hỏi không phải mảng');
         questionData = processAllQuestions(data);
         renderQuestions(questionData);
         restoreAnswers();
-      } catch (e) {
-        console.error('Lỗi tải câu hỏi:', e);
-        alert(`Không thể tải câu hỏi: ${e.message}`);
+      } catch (err) {
+        const jsonFile = `/questions/questions${made}.json`;
+        try {
+          const res = await fetch(jsonFile, { headers: { 'Accept': 'application/json' } });
+          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+          const data = await res.json();
+          if (!Array.isArray(data)) throw new Error('Dữ liệu câu hỏi không phải mảng');
+          questionData = processAllQuestions(data);
+          renderQuestions(questionData);
+          restoreAnswers();
+        } catch (e) {
+          console.error('Lỗi tải câu hỏi:', e);
+          alert(`Không thể tải câu hỏi: ${e.message}`);
+        }
       }
     }
-  }
 
-  function updateCountdown() {
-    const now = Date.now();
-    const remainMs = Math.max(0, (examDeadline || now) - now);
-    const remain = Math.floor(remainMs / 1000);
-    const m = String(Math.floor(remain / 60)).padStart(2, '0');
-    const s = String(remain % 60).padStart(2, '0');
-    qs('#countdown').innerText = `Thời gian: ${m}:${s}`;
-    localStorage.setItem(nsKey('savedTime'), remain);
-    if (remain <= 0) {
-      clearInterval(timer);
-      submitExam(true);
+    function updateCountdown() {
+      const now = Date.now();
+      const remainMs = Math.max(0, (examDeadline || now) - now);
+      const remain = Math.floor(remainMs / 1000);
+      const m = String(Math.floor(remain / 60)).padStart(2, '0');
+      const s = String(remain % 60).padStart(2, '0');
+      qs('#countdown').innerText = `Thời gian: ${m}:${s}`;
+      localStorage.setItem(nsKey('savedTime'), remain);
+      if (remain <= 0) {
+        clearInterval(timer);
+        submitExam(true);
+      }
     }
-  }
 
-  function applyGeneralFormatting(s) {
-  s = String(s || "");
-  s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
-  s = s.replace(/(\d+)\s*\n\s*(\+|\-|\)|\*|\/|\^)/g, "$1 $2");
-  s = s.replace(/(\^)\s*\n\s*(\d+)/g, "$1$2");
-  s = s.replace(/([a-zA-Z])\s*\n\s*([a-zA-Z])/g, "$1 $2");
-  s = s.replace(/^\s+/gm, ""); // Remove leading whitespace
-  s = s.replace(/(^|\.\s+)([^\s])/g, (_, pre, ch) => pre + ch);
-  s = s.replace(/\s{2,}/g, " ").trim();
-  s = s.replace(/Câu\s*(\d+)\s*\.(?!\s)/gi, "Câu $1. ");
-  s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
-  s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
-  s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
-  s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");
-  // Convert Unicode subscripts to regular numbers
-  const subMap = { '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9' };
-  s = s.replace(/[\u2080-\u2089]/g, m => subMap[m] || m);
-  return s;
-}
+    function applyGeneralFormatting(s) {
+      s = String(s || "");
+      s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
+      s = s.replace(/(\d+)\s*\n\s*(\+|\-|\)|\*|\/|\^)/g, "$1 $2");
+      s = s.replace(/(\^)\s*\n\s*(\d+)/g, "$1$2");
+      s = s.replace(/([a-zA-Z])\s*\n\s*([a-zA-Z])/g, "$1 $2");
+      s = s.replace(/^\s+/gm, "");
+      s = s.replace(/(^|\.\s+)([^\s])/g, (_, pre, ch) => pre + ch);
+      s = s.replace(/\s{2,}/g, " ").trim();
+      s = s.replace(/Câu\s*(\d+)\s*\.(?!\s)/gi, "Câu $1. ");
+      s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
+      s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
+      s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
+      s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");
+      const subMap = { '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9' };
+      s = s.replace(/[\u2080-\u2089]/g, m => subMap[m] || m);
+      return s;
+    }
 
-  
-  function applyGeneralFormatting(s) {
-  s = String(s || "");
-  s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
-  s = s.replace(/(\d+)\s*\n\s*(\+|\-|\)|\*|\/|\^)/g, "$1 $2");
-  s = s.replace(/(\^)\s*\n\s*(\d+)/g, "$1$2");
-  s = s.replace(/([a-zA-Z])\s*\n\s*([a-zA-Z])/g, "$1 $2");
-  s = s.replace(/^\s+/gm, ""); // xóa khoảng trắng đầu dòng
-  s = s.replace(/(^|\.\s+)([^\s])/g, (_, pre, ch) => pre + ch);
-  s = s.replace(/\s{2,}/g, " ").trim();
-  s = s.replace(/Câu\s*(\d+)\s*\.(?!\s)/gi, "Câu $1. ");
-  s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
-  s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
-  s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
-  s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");
-  // Chuyển số sub Unicode → thường
-  const subMap = { '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9' };
-  s = s.replace(/[\u2080-\u2089]/g, m => subMap[m] || m);
-  return s;
-}
+    function processMathContent(content) {
+      let s = applyGeneralFormatting(content);
+      s = s.replace(/([^\s])∫/g, "$1 ∫");
+      s = s.replace(/∫([^\s])/g, "∫ $1");
+      s = s.replace(/([^\s])dx\b/gi, "$1 dx");
+      s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos|ln|log)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
+      s = s.replace(/\bGiảihệbấtphươngtrình\b/gi, "Giải hệ bất phương trình");
+      s = s.replace(/\bGiảibấtphươngtrình\b/gi, "Giải bất phương trình");
+      s = s.replace(/\blog(\d+)\(([^)]+)\)/gi, (_, base, arg) => `\\log_{${base}}(${arg.trim()})`);
+      s = s.replace(/\blog\(([^)]+)\)/gi, (_, arg) => `\\log(${arg.trim()})`);
+      s = s.replace(/ln\(([^)]+)\)/gi, (_, arg) => `\\ln(${arg.trim()})`);
+      s = s.replace(/frac\(([^,]+),([^)]+)\)/gi, (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
+      s = s.replace(/\b([A-Za-z0-9]+)\/([A-Za-z0-9]+)\b/g, (_, a, b) => `\\frac{${a}}{${b}}`);
+      s = s.replace(/sqrt\[(\d+)\]\(([^)]+)\)/gi, (_, n, val) => `\\sqrt[${n}]{${val.trim()}}`);
+      s = s.replace(/sqrt\(([^)]+)\)/gi, (_, val) => `\\sqrt{${val.trim()}}`);
+      s = s.replace(/([A-Za-z])_(\d+)/g, (_, base, sub) => `${base}_{${sub}}`);
+      s = s.replace(/([A-Za-z0-9])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
+      s = s.replace(/int_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
+        `\\int${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
+      );
+      s = s.replace(/sum_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
+        `\\sum${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
+      );
+      s = s.replace(/lim_([^_]+)([^]*?)(?=\s|$)/gi, (_, limit, body) => `\\lim_{${limit}}${body.trim()}`);
+      s = s.replace(/d\/dx\(([^)]+)\)/gi, (_, expr) => `\\frac{d}{dx}(${expr.trim()})`);
+      s = s.replace(/\be\s*\(\s*([^)]+?)\s*\)/g, (_, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
+      s = s.replace(/\be\^\s*\(\s*([^)]+?)\s*\)/g, (_, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
+      s = s.replace(/(?<!\\frac\{)1\s*\/\s*([a-zA-Z0-9\\pi\+\-\*\/]+)/g, "\\frac{1}{$1}");
+      s = s.replace(/∫\s*từ\s*([^\s]+)\s*đến\s*([^\s]+)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
+        (_, a, b, expr) => `\\int_{${a.replace(/π/g, "\\pi")}}^{${b.replace(/π/g, "\\pi")}} ${expr.trim()} \\, dx`
+      );
+      s = s.replace(/∫\s*([^\n\r]+?)\s*dx\b/gi, (_, expr) => `\\int ${expr.trim()} \\, dx`);
+      return s;
+    }
 
-function processMathContent(content) {
-  let s = applyGeneralFormatting(content);
-  s = s.replace(/([^\s])∫/g, "$1 ∫");
-  s = s.replace(/∫([^\s])/g, "∫ $1");
-  s = s.replace(/([^\s])dx\b/gi, "$1 dx");
-  s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos|ln|log)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
-  s = s.replace(/\bGiảihệbấtphươngtrình\b/gi, "Giải hệ bất phương trình");
-  s = s.replace(/\bGiảibấtphươngtrình\b/gi, "Giải bất phương trình");
-  s = s.replace(/\blog(\d+)\(([^)]+)\)/gi, (_, base, arg) => `\\log_{${base}}(${arg.trim()})`);
-  s = s.replace(/\blog\(([^)]+)\)/gi, (_, arg) => `\\log(${arg.trim()})`);
-  s = s.replace(/ln\(([^)]+)\)/gi, (_, arg) => `\\ln(${arg.trim()})`);
-  s = s.replace(/frac\(([^,]+),([^)]+)\)/gi, (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
-  // chỉ thay thế khi chưa có \frac{}
-  s = s.replace(/\b([A-Za-z0-9]+)\/([A-Za-z0-9]+)\b/g, (_, a, b) => `\\frac{${a}}{${b}}`);
-  s = s.replace(/sqrt\[(\d+)\]\(([^)]+)\)/gi, (_, n, val) => `\\sqrt[${n}]{${val.trim()}}`);
-  s = s.replace(/sqrt\(([^)]+)\)/gi, (_, val) => `\\sqrt{${val.trim()}}`);
-  s = s.replace(/([A-Za-z])_(\d+)/g, (_, base, sub) => `${base}_{${sub}}`);
-  s = s.replace(/([A-Za-z0-9])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
-  s = s.replace(/int_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
-    `\\int${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
-  );
-  s = s.replace(/sum_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
-    `\\sum${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
-  );
-  s = s.replace(/lim_([^_]+)([^]*?)(?=\s|$)/gi, (_, limit, body) => `\\lim_{${limit}}${body.trim()}`);
-  s = s.replace(/d\/dx\(([^)]+)\)/gi, (_, expr) => `\\frac{d}{dx}(${expr.trim()})`);
+    function processPhysicsContent(content) {
+      let s = applyGeneralFormatting(content);
+      s = s.replace(/vec\{(\w+)\}/gi, (_, v) => `\\vec{${v}}`);
+      s = s.replace(/\|vec\{(\w+)\}\|/gi, (_, v) => `|\\vec{${v}}|`);
+      s = s.replace(/Delta/g, "\\Delta");
+      s = s.replace(/nabla/g, "\\nabla");
+      s = s.replace(/(\w+)_(\w+)/g, (_, base, sub) => `${base}_{${sub}}`);
+      s = s.replace(/(\w+)\^(\w+)/g, (_, base, sup) => `${base}^{${sup}}`);
+      return s;
+    }
 
-  // e^(...) → e^{...}
-  s = s.replace(/\be\s*\(\s*([^)]+?)\s*\)/g, (_, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
-  s = s.replace(/\be\^\s*\(\s*([^)]+?)\s*\)/g, (_, p1) => `e^{${p1.replace(/\s+/g, "")}}`);
+    function processChemistryContent(content) {
+      let s = applyGeneralFormatting(content);
+      s = s.replace(/H_2O/g, "\\ce{H2O}");
+      s = s.replace(/CO_2/g, "\\ce{CO2}");
+      s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
+      s = s.replace(/([A-Z][a-z]?)(\d+)/g, "\\ce{$1_$2}");
+      s = s.replace(/([A-Z][a-z]?)[\s]*([0-9]+)/g, (_, elem, num) => `${elem}${num}`);
+      const chemRegex = /(?:[A-Z][a-z]?\d*|\([A-Z][a-z]?\d*\)\d*)(?:\s*(?:[A-Z][a-z]?\d*|\([A-Z][a-z]?\d*\)\d*))*/g;
+      s = s.replace(chemRegex, match => {
+        if (/^[A-Za-z\s]+$/.test(match)) return match;
+        return `\\ce{${match}}`;
+      });
+      return s;
+    }
 
-  // 1/x → \frac{1}{x}, trừ khi đã có \frac
-  s = s.replace(/(?<!\\frac\{)1\s*\/\s*([a-zA-Z0-9\\pi\+\-\*\/]+)/g, "\\frac{1}{$1}");
-
-  // ∫ từ a đến b của f(x) dx
-  s = s.replace(/∫\s*từ\s*([^\s]+)\s*đến\s*([^\s]+)\s*của\s*\(?\s*([^)]+?)\s*\)?\s*dx/gi,
-    (_, a, b, expr) => `\\int_{${a.replace(/π/g, "\\pi")}}^{${b.replace(/π/g, "\\pi")}} ${expr.trim()} \\, dx`
-  );
-  s = s.replace(/∫\s*([^\n\r]+?)\s*dx\b/gi, (_, expr) => `\\int ${expr.trim()} \\, dx`);
-
-  return s;
-}
-
-function processPhysicsContent(content) {
-  let s = applyGeneralFormatting(content);
-  s = s.replace(/vec\{(\w+)\}/gi, (_, v) => `\\vec{${v}}`);
-  s = s.replace(/\|vec\{(\w+)\}\|/gi, (_, v) => `|\\vec{${v}}|`);
-  s = s.replace(/Delta/g, "\\Delta");
-  s = s.replace(/nabla/g, "\\nabla");
-  s = s.replace(/(\w+)_(\w+)/g, (_, base, sub) => `${base}_{${sub}}`);
-  s = s.replace(/(\w+)\^(\w+)/g, (_, base, sup) => `${base}^{${sup}}`);
-  return s;
-}
-
- function processChemistryContent(content) {
-        let s = applyGeneralFormatting(content);
-        s = s.replace(/H_2O/g, "\\ce{H2O}");
-        s = s.replace(/CO_2/g, "\\ce{CO2}");
-        s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
-        s = s.replace(/([A-Z][a-z]?)(\d+)/g, "\\ce{$1_$2}");
-        s = s.replace(/([A-Z][a-z]?)[\s]*([0-9]+)/g, (_, elem, num) => `${elem}${num}`);
-        const chemRegex = /(?:[A-Z][a-z]?\d*|\([A-Z][a-z]?\d*\)\d*)(?:\s*(?:[A-Z][a-z]?\d*|\([A-Z][a-z]?\d*\)\d*))*/g;
-        s = s.replace(chemRegex, match => {
-          if (/^[A-Za-z\s]+$/.test(match)) return match;
-          return `\\ce{${match}}`;
+    function processExamContent(content) {
+      let s = applyGeneralFormatting(content);
+      s = processMathContent(s);
+      s = processPhysicsContent(s);
+      s = processChemistryContent(s);
+      const patterns = [
+        /\\int[\s\S]*?\\,\s*dx/g,
+        /\\frac\{[^}]+\}\{[^}]+\}/g,
+        /\\sqrt(?:\[[^\]]+\])?\{[^}]+\}/g,
+        /\\log_\{\d+\}\([^)]*\)/g,
+        /\b(?:log\d*|log|ln|sin|cos|tan|exp)\([^)]*\)/gi,
+        /[A-Za-z0-9]+_\{\d+\}/g,
+        /[A-Za-z0-9]\^\{\d+\}/g,
+        /\\ce\{[^}]+\}/g,
+        /\\Delta/g,
+        /\\nabla/g,
+        /e\^\{[^}]+\}/g
+      ];
+      patterns.forEach((pattern) => {
+        s = s.replace(pattern, function (match, ...args) {
+          const offset = args[args.length - 2];
+          const str = args[args.length - 1];
+          if (isInsideMath(str, offset)) return match;
+          if (/^\\\(.*\\\)$/.test(match)) return match;
+          return `\\(${match}\\)`;
         });
-        return s;
-      }
+      });
+      s = s.replace(/\s{2,}/g, " ").trim();
+      return s;
+    }
 
-function processExamContent(content) {
-  let s = applyGeneralFormatting(content);
-  s = processMathContent(s);
-  s = processPhysicsContent(s);
-  s = processChemistryContent(s);
+    function isInsideMath(str, offset) {
+      const upto = str.slice(0, offset);
+      const lastOpen = upto.lastIndexOf("\\(");
+      const lastClose = upto.lastIndexOf("\\)");
+      return lastOpen > lastClose;
+    }
 
-  // bọc LaTeX nếu chưa bọc
-  const patterns = [
-    /\\int[\s\S]*?\\,\s*dx/g,
-    /\\frac\{[^}]+\}\{[^}]+\}/g,
-    /\\sqrt(?:\[[^\]]+\])?\{[^}]+\}/g,
-    /\\log_\{\d+\}\([^)]*\)/g,
-    /\b(?:log\d*|log|ln|sin|cos|tan|exp)\([^)]*\)/gi,
-    /[A-Za-z0-9]+_\{\d+\}/g,
-    /[A-Za-z0-9]\^\{\d+\}/g,
-    /\\ce\{[^}]+\}/g,
-    /\\Delta/g,
-    /\\nabla/g,
-    /e\^\{[^}]+\}/g
-  ];
-
-  patterns.forEach((pattern) => {
-    s = s.replace(pattern, function (match, ...args) {
-      const offset = args[args.length - 2];
-      const str = args[args.length - 1];
-      if (isInsideMath(str, offset)) return match;
-      if (/^\\\(.*\\\)$/.test(match)) return match;
-      return `\\(${match}\\)`;
-    });
-  });
-
-  s = s.replace(/\s{2,}/g, " ").trim();
-  return s;
-}
-
-function isInsideMath(str, offset) {
-  const upto = str.slice(0, offset);
-  const lastOpen = upto.lastIndexOf("\\(");
-  const lastClose = upto.lastIndexOf("\\)");
-  return lastOpen > lastClose;
-}
-
-
-  function processAllQuestions(questions) {
-    return questions.map(q => {
-      const qq = { ...q };
-      qq.noi_dung = processExamContent(qq.noi_dung);
-      if (qq.lua_chon && typeof qq.lua_chon === 'object') {
-        for (const k in qq.lua_chon) {
-          if (Object.prototype.hasOwnProperty.call(qq.lua_chon, k)) {
-            qq.lua_chon[k] = processExamContent(qq.lua_chon[k]);
+    function processAllQuestions(questions) {
+      return questions.map(q => {
+        const qq = { ...q };
+        qq.noi_dung = processExamContent(qq.noi_dung);
+        if (qq.lua_chon && typeof qq.lua_chon === 'object') {
+          for (const k in qq.lua_chon) {
+            if (Object.prototype.hasOwnProperty.call(qq.lua_chon, k)) {
+              qq.lua_chon[k] = processExamContent(qq.lua_chon[k]);
+            }
           }
         }
-      }
-      qq.dap_an_dung = qq.dap_an_dung ? String(qq.dap_an_dung).trim() : '';
-      qq.goi_y_dap_an = qq.goi_y_dap_an ? processExamContent(qq.goi_y_dap_an) : '';
-      return qq;
-    });
-  }
-
-  function getAnswerValue(index) {
-    const q = questionData[index];
-    if ((q.kieu_cau_hoi || '').toLowerCase() === 'tu_luan') {
-      const ta = document.getElementById(`q${index}`);
-      return ta ? ta.value.trim() : '';
-    } else {
-      const radios = document.getElementsByName(`q${index}`);
-      for (const r of radios) {
-        if (r.checked) return r.value;
-      }
-      return '';
+        qq.dap_an_dung = qq.dap_an_dung ? String(qq.dap_an_dung).trim() : '';
+        qq.goi_y_dap_an = qq.goi_y_dap_an ? processExamContent(qq.goi_y_dap_an) : '';
+        return qq;
+      });
     }
-  }
 
-  function renderQuestions(questions) {
-    const container = document.getElementById('questions');
-    container.innerHTML = '';
-    const unansweredLabel = document.createElement('p');
-    unansweredLabel.id = 'unanswered-count';
-    unansweredLabel.className = 'text-red-600 font-bold mb-4';
-    container.appendChild(unansweredLabel);
-    questions.forEach((q, i) => {
-      const div = document.createElement('div');
-      div.className = 'mb-6 p-4 bg-gray-50 rounded-lg';
-      const label = document.createElement('label');
-      label.className = 'block font-semibold mb-2 text-lg';
-      label.innerHTML = `Câu ${i + 1}: ${safeHTML(q.noi_dung)}`;
-      div.appendChild(label);
+    function getAnswerValue(index) {
+      const q = questionData[index];
       if ((q.kieu_cau_hoi || '').toLowerCase() === 'tu_luan') {
-        const ta = document.createElement('textarea');
-        ta.id = `q${i}`;
-        ta.rows = 4;
-        ta.placeholder = 'Nhập câu trả lời...';
-        ta.className = 'border p-2 w-full rounded-md';
-        div.appendChild(ta);
-      } else if (q.lua_chon) {
-        const wrap = document.createElement('div');
-        wrap.className = 'border rounded-md p-2 max-h-40 overflow-y-auto space-y-2';
-        Object.entries(q.lua_chon).forEach(([k, v]) => {
-          const row = document.createElement('div');
-          row.className = 'flex items-start gap-2 min-w-max';
-          const id = `q${i}_${k}`;
-          row.innerHTML = `
-            <input type="radio" name="q${i}" id="${id}" value="${k}" class="mt-1">
-            <label for="${id}" class="overflow-x-auto block" style="max-width: calc(100% - 30px);">${safeHTML(`${k}. ${v}`)}</label>
-          `;
-          wrap.appendChild(row);
-        });
-        div.appendChild(wrap);
+        const ta = qs(`#q${index}`);
+        return ta ? ta.value.trim() : '';
+      } else {
+        const radios = qsa(`input[name="q${index}"]`);
+        for (const r of radios) {
+          if (r.checked) return r.value;
+        }
+        return '';
       }
-      container.appendChild(div);
-    });
-    function updateUnansweredCount() {
-      let unanswered = 0;
+    }
+
+    function renderQuestions(questions) {
+      const container = qs('#questions');
+      container.innerHTML = '';
+      const unansweredLabel = document.createElement('p');
+      unansweredLabel.id = 'unanswered-count';
+      unansweredLabel.className = 'text-red-600 font-bold mb-4';
+      container.appendChild(unansweredLabel);
       questions.forEach((q, i) => {
-        const sel = getAnswerValue(i);
-        if (!sel) unanswered++;
-      });
-      unansweredLabel.textContent = `Câu chưa trả lời: ${unanswered}`;
-    }
-    questions.forEach((q, i) => {
-      if ((q.kieu_cau_hoi || '').toLowerCase() === 'tu_luan') {
-        const ta = document.getElementById(`q${i}`);
-        if (ta) {
-          ta.addEventListener('input', () => {
-            const cur = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
-            cur[`q${i}`] = ta.value;
-            localStorage.setItem(nsKey('savedAnswers'), JSON.stringify(cur));
-            updateUnansweredCount();
+        const div = document.createElement('div');
+        div.className = 'mb-6 p-4 bg-gray-50 rounded-lg';
+        const label = document.createElement('label');
+        label.className = 'block font-semibold mb-2 text-lg';
+        label.innerHTML = `Câu ${i + 1}: ${safeHTML(q.noi_dung)}`;
+        div.appendChild(label);
+        if ((q.kieu_cau_hoi || '').toLowerCase() === 'tu_luan') {
+          const ta = document.createElement('textarea');
+          ta.id = `q${i}`;
+          ta.rows = 4;
+          ta.placeholder = 'Nhập câu trả lời...';
+          ta.className = 'border p-2 w-full rounded-md';
+          div.appendChild(ta);
+        } else if (q.lua_chon) {
+          const wrap = document.createElement('div');
+          wrap.className = 'border rounded-md p-2 max-h-40 overflow-y-auto space-y-2';
+          Object.entries(q.lua_chon).forEach(([k, v]) => {
+            const row = document.createElement('div');
+            row.className = 'flex items-start gap-2 min-w-max';
+            const id = `q${i}_${k}`;
+            row.innerHTML = `
+              <input type="radio" name="q${i}" id="${id}" value="${k}" class="mt-1">
+              <label for="${id}" class="overflow-x-auto block" style="max-width: calc(100% - 30px);">${safeHTML(`${k}. ${v}`)}</label>
+            `;
+            wrap.appendChild(row);
           });
+          div.appendChild(wrap);
         }
-      } else {
-        const radios = document.getElementsByName(`q${i}`);
-        Array.from(radios).forEach(r => {
-          r.addEventListener('change', () => {
-            const cur = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
-            cur[`q${i}`] = r.value;
-            localStorage.setItem(nsKey('savedAnswers'), JSON.stringify(cur));
-            updateUnansweredCount();
-          });
+        container.appendChild(div);
+      });
+      function updateUnansweredCount() {
+        let unanswered = 0;
+        questions.forEach((q, i) => {
+          const sel = getAnswerValue(i);
+          if (!sel) unanswered++;
         });
+        unansweredLabel.textContent = `Câu chưa trả lời: ${unanswered}`;
       }
-    });
-    updateUnansweredCount();
-    typeset(container);
-  }
-
-  function restoreAnswers() {
-    const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
-    for (const [key, value] of Object.entries(saved)) {
-      const idx = Number(key.replace('q', ''));
-      const q = questionData[idx] || {};
-      if ((q.kieu_cau_hoi || '').toLowerCase() === 'tu_luan') {
-        const ta = document.getElementById(key);
-        if (ta) ta.value = value;
-      } else {
-        const radio = document.getElementById(`${key}_${value}`);
-        if (radio) radio.checked = true;
-      }
-    }
-  }
-
-  function clearTempStorage() {
-    localStorage.removeItem(nsKey('savedAnswers'));
-    localStorage.removeItem(nsKey('savedTime'));
-  }
-
-  document.getElementById('btn-submit').addEventListener('click', () => submitExam(false));
-
-  async function submitExam(autoByTime) {
-    clearInterval(timer);
-    const name = qs('#hoten').value.trim();
-    const made = qs('#made').value;
-    currentMade = made;
-    const sbd = qs('#sbd').value.trim();
-    const dob = qs('#ngaysinh').value;
-    let unanswered = 0;
-    questionData.forEach((q, i) => {
-      if (!getAnswerValue(i)) unanswered++;
-    });
-    if (!autoByTime && unanswered > 0) {
-      if (!confirm(`Bạn còn ${unanswered} câu chưa trả lời. Bạn có chắc muốn nộp bài không?`)) {
-        timer = setInterval(updateCountdown, 1000);
-        return;
-      }
-    }
-    const answers = [];
-    let score = 0;
-    questionData.forEach((q, i) => {
-      const selected = getAnswerValue(i);
-      const correctKey = q.dap_an_dung ? q.dap_an_dung.trim() : '';
-      const kieu = (q.kieu_cau_hoi || 'trac_nghiem').toLowerCase();
-      let selectedContent = '';
-      let correctContent = '';
-      if (kieu === 'trac_nghiem') {
-        selectedContent = selected && q.lua_chon ? q.lua_chon[selected] : '(chưa chọn)';
-        correctContent = correctKey && q.lua_chon ? q.lua_chon[correctKey] : '';
-      } else {
-        selectedContent = selected || '(chưa trả lời)';
-      }
-      const isCorrect = (kieu === 'trac_nghiem') && selected && correctKey && selected.toUpperCase() === correctKey.toUpperCase();
-      if (isCorrect) score++;
-      answers.push({
-        cau: i + 1,
-        noi_dung: q.noi_dung,
-        da_chon: processExamContent(selectedContent),
-        dap_an_dung: processExamContent(correctContent),
-        dung: !!isCorrect,
-        kieu,
-        goi_y_dap_an: q.goi_y_dap_an || ''
+      questions.forEach((q, i) => {
+        if ((q.kieu_cau_hoi || '').toLowerCase() === 'tu_luan') {
+          const ta = qs(`#q${i}`);
+          if (ta) {
+            ta.addEventListener('input', () => {
+              const cur = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
+              cur[`q${i}`] = ta.value;
+              localStorage.setItem(nsKey('savedAnswers'), JSON.stringify(cur));
+              updateUnansweredCount();
+            });
+          }
+        } else {
+          const radios = qsa(`input[name="q${i}"]`);
+          Array.from(radios).forEach(r => {
+            r.addEventListener('change', () => {
+              const cur = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
+              cur[`q${i}`] = r.value;
+              localStorage.setItem(nsKey('savedAnswers'), JSON.stringify(cur));
+              updateUnansweredCount();
+            });
+          });
+        }
       });
-    });
-    const finalScore = questionData.length ? (score / questionData.length * 10).toFixed(2) : '0.00';
-    clearTempStorage();
-    const now = new Date();
-    const formattedDate = now.toLocaleString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
-    let fileContent = `<div><strong>KẾT QUẢ BÀI THI</strong></div>` +
-      `<div>Họ tên: ${safeHTML(name)}</div>` +
-      `<div>SBD: ${safeHTML(sbd)}</div>` +
-      `<div>Ngày sinh: ${safeHTML(dob)}</div>` +
-      `<div>Mã đề: ${safeHTML(made)}</div>` +
-      `<div>Điểm: ${safeHTML(finalScore)}/10</div>` +
-      `<div>Nộp lúc: ${safeHTML(formattedDate)}</div><br>`;
-    answers.forEach(ans => {
-      fileContent += `<div style="margin-bottom: .75rem;">Câu ${ans.cau}: <span>${safeHTML(ans.noi_dung)}</span></div>`;
-      fileContent += `<div>Bạn chọn: <span>${safeHTML(ans.da_chon)}</span>`;
-      if (ans.kieu === 'trac_nghiem') {
-        fileContent += ` ${ans.dung ? '- ĐÚNG' : '- SAI'}</div>`;
-        if (ans.dap_an_dung) {
-          fileContent += `<div>Đáp án đúng: <span>${safeHTML(ans.dap_an_dung)}</span></div>`;
-        }
-      } else {
-        fileContent += `</div>`;
-        if (ans.goi_y_dap_an) {
-          fileContent += `<div>Gợi ý đáp án: <span>${safeHTML(ans.goi_y_dap_an)}</span></div>`;
+      updateUnansweredCount();
+      typeset(container);
+    }
+
+    function restoreAnswers() {
+      const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
+      for (const [key, value] of Object.entries(saved)) {
+        const idx = Number(key.replace('q', ''));
+        const q = questionData[idx] || {};
+        if ((q.kieu_cau_hoi || '').toLowerCase() === 'tu_luan') {
+          const ta = qs(`#${key}`);
+          if (ta) ta.value = value;
+        } else {
+          const radio = qs(`#${key}_${value}`);
+          if (radio) radio.checked = true;
         }
       }
-      fileContent += `<br>`;
-    });
-    const resultDiv = document.getElementById('result-container');
-    resultDiv.classList.remove('hidden');
-    resultDiv.innerHTML = `
-      <h1 class="text-2xl font-bold text-green-600 mb-4">✅ KẾT QUẢ BÀI THI</h1>
-      <p class="text-sm text-gray-500 mb-4">🕒 Nộp lúc: ${safeHTML(formattedDate)}</p>
-      <div id="result-html" class="result-scrollable">${fileContent}</div>
-      <div class="flex gap-4 mt-4">
-        <button id="btn-download-doc" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">⬇️ Tải kết quả .DOC</button>
-        <button id="btn-download-pdf" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">⬇️ Tải kết quả .PDF</button>
-      </div>
-    `;
-    document.getElementById('exam-container').classList.add('hidden');
-    typeset(resultDiv);
-    document.getElementById('btn-download-doc').addEventListener('click', () => downloadDOC(name, made));
-    document.getElementById('btn-download-pdf').addEventListener('click', () => downloadPDF(name, made, answers, finalScore, formattedDate));
-    try {
-      await fetch(`${API_BASE}/save_result`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hoten: name, sbd, ngaysinh: dob, made, diem: finalScore, answers })
+    }
+
+    function clearTempStorage() {
+      localStorage.removeItem(nsKey('savedAnswers'));
+      localStorage.removeItem(nsKey('savedTime'));
+    }
+
+    qs('#btn-submit')?.addEventListener('click', () => submitExam(false));
+
+    async function submitExam(autoByTime) {
+      clearInterval(timer);
+      const name = qs('#hoten').value.trim();
+      const made = qs('#made').value;
+      currentMade = made;
+      const sbd = qs('#sbd').value.trim();
+      const dob = qs('#ngaysinh').value;
+      let unanswered = 0;
+      questionData.forEach((q, i) => {
+        if (!getAnswerValue(i)) unanswered++;
       });
-    } catch (err) {
-      console.error('Lỗi lưu backend:', err);
-    }
-  }
-
-  function downloadDOC(name, made) {
-    const container = document.getElementById('result-html');
-    const header = `<!DOCTYPE html><html><head><meta charset='utf-8'><title>Kết quả</title></head><body>`;
-    const footer = '</body></html>';
-    const blob = new Blob(['\ufeff', header + container.innerHTML + footer], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `KQ_${(name || '').replace(/\s+/g, '_')}_${made}.doc`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function downloadPDF(name, made, answers, finalScore, formattedDate) {
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-      console.error('Thư viện jsPDF không được tải!');
-      alert('Không thể tạo tệp PDF vì thư viện jsPDF không được tải. Vui lòng kiểm tra kết nối mạng hoặc console để biết chi tiết!');
-      return;
-    }
-    try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-      let y = 40; // Starting y position
-      const margin = 40;
-      const pageHeight = doc.internal.pageSize.height;
-      const maxWidth = 500;
-
-      // Helper function to add text and handle page breaks
-      function addText(text, x, y, options = {}) {
-        if (y > pageHeight - margin) {
-          doc.addPage();
-          y = 40;
+      if (!autoByTime && unanswered > 0) {
+        if (!confirm(`Bạn còn ${unanswered} câu chưa trả lời. Bạn có chắc muốn nộp bài không?`)) {
+          timer = setInterval(updateCountdown, 1000);
+          return;
         }
-        doc.text(text, x, y, options);
-        return y + (options.lineHeight || 20);
       }
-
-      // Validate inputs
-      if (!name || !made || !answers || !finalScore || !formattedDate) {
-        throw new Error('Dữ liệu đầu vào không hợp lệ!');
-      }
-
-      // Set font
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(12);
-
-      // Header
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      y = addText('KẾT QUẢ BÀI THI', margin, y);
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
-      y = addText(`Họ tên: ${name}`, margin, y);
-      y = addText(`SBD: ${qs('#sbd').value || 'N/A'}`, margin, y);
-      y = addText(`Ngày sinh: ${qs('#ngaysinh').value || 'N/A'}`, margin, y);
-      y = addText(`Mã đề: ${made}`, margin, y);
-      y = addText(`Điểm: ${finalScore}/10`, margin, y);
-      y = addText(`Nộp lúc: ${formattedDate}`, margin, y);
-      y += 10;
-
-      // Questions and Answers
+      const answers = [];
+      let score = 0;
+      questionData.forEach((q, i) => {
+        const selected = getAnswerValue(i);
+        const correctKey = q.dap_an_dung ? q.dap_an_dung.trim() : '';
+        const kieu = (q.kieu_cau_hoi || 'trac_nghiem').toLowerCase();
+        let selectedContent = '';
+        let correctContent = '';
+        if (kieu === 'trac_nghiem') {
+          selectedContent = selected && q.lua_chon ? q.lua_chon[selected] : '(chưa chọn)';
+          correctContent = correctKey && q.lua_chon ? q.lua_chon[correctKey] : '';
+        } else {
+          selectedContent = selected || '(chưa trả lời)';
+        }
+        const isCorrect = (kieu === 'trac_nghiem') && selected && correctKey && selected.toUpperCase() === correctKey.toUpperCase();
+        if (isCorrect) score++;
+        answers.push({
+          cau: i + 1,
+          noi_dung: q.noi_dung,
+          da_chon: processExamContent(selectedContent),
+          dap_an_dung: processExamContent(correctContent),
+          dung: !!isCorrect,
+          kieu,
+          goi_y_dap_an: q.goi_y_dap_an || ''
+        });
+      });
+      const finalScore = questionData.length ? (score / questionData.length * 10).toFixed(2) : '0.00';
+      clearTempStorage();
+      const now = new Date();
+      const formattedDate = now.toLocaleString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+      let fileContent = `<div><strong>KẾT QUẢ BÀI THI</strong></div>` +
+        `<div>Họ tên: ${safeHTML(name)}</div>` +
+        `<div>SBD: ${safeHTML(sbd)}</div>` +
+        `<div>Ngày sinh: ${safeHTML(dob)}</div>` +
+        `<div>Mã đề: ${safeHTML(made)}</div>` +
+        `<div>Điểm: ${safeHTML(finalScore)}/10</div>` +
+        `<div>Nộp lúc: ${safeHTML(formattedDate)}</div><br>`;
       answers.forEach(ans => {
-        // Simplify LaTeX for PDF (remove MathJax rendering)
-        const cleanContent = ans.noi_dung ? ans.noi_dung.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2)) : '(Không có nội dung)';
-        const cleanSelected = ans.da_chon ? ans.da_chon.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2)) : '(Không chọn)';
-        const cleanCorrect = ans.dap_an_dung ? ans.dap_an_dung.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2)) : '';
-        const cleanHint = ans.goi_y_dap_an ? ans.goi_y_dap_an.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2)) : '';
-
-        y = addText(`Câu ${ans.cau}: ${cleanContent}`, margin, y, { maxWidth });
-        y = addText(`Bạn chọn: ${cleanSelected}${ans.kieu === 'trac_nghiem' ? (ans.dung ? ' - ĐÚNG' : ' - SAI') : ''}`, margin, y, { maxWidth });
-        if (ans.kieu === 'trac_nghiem' && ans.dap_an_dung) {
-          y = addText(`Đáp án đúng: ${cleanCorrect}`, margin, y, { maxWidth });
+        fileContent += `<div style="margin-bottom: .75rem;">Câu ${ans.cau}: <span>${safeHTML(ans.noi_dung)}</span></div>`;
+        fileContent += `<div>Bạn chọn: <span>${safeHTML(ans.da_chon)}</span>`;
+        if (ans.kieu === 'trac_nghiem') {
+          fileContent += ` ${ans.dung ? '- ĐÚNG' : '- SAI'}</div>`;
+          if (ans.dap_an_dung) {
+            fileContent += `<div>Đáp án đúng: <span>${safeHTML(ans.dap_an_dung)}</span></div>`;
+          }
+        } else {
+          fileContent += `</div>`;
+          if (ans.goi_y_dap_an) {
+            fileContent += `<div>Gợi ý đáp án: <span>${safeHTML(ans.goi_y_dap_an)}</span></div>`;
+          }
         }
-        if (ans.goi_y_dap_an) {
-          y = addText(`Gợi ý đáp án: ${cleanHint}`, margin, y, { maxWidth });
-        }
-        y += 10;
+        fileContent += `<br>`;
       });
-
-      doc.save(`KQ_${(name || '').replace(/\s+/g, '_')}_${made}.pdf`);
-    } catch (err) {
-      console.error('Lỗi tạo PDF:', err);
-      alert('Không thể tạo tệp PDF. Vui lòng thử lại hoặc kiểm tra console để biết chi tiết!');
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {});
-
- // ====== Lưu & khôi phục đáp án + thời gian ======
-
-// Khôi phục dữ liệu khi load lại trang
-function restoreProgress() {
-  // Khôi phục đáp án
-  const savedAnswers = JSON.parse(localStorage.getItem(nsKey("savedAnswers")) || "{}");
-  for (const [key, value] of Object.entries(savedAnswers)) {
-    const input = document.getElementById(key);
-    if (input) {
-      if (input.type === "radio" || input.type === "checkbox") {
-        document.querySelectorAll(`input[name="${input.name}"]`).forEach(el => {
-          el.checked = (el.value === value);
+      const resultDiv = qs('#result-container');
+      resultDiv.classList.remove('hidden');
+      resultDiv.innerHTML = `
+        <h1 class="text-2xl font-bold text-green-600 mb-4">✅ KẾT QUẢ BÀI THI</h1>
+        <p class="text-sm text-gray-500 mb-4">🕒 Nộp lúc: ${safeHTML(formattedDate)}</p>
+        <div id="result-html" class="result-scrollable">${fileContent}</div>
+        <div class="flex gap-4 mt-4">
+          <button id="btn-download-doc" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">⬇️ Tải kết quả .DOC</button>
+          <button id="btn-download-pdf" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">⬇️ Tải kết quả .PDF</button>
+        </div>
+      `;
+      qs('#exam-container').classList.add('hidden');
+      typeset(resultDiv);
+      qs('#btn-download-doc')?.addEventListener('click', () => downloadDOC(name, made));
+      qs('#btn-download-pdf')?.addEventListener('click', () => downloadPDF(name, made, answers, finalScore, formattedDate));
+      try {
+        await fetch(`${API_BASE}/save_result`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hoten: name, sbd, ngaysinh: dob, made, diem: finalScore, answers })
         });
-      } else if (["SELECT", "TEXTAREA", "INPUT"].includes(input.tagName)) {
-        input.value = value;
+      } catch (err) {
+        console.error('Lỗi lưu backend:', err);
       }
     }
-  }
 
-  // Khôi phục thời gian
-  const savedTime = localStorage.getItem(nsKey("savedTime"));
-  if (savedTime !== null) {
-    time = parseInt(savedTime, 10);
-  }
-}
+    function downloadDOC(name, made) {
+      const container = qs('#result-html');
+      const header = `<!DOCTYPE html><html><head><meta charset='utf-8'><title>Kết quả</title></head><body>`;
+      const footer = '</body></html>';
+      const blob = new Blob(['\ufeff', header + container.innerHTML + footer], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `KQ_${(name || '').replace(/\s+/g, '_')}_${made}.doc`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
 
-// Theo dõi thay đổi đáp án để lưu
-function setupTracking() {
-  document.querySelectorAll("input, select, textarea").forEach(el => {
-    el.addEventListener("change", () => {
-      const current = JSON.parse(localStorage.getItem(nsKey("savedAnswers")) || "{}");
-      if (el.type === "radio" || el.type === "checkbox") {
-        if (el.checked) current[el.id] = el.value;
-      } else {
-        current[el.id] = el.value;
+    function downloadPDF(name, made, answers, finalScore, formattedDate) {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+        let y = 40;
+        const margin = 40;
+        const pageHeight = doc.internal.pageSize.height;
+        const maxWidth = 500;
+
+        function addText(text, x, y, options = {}) {
+          if (y > pageHeight - margin) {
+            doc.addPage();
+            y = 40;
+          }
+          doc.text(text, x, y, options);
+          return y + (options.lineHeight || 20);
+        }
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(12);
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        y = addText('KẾT QUẢ BÀI THI', margin, y);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        y = addText(`Họ tên: ${name}`, margin, y);
+        y = addText(`SBD: ${qs('#sbd').value}`, margin, y);
+        y = addText(`Ngày sinh: ${qs('#ngaysinh').value}`, margin, y);
+        y = addText(`Mã đề: ${made}`, margin, y);
+        y = addText(`Điểm: ${finalScore}/10`, margin, y);
+        y = addText(`Nộp lúc: ${formattedDate}`, margin, y);
+        y += 10;
+
+        answers.forEach(ans => {
+          const cleanContent = ans.noi_dung.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2));
+          const cleanSelected = ans.da_chon.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2));
+          const cleanCorrect = ans.dap_an_dung.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2));
+          const cleanHint = ans.goi_y_dap_an.replace(/\\\(.*?\\\)/g, match => match.slice(2, -2));
+          y = addText(`Câu ${ans.cau}: ${cleanContent}`, margin, y, { maxWidth });
+          y = addText(`Bạn chọn: ${cleanSelected}${ans.kieu === 'trac_nghiem' ? (ans.dung ? ' - ĐÚNG' : ' - SAI') : ''}`, margin, y, { maxWidth });
+          if (ans.kieu === 'trac_nghiem' && ans.dap_an_dung) {
+            y = addText(`Đáp án đúng: ${cleanCorrect}`, margin, y, { maxWidth });
+          }
+          if (ans.goi_y_dap_an) {
+            y = addText(`Gợi ý đáp án: ${cleanHint}`, margin, y, { maxWidth });
+          }
+          y += 10;
+        });
+
+        doc.save(`KQ_${(name || '').replace(/\s+/g, '_')}_${made}.pdf`);
+      } catch (err) {
+        console.error('Lỗi tạo PDF:', err);
+        alert('Không thể tạo tệp PDF. Vui lòng thử lại hoặc kiểm tra console để biết chi tiết!');
       }
-      localStorage.setItem(nsKey("savedAnswers"), JSON.stringify(current));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      startQrScanner();
     });
-  });
-
-  // Lưu thời gian còn lại mỗi giây
-  setInterval(() => {
-    localStorage.setItem(nsKey("savedTime"), time);
-  }, 1000);
-}
-
-// Xóa dữ liệu tạm khi nộp bài
-function clearTempStorage() {
-  localStorage.removeItem(nsKey("savedAnswers"));
-  localStorage.removeItem(nsKey("savedTime"));
-  localStorage.removeItem("hoten");
-  localStorage.removeItem("made");
-}
-
-  
-</script>
+  </script>
 </body>
 </html>
