@@ -32,7 +32,7 @@ body {
 }
 .camera-box {
   position: relative;
-  width: min(90vw, 280px);
+  width: min(90vw, 270px);
   aspect-ratio: 1/1;
   margin: 12px auto;
   border-radius: 12px;
@@ -56,8 +56,8 @@ body {
   pointer-events: none;
 }
 .qr-frame {
-  width: 210px;
-  height: 210px;
+  width: 240px;
+  height: 240px;
   border: 2px solid rgba(0, 147, 255, 0.95);
   border-radius: 10px;
   box-shadow: 
@@ -135,4 +135,5 @@ body {
   #left-column, #right-column {
     min-height: 300px;
   }
+
 }
