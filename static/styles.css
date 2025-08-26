@@ -1,111 +1,114 @@
- body {
-      background-image: url("");
-      background-size: cover;
-      background-position: center;
-      margin: 0;
-      padding: 0;
-      font-family: 'Arial', sans-serif;
-    }
-    .banner {
-      background: linear-gradient(90deg, #4facfe, #00f2fe);
-      color: #fff;
-      padding: 20px;
-      text-align: center;
-      font-size: 25px;
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-    }
-    .card {
-      background: #fff;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      padding: 1.25rem;
-    }
-    .hidden {
-      display: none !important;
-    }
-    .result-scrollable {
-      max-height: 70vh; /* Tăng chiều cao tối đa để tránh tràn trên mobile */
-      overflow: auto;
-      border: 1px solid #e5e7eb;
-      padding: 1rem;
-      border-radius: 0.5rem;
-    }
+body {
+  background-image: url("");
+  background-size: cover;
+  background-position: center;
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+}
+.banner {
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+  font-size: 25px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+.card {
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.25rem;
+}
+.hidden {
+  display: none !important;
+}
+.result-scrollable {
+  max-height: 70vh; /* Tăng chiều cao tối đa để tránh tràn trên mobile */
+  overflow: auto;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
 
-    /* Khung camera */
-    .camera-box {
-      position: relative;
-      width: min(90vw, 350px);
-      aspect-ratio: 1/1;
-      margin: 12px auto;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-      background: rgba(0, 0, 0, 0.6);
-      touch-action: none; /* Cải thiện trải nghiệm cảm ứng */
-    }
-    #reader, #reader video, #reader canvas {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: cover;
-      border-radius: 12px;
-    }
+/* Khung camera */
+.camera-box {
+  position: relative;
+  width: min(90vw, 300px); /* Increased from 350px */
+  max-width: 100%; /* Prevent overflow */
+  max-height: 350px; /* Cap height for consistency */
+  aspect-ratio: 1/1;
+  margin: 16px auto; /* Slightly increased margin for better centering */
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.6);
+  touch-action: none; /* Cải thiện trải nghiệm cảm ứng */
+}
+#reader, #reader video, #reader canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  border-radius: 12px;
+}
 
-    /* Ô định vị QR */
-    .qr-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-    }
-    .qr-frame {
-      width: 210px;
-      height: 210px;
-      border: 2px solid rgba(0, 147, 255, 0.95);
-      border-radius: 10px;
-      box-shadow: 
-        0 0 15px rgba(0, 147, 255, 0.9),
-        0 0 35px rgba(0, 147, 255, 0.7),
-        0 0 60px rgba(0, 147, 255, 0.5),
-        0 0 0 9999px rgba(0, 0, 0, 0.35) inset;
-      position: relative;
-    }
+/* Ô định vị QR */
+.qr-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.qr-frame {
+  width: 250px; /* Increased from 200px */
+  height: 250px; /* Increased from 200px */
+  border: 2px solid rgba(0, 147, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 
+    0 0 15px rgba(0, 147, 255, 0.9),
+    0 0 35px rgba(0, 147, 255, 0.7),
+    0 0 60px rgba(0, 147, 255, 0.5),
+    0 0 0 9999px rgba(0, 0, 0, 0.35) inset;
+  position: relative;
+}
 
-    /* Scan line */
-    .scan-line {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 6px;
-      background: linear-gradient(90deg, transparent, #00BFFF, transparent);
-      animation: scanMove 2.2s linear infinite;
-      border-radius: 3px;
-      box-shadow: 
-        0 0 15px rgba(0, 147, 255, 0.9),
-        0 0 35px rgba(0, 147, 255, 0.7),
-        0 0 60px rgba(0, 147, 255, 0.5);
-    }
-    @keyframes scanMove {
-      0% { top: 0; opacity: 0.85; }
-      50% { opacity: 1; }
-      100% { top: calc(100% - 6px); opacity: 0.85; }
-    }
+/* Scan line */
+.scan-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, transparent, #00BFFF, transparent);
+  animation: scanMove 2.2s linear infinite;
+  border-radius: 3px;
+  box-shadow: 
+    0 0 15px rgba(0, 147, 255, 0.9),
+    0 0 35px rgba(0, 147, 255, 0.7),
+    0 0 60px rgba(0, 147, 255, 0.5);
+}
+@keyframes scanMove {
+  0% { top: 0; opacity: 0.85; }
+  50% { opacity: 1; }
+  100% { top: calc(100% - 6px); opacity: 0.85; }
+}
 
-    /* Responsive adjustments */
-    @media (max-width: 640px) {
-      .banner {
-        font-size: 20px;
-      }
-      .result-scrollable {
-        max-height: 50vh;
-      }
-      .camera-box {
-        width: 80vw;
-      }
-    }
-
-
-
-
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .banner {
+    font-size: 20px;
+  }
+  .result-scrollable {
+    max-height: 50vh;
+  }
+  .camera-box {
+    width: 85vw; /* Increased from 80vw */
+    max-height: 85vw; /* Ensure height matches width for square aspect ratio */
+  }
+  .qr-frame {
+    width: 250px; /* Slightly smaller for mobile */
+    height: 250px; /* Slightly smaller for mobile */
+  }
+}
