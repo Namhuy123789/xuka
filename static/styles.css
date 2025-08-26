@@ -34,7 +34,7 @@ body {
 /* Khung camera */
 .camera-box {
   position: relative;
-  width: min(90vw, 300px); /* Increased from 350px */
+  width: min(90vw, 280px); /* Increased from 350px */
   max-width: 100%; /* Prevent overflow */
   max-height: 350px; /* Cap height for consistency */
   aspect-ratio: 1/1;
@@ -62,8 +62,8 @@ body {
   pointer-events: none;
 }
 .qr-frame {
-  width: 210px; /* Increased from 200px */
-  height: 210px; /* Increased from 200px */
+  width: 200px; /* Increased from 200px */
+  height: 200px; /* Increased from 200px */
   border: 2px solid rgba(0, 147, 255, 0.95);
   border-radius: 12px;
   box-shadow: 
@@ -112,4 +112,5 @@ body {
     height: 250px; /* Slightly smaller for mobile */
   }
 }
+
 
