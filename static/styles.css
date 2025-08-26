@@ -34,7 +34,7 @@
     /* Khung camera */
     .camera-box {
       position: relative;
-      width: min(90vw, 270px);
+      width: min(90vw, 310px);
       aspect-ratio: 1/1;
       margin: 12px auto;
       border-radius: 12px;
@@ -105,3 +105,4 @@
         width: 80vw;
       }
     }
+
