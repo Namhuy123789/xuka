@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template, abort, redirect, url_for
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import NotFound  # Added to fix NameError
 from pathlib import Path
 from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
@@ -9,17 +10,11 @@ import re
 import json
 import os
 from flask_socketio import SocketIO, emit
-from flask import send_file
-import base64
-import hashlib
 from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
-from Crypto.Util.Padding import unpad
-from werkzeug.exceptions import NotFound
-from flask import Flask, jsonify
 from Crypto.Hash import SHA256
-
-
+import base64
+from flask import send_from_directory
 
 
 
@@ -34,19 +29,15 @@ BASE_DIR = Path(__file__).resolve().parent
 QUESTIONS_DIR = BASE_DIR / "questions"
 RESULTS_DIR = BASE_DIR / "results"
 STATIC_DIR = BASE_DIR / "static"
-USERS_FILE = STATIC_DIR / "users.json"  # Học sinh
-ADMIN_FILE = STATIC_DIR / "users1.json"  # Quản trị viên
+USERS_FILE = STATIC_DIR / "users.json"
+ADMIN_FILE = STATIC_DIR / "users1.json"
 
 # Tạo các thư mục nếu chưa tồn tại
 for directory in [QUESTIONS_DIR, RESULTS_DIR, STATIC_DIR]:
     directory.mkdir(exist_ok=True)
 
 socketio = SocketIO(app, async_mode="threading")
-
-# CSRF
 csrf = CSRFProtect(app)
-
-# Rate limiting
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
@@ -57,12 +48,20 @@ limiter = Limiter(
 # --- Helpers ---
 def load_users(file_path: Path):
     if not file_path.exists():
+        print(f"[WARN] File {file_path} không tồn tại, trả về danh sách rỗng")
         return []
     try:
         with open(file_path, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+            if not isinstance(data, list):
+                print(f"[WARN] File {file_path} không có định dạng danh sách hợp lệ")
+                return []
+            return data
     except json.JSONDecodeError as e:
         app.logger.error(f"Lỗi giải mã JSON trong {file_path}: {e}")
+        return []
+    except Exception as e:
+        app.logger.error(f"Lỗi đọc file {file_path}: {e}")
         return []
 
 def list_exam_codes():
@@ -76,31 +75,42 @@ def list_exam_codes():
                 codes.append(code)
     return sorted(set(codes), key=lambda x: int(x))
 
-# Khóa bí mật để giải mã QR (nên để trong biến môi trường khi chạy thực tế)
 MASTER_PASSPHRASE = os.environ.get("MASTER_PASSPHRASE", "thay-bang-chuoi-bi-mat")
 
-# --- Giải mã AES-GCM ---
 def decrypt_qr_data(encrypted_data: str):
     try:
+        print(f"[DEBUG] Nhận qr_value: {encrypted_data}")
         parts = encrypted_data.split('.')
         if len(parts) != 4 or parts[0] != 'v1':
             raise ValueError("Định dạng mã QR không hợp lệ (phải là v1.<salt>.<iv>.<ciphertext+tag>)")
 
-        # Giải mã base64
+        print(f"[DEBUG] Phân tích qr_value: salt={parts[1]}, iv={parts[2]}, ct_and_tag={parts[3]}")
+        
         try:
-            salt = base64.b64decode(parts[1])
-            iv = base64.b64decode(parts[2])
-            ct_and_tag = base64.b64decode(parts[3])
-        except Exception:
-            raise ValueError("QR chứa dữ liệu base64 không hợp lệ")
+            salt = base64.b64decode(parts[1], validate=True)
+            print("[DEBUG] Giải mã base64 salt thành công")
+        except Exception as e:
+            print(f"[ERROR] Lỗi giải mã base64 salt: {str(e)}")
+            raise ValueError(f"QR chứa base64 không hợp lệ (salt): {str(e)}")
+        
+        try:
+            iv = base64.b64decode(parts[2], validate=True)
+            print("[DEBUG] Giải mã base64 iv thành công")
+        except Exception as e:
+            print(f"[ERROR] Lỗi giải mã base64 iv: {str(e)}")
+            raise ValueError(f"QR chứa base64 không hợp lệ (iv): {str(e)}")
+        
+        try:
+            ct_and_tag = base64.b64decode(parts[3], validate=True)
+            print("[DEBUG] Giải mã base64 ct_and_tag thành công")
+        except Exception as e:
+            print(f"[ERROR] Lỗi giải mã base64 ct_and_tag: {str(e)}")
+            raise ValueError(f"QR chứa base64 không hợp lệ (ciphertext+tag): {str(e)}")
 
         if len(ct_and_tag) < 16:
             raise ValueError("Ciphertext không hợp lệ (thiếu tag)")
 
-        # Ciphertext và Tag (tag AES-GCM = 16 bytes cuối)
         ciphertext, tag = ct_and_tag[:-16], ct_and_tag[-16:]
-
-        # Tạo key bằng PBKDF2 + SHA256
         key = PBKDF2(
             MASTER_PASSPHRASE.encode("utf-8"),
             salt,
@@ -108,14 +118,10 @@ def decrypt_qr_data(encrypted_data: str):
             count=100000,
             hmac_hash_module=SHA256
         )
-
-        # Giải mã AES-GCM
         cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
         plaintext = cipher.decrypt_and_verify(ciphertext, tag)
-
-        # Parse JSON
         data = json.loads(plaintext.decode("utf-8"))
-        app.logger.info(f"Giải mã QR thành công: {data}")
+        print(f"[DEBUG] Giải mã QR thành công: {data}")
         return data
 
     except (ValueError, KeyError, json.JSONDecodeError) as e:
@@ -125,8 +131,82 @@ def decrypt_qr_data(encrypted_data: str):
         app.logger.error(f"Lỗi giải mã QR: {e}")
         raise
 
+# --- Routes ---
+@app.post("/api/decrypt_qr")
+@csrf.exempt
+def api_decrypt_qr():
+    try:
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({"status": "error", "msg": "Dữ liệu JSON không hợp lệ"}), 400
 
+        qr_value = str(data.get("qr_value", "")).strip()
+        print(f"[DEBUG] Giá trị qr_value nhận được: {qr_value}")
+        if not qr_value:
+            return jsonify({"status": "error", "msg": "Thiếu dữ liệu QR"}), 400
 
+        if qr_value.startswith('v1.'):
+            try:
+                decoded_data = decrypt_qr_data(qr_value)
+                username = decoded_data.get("username", "").strip()
+                password = decoded_data.get("password", "").strip()
+                hoten = decoded_data.get("hoten", "").strip()
+                sbd = decoded_data.get("sbd", "").strip()
+                ngaysinh = decoded_data.get("ngaysinh", "").strip()
+            except Exception as e:
+                return jsonify({"status": "error", "msg": f"Lỗi giải mã QR: {str(e)}"}), 400
+        else:
+            if ":" not in qr_value:
+                return jsonify({
+                    "status": "error",
+                    "msg": "Mã QR không hợp lệ, phải có dạng username:password hoặc v1.<salt>.<iv>.<data>"
+                }), 400
+            username, password = qr_value.split(":", 1)
+            hoten, sbd, ngaysinh = "", "", ""
+
+        admins = load_users(ADMIN_FILE)
+        for user in admins:
+            if user.get("username") == username and user.get("password") == password:
+                return jsonify({
+                    "status": "success",
+                    "role": "admin",
+                    "user": user,
+                    "redirect": url_for('index')
+                }), 200
+
+        users = load_users(USERS_FILE)
+        for user in users:
+            if user.get("username") == username and user.get("password") == password:
+                return jsonify({
+                    "status": "success",
+                    "role": "user",
+                    "user": user,
+                    "redirect": url_for('index')
+                }), 200
+
+        if qr_value.startswith('v1.') and username and password:
+            return jsonify({
+                "status": "success",
+                "role": "user",
+                "user": {
+                    "username": username,
+                    "hoten": hoten,
+                    "sbd": sbd,
+                    "ngaysinh": ngaysinh
+                },
+                "redirect": url_for('index')
+            }), 200
+
+        return jsonify({"status": "fail", "msg": "Mã QR không hợp lệ hoặc tài khoản không tồn tại"}), 401
+
+    except ValueError as ve:
+        return jsonify({
+            "status": "error",
+            "msg": f"Lỗi định dạng QR: {str(ve)}. Định dạng phải là username:password hoặc v1.<salt>.<iv>.<data>"
+        }), 400
+    except Exception as e:
+        app.logger.exception(f"Lỗi giải mã QR: {e}")
+        return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
 @app.post("/login")
 @csrf.exempt
@@ -139,7 +219,6 @@ def login():
         if not username or not password:
             return jsonify({"status": "error", "msg": "Thiếu tên đăng nhập hoặc mật khẩu"}), 400
 
-        # Nếu bạn chỉ muốn cho vào luôn (không cần check file user.json)
         return jsonify({
             "status": "success",
             "role": "user",
@@ -154,46 +233,6 @@ def login():
         app.logger.error(f"Lỗi /login: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server"}), 500
 
-
-
-
-
-
-
-
-# --- Route: Save answers and calculate score ---
-def tinh_diem_va_luu_bai_lam(bai_lam, de_thi):
-    so_cau_dung = 0
-    tong_cau_trac_nghiem = 0
-    ket_qua = []
-
-    for i, cau_hoi in enumerate(de_thi):
-        item = cau_hoi.copy()
-        ma_cau = f"cau_{i}"
-        tra_loi = bai_lam.get(ma_cau)
-
-        if cau_hoi.get("kieu_cau_hoi") == "tu_luan":
-            item["tra_loi_hoc_sinh"] = tra_loi or ""
-        elif "lua_chon" in cau_hoi and "dap_an_dung" in cau_hoi:
-            tong_cau_trac_nghiem += 1
-            if tra_loi == cau_hoi["dap_an_dung"]:
-                so_cau_dung += 1
-            item["tra_loi_hoc_sinh"] = tra_loi or ""
-        else:
-            item["tra_loi_hoc_sinh"] = tra_loi or ""
-
-        ket_qua.append(item)
-
-    diem = round((so_cau_dung / max(tong_cau_trac_nghiem, 1)) * 10, 2)
-
-    return {
-        "diem": diem,
-        "so_cau_dung": so_cau_dung,
-        "tong_cau_trac_nghiem": tong_cau_trac_nghiem,
-        "bai_lam_chi_tiet": ket_qua
-    }
-
-# --- SocketIO ---
 @app.route('/alochat')
 def alochat():
     return render_template('alochat.html')
@@ -218,7 +257,6 @@ def handle_user_online(data):
 def handle_typing(data):
     emit("typing", data, broadcast=True, include_self=False)
 
-# --- Routes (views) ---
 @app.route('/favicon.ico')
 def favicon():
     icon_path = STATIC_DIR / "favicon.ico"
@@ -254,7 +292,6 @@ def web():
 def mobile():
     return render_template("index_mobile.html")
 
-# --- API: Danh sách mã đề ---
 @app.get("/api/made")
 def api_made():
     try:
@@ -263,7 +300,6 @@ def api_made():
         app.logger.exception(f"Lỗi liệt kê mã đề: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-# --- API LOGIN ---
 @app.post("/api/login")
 @csrf.exempt
 @limiter.limit("10/minute")
@@ -312,7 +348,6 @@ def api_login():
         app.logger.exception(f"Lỗi đăng nhập: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-# --- API REGISTER ---
 @app.post("/api/register")
 @csrf.exempt
 @limiter.limit("5/minute")
@@ -356,7 +391,6 @@ def api_register():
         app.logger.exception(f"Lỗi đăng ký: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-# --- Token ---
 @app.post("/api/generate-token")
 @csrf.exempt
 def api_generate_token():
@@ -373,7 +407,6 @@ def api_generate_token():
         app.logger.exception(f"Lỗi tạo token: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-# --- API: Danh sách mã đề ---
 @app.get("/api/list_made")
 def api_list_made():
     try:
@@ -387,53 +420,35 @@ def api_list_made():
         app.logger.exception(f"Lỗi liệt kê mã đề: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-# --- Lấy đề thi ---
-@app.route("/questions/<path:filename>")
-def serve_questions_file(filename):
-    try:
-        filepath = QUESTIONS_DIR / filename
-        if filepath.exists():
-            return send_file(filepath)
-        else:
-            return jsonify({"status": "error", "msg": f"File {filename} không tồn tại"}), 404
-    except Exception as e:
-        app.logger.exception(f"Lỗi phục vụ file câu hỏi: {e}")
-        return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
-
-
-
-
-
-
 @app.route("/get_exam_codes")
 def get_exam_codes():
-    # Use the QUESTIONS_DIR defined earlier
-    exam_dir = QUESTIONS_DIR  # Path(__file__).parent / "questions"
-    print("[DEBUG] Đang đọc thư mục:", exam_dir.resolve())
+    try:
+        exam_dir = QUESTIONS_DIR
+        print("[DEBUG] Đang đọc thư mục:", exam_dir.resolve())
+        if not exam_dir.exists():
+            app.logger.error("Thư mục đề thi không tồn tại!")
+            return jsonify([])
 
-    if not exam_dir.exists():
-        app.logger.error("Thư mục đề thi không tồn tại!")
-        return jsonify([])  # Return empty array for consistency
+        codes = [f.stem.replace("questions", "") for f in exam_dir.glob("questions*.json") if f.stem.startswith("questions") and f.stem[len("questions"):].isdigit()]
+        if not codes:
+            app.logger.warning("Không tìm thấy mã đề nào trong thư mục questions!")
+            return jsonify([])
 
-    # Lấy danh sách file đề (chỉ tìm *.json)
-    codes = [f.stem.replace("questions", "") for f in exam_dir.glob("questions*.json") if f.stem.startswith("questions") and f.stem[len("questions"):].isdigit()]
-    
-    if not codes:
-        app.logger.warning("Không tìm thấy mã đề nào trong thư mục questions!")
-        return jsonify([])  # Return empty array
+        print("[DEBUG] Mã đề tìm thấy:", codes)
+        return jsonify(codes)
+    except Exception as e:
+        app.logger.exception(f"Lỗi lấy mã đề: {e}")
+        return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-    print("[DEBUG] Mã đề tìm thấy:", codes)
-    return jsonify(codes)
-
-
-
-@app.route("/questions")
+@app.route("/get_questions")
 def get_questions():
     try:
         made = request.args.get("made", "000")
         filename = f"questions{made}.json"
         filepath = QUESTIONS_DIR / filename
+        print(f"[DEBUG] Đang tìm file: {filepath}")
         if not filepath.exists():
+            print(f"[ERROR] File không tồn tại: {filepath}")
             return jsonify({"status": "error", "msg": f"File {filename} không tồn tại"}), 404
 
         with open(filepath, encoding="utf-8") as f:
@@ -454,25 +469,29 @@ def get_questions():
                 q_processed["dap_an_dung"] = q.get("dap_an_dung", "")
             processed_questions.append(q_processed)
 
+        print(f"[DEBUG] Đã tải {len(processed_questions)} câu hỏi cho mã đề {made}")
         return jsonify(processed_questions)
+    except json.JSONDecodeError as e:
+        print(f"[ERROR] File JSON không hợp lệ: {filepath}, lỗi: {str(e)}")
+        return jsonify({"status": "error", "msg": "File câu hỏi không hợp lệ"}), 400
     except Exception as e:
         app.logger.exception(f"Lỗi tải câu hỏi: {e}")
         return jsonify({"status": "error", "msg": str(e)}), 500
 
-# --- Download kết quả ---
-@app.get('/download/<path:filename>')
-def download_file(filename):
+@app.route("/questions/<path:filename>")
+def serve_questions_file(filename):
     try:
-        safe = secure_filename(filename)
-        file_path = RESULTS_DIR / safe
-        if not file_path.exists():
-            return jsonify({"status": "error", "msg": "File không tồn tại"}), 404
-        return send_from_directory(RESULTS_DIR, safe, as_attachment=True)
+        filepath = QUESTIONS_DIR / filename
+        print(f"[DEBUG] Phục vụ file tĩnh: {filepath}")
+        if filepath.exists():
+            return send_file(filepath)
+        else:
+            print(f"[ERROR] File không tồn tại: {filepath}")
+            return jsonify({"status": "error", "msg": f"File {filename} không tồn tại"}), 404
     except Exception as e:
-        app.logger.exception(f"Lỗi tải file: {e}")
+        app.logger.exception(f"Lỗi phục vụ file câu hỏi: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-# --- Lưu kết quả ---
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
@@ -488,7 +507,6 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Load đề thi theo mã đề
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
@@ -500,7 +518,6 @@ def save_result():
                 app.logger.error(f"Lỗi đọc file đề: {e}")
                 question_data = []
 
-        # Tạo file kết quả
         timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
@@ -517,16 +534,13 @@ def save_result():
             ""
         ]
 
-        # Ghi kết quả từng câu
         for a in answers:
             cau = a.get("cau", "N/A")
             noi_dung = a.get("noi_dung", "Không có nội dung")
             kieu = a.get("kieu", "trac_nghiem").lower()
 
             try:
-                idx = int
-
-                (cau) - 1
+                idx = int(cau) - 1
                 if 0 <= idx < len(question_data):
                     cau_goc = question_data[idx]
                 else:
@@ -554,7 +568,6 @@ def save_result():
 
             lines.append("")
 
-        # Ghi ra file
         try:
             filepath.write_text("\n".join(lines), encoding="utf-8")
         except Exception as e:
@@ -571,88 +584,39 @@ def save_result():
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-# --- API: Giải mã QR ---
-@app.post("/api/decrypt_qr")
-@csrf.exempt
-def api_decrypt_qr():
+
+
+@app.route('/static/sw.js')
+def serve_service_worker():
+    response = send_from_directory('static', 'sw.js')
+    response.headers['Service-Worker-Allowed'] = '/'
+    return response
+
+@app.get('/download/<path:filename>')
+def download_file(filename):
     try:
-        data = request.get_json(silent=True)
-        if not data:
-            return jsonify({"status": "error", "msg": "Dữ liệu JSON không hợp lệ"}), 400
-
-        qr_value = str(data.get("qr_value", "")).strip()
-        if not qr_value:
-            return jsonify({"status": "error", "msg": "Thiếu dữ liệu QR"}), 400
-
-        # Nếu mã QR là loại AES mã hóa (v1)
-        if qr_value.startswith('v1.'):
-            try:
-                decoded_data = decrypt_qr_data(qr_value)
-                username = decoded_data.get("username", "").strip()
-                password = decoded_data.get("password", "").strip()
-                hoten = decoded_data.get("hoten", "").strip()
-                sbd = decoded_data.get("sbd", "").strip()
-                ngaysinh = decoded_data.get("ngaysinh", "").strip()
-            except Exception as e:
-                return jsonify({"status": "error", "msg": f"Lỗi giải mã QR: {str(e)}"}), 400
-        else:
-            # Nếu mã QR dạng username:password
-            if ":" not in qr_value:
-                return jsonify({
-                    "status": "error",
-                    "msg": "Mã QR không hợp lệ, phải có dạng username:password hoặc v1.<salt>.<iv>.<data>"
-                }), 400
-            username, password = qr_value.split(":", 1)
-            hoten, sbd, ngaysinh = "", "", ""
-
-        # Kiểm tra admin
-        admins = load_users(ADMIN_FILE)
-        for user in admins:
-            if user.get("username") == username and user.get("password") == password:
-                return jsonify({
-                    "status": "success",
-                    "role": "admin",
-                    "user": user,
-                    "redirect": url_for('index')
-                }), 200
-
-        # Kiểm tra user
-        users = load_users(USERS_FILE)
-        for user in users:
-            if user.get("username") == username and user.get("password") == password:
-                return jsonify({
-                    "status": "success",
-                    "role": "user",
-                    "user": user,
-                    "redirect": url_for('index')
-                }), 200
-
-        # Nếu không tìm thấy trong DB nhưng QR có dữ liệu
-        if qr_value.startswith('v1.') and username and password:
-            return jsonify({
-                "status": "success",
-                "role": "user",
-                "user": {
-                    "username": username,
-                    "hoten": hoten,
-                    "sbd": sbd,
-                    "ngaysinh": ngaysinh
-                },
-                "redirect": url_for('index')
-            }), 200
-
-        return jsonify({"status": "fail", "msg": "Mã QR không hợp lệ hoặc tài khoản không tồn tại"}), 401
-
-    except ValueError as ve:
-        return jsonify({
-            "status": "error",
-            "msg": f"Lỗi định dạng QR: {str(ve)}. Định dạng phải là username:password hoặc v1.<salt>.<iv>.<data>"
-        }), 400
+        safe = secure_filename(filename)
+        file_path = RESULTS_DIR / safe
+        if not file_path.exists():
+            return jsonify({"status": "error", "msg": "File không tồn tại"}), 404
+        return send_from_directory(RESULTS_DIR, safe, as_attachment=True)
     except Exception as e:
-        app.logger.exception(f"Lỗi giải mã QR: {e}")
+        app.logger.exception(f"Lỗi tải file: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-# --- Error handler ---
+@app.route('/exam_session', methods=['GET'])
+def exam_session():
+    try:
+        made = request.args.get('made')
+        if not made:
+            return jsonify({"status": "error", "msg": "Mã đề không được cung cấp!"}), 400
+        
+        duration_sec = 3600  # 1 giờ
+        return jsonify({"status": "success", "duration_sec": duration_sec, "deadline": None})
+    except Exception as e:
+        app.logger.exception(f"Lỗi lấy phiên thi: {e}")
+        return jsonify({"status": "error", "msg": str(e)}), 500
+
 @app.errorhandler(Exception)
 def handle_all(e):
     if isinstance(e, NotFound):
