@@ -256,20 +256,152 @@
     <p id="form-error" class="text-red-600 mt-2 font-semibold hidden">Vui lòng kiểm tra lại thông tin!</p>
     <button id="btn-start-exam" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Bắt đầu thi</button>
   </section>
+    <!-- Bài thi -->
+<section id="exam-container" class="max-w-6xl mx-auto p-6 bg-white rounded shadow hidden">
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+    <!-- Cột trái -->
+<aside class="md:col-span-2 bg-white p-4 rounded-2xl shadow-lg flex flex-col gap-6">
 
-  <!-- Bài thi -->
-  <section id="exam-container" class="max-w-3xl mx-auto bg-white p-6 rounded shadow hidden">
-    <h1 class="text-2xl font-bold mb-4 text-center">BÀI THI TRẮC NGHIỆM</h1>
-    <p id="exam-notice" class="text-red-600 font-bold mb-4 hidden">Chế độ thi: Phím bị khóa và mạng bị ngắt để đảm bảo công bằng.</p>
-    <p id="countdown" class="text-red-600 font-bold mb-4">Thời gian: --:--</p>
-    <div id="questions" class="space-y-4 mb-6"></div>
-    <button id="btn-submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Nộp bài</button>
-    <p id="result" class="mt-4 text-green-600 font-bold"></p>
-  </section>
+  <!-- Thông tin thí sinh -->
+  <div class="pb-4 border-b">
+    <h2 class="text-lg font-bold text-blue-600 flex items-center gap-2">
+      <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.364 4.56a9 9 0 01-13.243 13.243z" />
+      </svg>
+      Thông tin 
+    </h2>
+    <div class="mt-2 space-y-1 text-gray-700 text-sm">
+      <p><span class="font-semibold">HT:</span> <span id="info-hoten">--</span></p>
+      <p><span class="font-semibold">SBD:</span> <span id="info-sbd">--</span></p>
+      <p><span class="font-semibold">Mã đề:</span> <span id="info-made">--</span></p>
+    </div>
+  </div>
+
+  <!-- Thời gian -->
+  <div class="pb-4 border-b">
+    <h2 class="text-lg font-bold text-blue-600 flex items-center gap-2">
+      <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      Thời gian làm bài
+    </h2>
+    <p id="countdown" class="text-red-600 font-extrabold text-3xl mt-2 tracking-wider">--:--</p>
+  </div>
+
+  <!-- Tiến độ -->
+  <div class="pb-4 border-b">
+    <h2 class="text-lg font-bold text-blue-600 flex items-center gap-2">
+      <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      Tiến độ làm bài
+    </h2>
+    <div class="w-full bg-gray-200 rounded-full h-3 mt-3 overflow-hidden">
+      <div id="progress-bar" class="bg-green-500 h-3 w-0 transition-all duration-500"></div>
+    </div>
+    <p id="progress-text" class="text-sm mt-2 text-gray-600">0 / 0 câu</p>
+  </div>
+
+  <!-- Máy tính Casio fx-580 -->
+  <div class="bg-gray-900 rounded-2xl shadow-inner p-4">
+    <h2 class="text-lg font-bold text-yellow-400 text-center mb-3">CASIO fx-580VN X</h2>
+    <!-- Màn hình -->
+    <div id="calc-display" class="bg-gray-200 text-right p-2 rounded text-xl font-mono overflow-x-auto">0</div>
+    <!-- Bàn phím -->
+    <div class="grid grid-cols-5 gap-2 mt-3 text-sm">
+      <button class="calc-btn bg-red-500 text-white col-span-2">AC</button>
+      <button class="calc-btn bg-gray-700 text-white">√</button>
+      <button class="calc-btn bg-gray-700 text-white">^</button>
+      <button class="calc-btn bg-yellow-500 text-white">÷</button>
+
+      <button class="calc-btn bg-gray-800 text-white">7</button>
+      <button class="calc-btn bg-gray-800 text-white">8</button>
+      <button class="calc-btn bg-gray-800 text-white">9</button>
+      <button class="calc-btn bg-yellow-500 text-white">×</button>
+      <button class="calc-btn bg-gray-600 text-white">Ans</button>
+
+      <button class="calc-btn bg-gray-800 text-white">4</button>
+      <button class="calc-btn bg-gray-800 text-white">5</button>
+      <button class="calc-btn bg-gray-800 text-white">6</button>
+      <button class="calc-btn bg-yellow-500 text-white">−</button>
+      <button class="calc-btn bg-gray-600 text-white">(</button>
+
+      <button class="calc-btn bg-gray-800 text-white">1</button>
+      <button class="calc-btn bg-gray-800 text-white">2</button>
+      <button class="calc-btn bg-gray-800 text-white">3</button>
+      <button class="calc-btn bg-yellow-500 text-white">+</button>
+      <button class="calc-btn bg-gray-600 text-white">)</button>
+
+      <button class="calc-btn bg-gray-800 text-white col-span-2">0</button>
+      <button class="calc-btn bg-gray-800 text-white">.</button>
+      <button class="calc-btn bg-green-500 text-white col-span-2">=</button>
+    </div>
+  </div>
+
+</aside>
+
+<script>
+let calcDisplay = document.getElementById("calc-display");
+let currentInput = "";
+let lastAnswer = "";
+
+document.querySelectorAll(".calc-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    let val = btn.textContent.trim();
+
+    if (val === "AC") {
+      currentInput = "";
+      calcDisplay.textContent = "0";
+    } else if (val === "=") {
+      try {
+        let expr = currentInput.replace(/÷/g, "/").replace(/×/g, "*").replace(/√/g, "Math.sqrt").replace(/\^/g, "**");
+        let result = eval(expr);
+        calcDisplay.textContent = result;
+        lastAnswer = result;
+        currentInput = "" + result;
+      } catch {
+        calcDisplay.textContent = "Error";
+        currentInput = "";
+      }
+    } else if (val === "Ans") {
+      currentInput += lastAnswer;
+      calcDisplay.textContent = currentInput;
+    } else {
+      currentInput += val;
+      calcDisplay.textContent = currentInput;
+    }
+  });
+});
+</script>
+
+
+
+    <!-- Cột giữa: Câu hỏi -->
+    <main class="md:col-span-7 bg-white p-4 rounded shadow">
+      <h1 class="text-2xl font-bold mb-4 text-center">BÀI THI TRẮC NGHIỆM</h1>
+      <p id="exam-notice" class="text-red-600 font-bold mb-4 hidden">Chế độ thi: Phím bị khóa và mạng bị ngắt để đảm bảo công bằng.</p>
+      <div id="questions" class="space-y-6"></div>
+      <div class="flex justify-center mt-6">
+        <button id="btn-submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700">Nộp bài</button>
+      </div>
+      <p id="result" class="mt-4 text-green-600 font-bold text-center"></p>
+    </main>
+
+    <!-- Cột phải: Bảng trả lời -->
+    <aside class="md:col-span-3 bg-white p-4 rounded shadow">
+      <h2 class="text-lg font-bold text-blue-700 mb-2">📑 Bảng trả lời</h2>
+      <div id="answer-sheet" class="grid grid-cols-5 gap-2 text-sm"></div>
+      <h2 class="text-lg font-bold text-blue-700 mt-4 mb-2">🔖 Câu đánh dấu</h2>
+      <ul id="review-list" class="list-disc list-inside text-gray-700 text-sm"></ul>
+    </aside>
+  </div>
+</section>
+
 
   <!-- Kết quả -->
   <section id="result-container" class="max-w-2xl mx-auto p-6 bg-white rounded shadow mt-10 hidden"></section>
 
+  <!-- Footer -->
   <footer class="mt-10 py-4 text-center text-gray-700 text-sm font-medium">
     Bản quyền © 2025 <span class="font-bold text-red-600">PHẠM HUY TUÂN</span> · ĐT: <a href="tel:0389897989" class="text-blue-600 hover:underline">0389 897 989</a>
   </footer>
