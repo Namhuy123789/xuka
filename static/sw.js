@@ -1,35 +1,75 @@
 // sw.js
-self.addEventListener('install', (event) => {
+const CACHE_NAME = 'xuka-cache-v2';
+
+// File tĩnh cần cache sẵn
+const PRECACHE_URLS = [
+  '/', // ⚠️ nếu deploy ở subpath thì đổi thành đường dẫn gốc phù hợp
+  '/static/css/style.css',
+  '/static/js/app.js',
+  '/static/img/logo.png',
+  '/static/fonts/roboto.woff2'
+];
+
+// Install: cache sẵn file tĩnh
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache =>
+      cache.addAll(PRECACHE_URLS).catch(err => {
+        console.warn("Precache failed:", err);
+      })
+    )
+  );
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+// Activate: xóa cache cũ
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      )
+    )
+  );
+  self.clients.claim();
 });
 
-// Danh sách origin được phép
-const allowedOrigins = [
-  'https://xuka.com.vn',
-  'http://127.0.0.1:5000',
-  'http://localhost:5000',
-  'https://cdn.jsdelivr.net',
-  'https://cdnjs.cloudflare.com',
-  'https://unpkg.com'
-];
-
-// Xử lý request
-self.addEventListener('fetch', (event) => {
+// Fetch: cache strategy
+self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  const isAllowed = allowedOrigins.includes(url.origin);
 
-  if (!isAllowed) {
+  // API → network-first
+  if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      new Response('Mạng bị ngắt trong lúc thi. Không thể truy cập tài nguyên ngoài.', {
-        status: 403,
-        statusText: 'Forbidden'
+      fetch(event.request)
+        .then(response => {
+          // có thể clone response để cache lại API nếu cần
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // File tĩnh → cache-first
+  if (/\.(js|css|png|jpg|jpeg|gif|svg|woff2?|ttf)$/.test(url.pathname)) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response && response.status === 200 && response.type === "basic") {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        });
       })
     );
-  } else {
-    event.respondWith(fetch(event.request));
+    return;
   }
+
+  // Mặc định → network-first
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
+  );
 });
