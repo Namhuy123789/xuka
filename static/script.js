@@ -1,3 +1,4 @@
+
 const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://127.0.0.1:5000' : 'https://xuka.com.vn';
 let time = 0;
 let timer = null;
@@ -311,7 +312,10 @@ function updateProgress() {
   });
   const percentage = total ? (answered / total * 100).toFixed(0) : 0;
   qs('#progress-bar').style.width = `${percentage}%`;
-  qs('#progress-text').textContent = `${answered} / ${total} câu`;
+ 
+  qs('#progress-text').textContent = `${answered} trên ${total} câu`;
+
+
 }
 
 function applyGeneralFormatting(s) {
@@ -325,11 +329,8 @@ function applyGeneralFormatting(s) {
   s = s.replace(/\s{2,}/g, " ").trim();
   s = s.replace(/Câu\s*(\d+)\s*\.(?!\s)/gi, "Câu $1. ");
   s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
-
-  // **IMPORTANT**: không chèn khoảng trắng giữa chữ và số nữa (đã bỏ 2 dòng problem).
-  // s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
-  // s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
-
+  s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
+  s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
   s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");
   const subMap = { '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9' };
   s = s.replace(/[\u2080-\u2089]/g, m => subMap[m] || m);
@@ -371,9 +372,6 @@ function processMathContent(content) {
   return s;
 }
 
-
-
-
 function processPhysicsContent(content) {
   let s = applyGeneralFormatting(content);
   s = s.replace(/vec\{(\w+)\}/gi, (_, v) => `\\vec{${v}}`);
@@ -385,30 +383,21 @@ function processPhysicsContent(content) {
   return s;
 }
 
-
-
 function processChemistryContent(content) {
-  let s = String(content || "");
-
-  // Bỏ \ce{...}
-  s = s.replace(/\\ce\s*\{([^}]*)\}/g, "$1");
-
-  // H_2O -> H2O
-  s = s.replace(/([A-Za-z\)])_(\d+)/g, "$1$2");
-
-  // Nếu có các trường hợp tách rời như "P 2 O 5":
-  // 1) Ghép element + số: "P 2" -> "P2", "O 5" -> "O5"
-  s = s.replace(/([A-Z][a-z]?)\s+(\d+)/g, "$1$2");
-
-  // 2) Ghép tiếp các cụm element+số liền nhau: "P2 O5" -> "P2O5"
-  s = s.replace(/([A-Z][a-z]?\d+)\s+([A-Z][a-z]?\d+)/g, "$1$2");
-
-  // Chuyển số thành subscript nhưng chỉ gắn cho nguyên tố hoặc cho dấu ')'
-  s = s.replace(/([A-Z][a-z]?|\))(\d+)/g, (_, elem, num) => `${elem}<sub>${num}</sub>`);
-
+  let s = applyGeneralFormatting(content);
+  s = s.replace(/H_2O/g, "\\ce{H2O}");
+  s = s.replace(/CO_2/g, "\\ce{CO2}");
+  s = s.replace(/([A-Z][a-z]?)(\d+)/g, '$1<sub>$2</sub>');
+  s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
+  s = s.replace(/([A-Z][a-z]?)(\d+)/g, "\\ce{$1_$2}");
+  s = s.replace(/([A-Z][a-z]?)[\s]*([0-9]+)/g, (_, elem, num) => `${elem}${num}`);
+  const chemRegex = /(?:[A-Z][a-z]?\d*|\([A-Z][a-z]?\d*\)\d*)(?:\s*(?:[A-Z][a-z]?\d*|\([A-Z][a-z]?\d*\)\d*))*/g;
+  s = s.replace(chemRegex, match => {
+    if (/^[A-Za-z\s]+$/.test(match)) return match;
+    return `\\ce{${match}}`;
+  });
   return s;
 }
-
 
 function processExamContent(content) {
   let s = applyGeneralFormatting(content);
@@ -441,12 +430,15 @@ function processExamContent(content) {
   return s;
 }
 
+
+
 function isInsideMath(str, offset) {
   const upto = str.slice(0, offset);
   const lastOpen = upto.lastIndexOf("\\(");
   const lastClose = upto.lastIndexOf("\\)");
   return lastOpen > lastClose;
 }
+
 
 function processAllQuestions(questions) {
   return questions.map(q => {
