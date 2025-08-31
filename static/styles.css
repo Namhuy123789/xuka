@@ -7,13 +7,18 @@ body {
   padding: 0;
   font-family: 'Arial', sans-serif;
 }
-.banner {
+banner {
+  display: flex;                  /* dùng flex để căn giữa nội dung */
+  justify-content: center;        /* căn giữa ngang */
+  align-items: center;            /* căn giữa dọc */
   background: linear-gradient(90deg, #4facfe, #00f2fe);
   color: #fff;
-  padding: 20px;
+  padding: 40px 20px;             /* khoảng cách trong */
   text-align: center;
   font-size: 25px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+  min-height: 120px;              /* chiều cao tối thiểu */
+  line-height: 1.5;
 }
 .card {
   background: #fff;
@@ -113,3 +118,4 @@ body {
     height: 250px; /* Slightly smaller for mobile */
   }
 }
+
