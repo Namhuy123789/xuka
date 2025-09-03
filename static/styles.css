@@ -1,4 +1,4 @@
-
+/* Reset và font chung */
 body {
   background-image: url("");
   background-size: cover;
@@ -7,25 +7,39 @@ body {
   padding: 0;
   font-family: 'Arial', sans-serif;
 }
+
+/* Banner */
 .banner {
   background: linear-gradient(90deg, #4facfe, #00f2fe);
   color: #fff;
-  padding: 20px;
+  padding: 12px;
   text-align: center;
-  font-size: 25px;
+  font-size: 18px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
+
+/* Card */
 .card {
   background: #fff;
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 1.25rem;
+  padding: 1rem;
+  max-width: 95vw;
+  margin: 12px auto;
 }
+
+/* Hidden */
 .hidden {
   display: none !important;
 }
+
+/* Khu vực kết quả */
 .result-scrollable {
-  max-height: 70vh; /* Tăng chiều cao tối đa để tránh tràn trên mobile */
+  max-height: 50vh;
   overflow: auto;
   border: 1px solid #e5e7eb;
   padding: 1rem;
@@ -35,17 +49,17 @@ body {
 /* Khung camera */
 .camera-box {
   position: relative;
-  width: min(90vw, 300px); /* Increased from 350px */
-  max-width: 100%; /* Prevent overflow */
-  max-height: 350px; /* Cap height for consistency */
+  width: 85vw; 
+  max-width: 300px;
   aspect-ratio: 1/1;
-  margin: 16px auto; /* Slightly increased margin for better centering */
+  margin: 16px auto;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
   background: rgba(0, 0, 0, 0.6);
-  touch-action: none; /* Cải thiện trải nghiệm cảm ứng */
+  touch-action: none;
 }
+
 #reader, #reader video, #reader canvas {
   width: 100% !important;
   height: 100% !important;
@@ -63,8 +77,8 @@ body {
   pointer-events: none;
 }
 .qr-frame {
-  width: 250px; /* Increased from 200px */
-  height: 250px; /* Increased from 200px */
+  width: min(70vw, 250px);
+  height: min(70vw, 250px);
   border: 2px solid rgba(0, 147, 255, 0.95);
   border-radius: 12px;
   box-shadow: 
@@ -96,20 +110,34 @@ body {
   100% { top: calc(100% - 6px); opacity: 0.85; }
 }
 
-/* Responsive adjustments */
-@media (max-width: 640px) {
+/* 📱 Mobile-first: mặc định dùng cho màn hình nhỏ */
+
+/* 📲 Tablet (>= 640px) */
+@media (min-width: 640px) {
   .banner {
     font-size: 20px;
+    padding: 16px;
   }
   .result-scrollable {
-    max-height: 50vh;
+    max-height: 60vh;
   }
   .camera-box {
-    width: 85vw; /* Increased from 80vw */
-    max-height: 85vw; /* Ensure height matches width for square aspect ratio */
+    width: 70vw;
+    max-height: 70vw;
   }
-  .qr-frame {
-    width: 250px; /* Slightly smaller for mobile */
-    height: 250px; /* Slightly smaller for mobile */
+}
+
+/* 💻 Desktop (>= 1024px) */
+@media (min-width: 1024px) {
+  .banner {
+    font-size: 25px;
+    height: 135px;
+  }
+  .result-scrollable {
+    max-height: 70vh;
+  }
+  .camera-box {
+    width: min(90vw, 350px);
+    max-height: 350px;
   }
 }
