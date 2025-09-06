@@ -154,21 +154,40 @@
     }
   </style>
 </head>
-<body>
-  <!-- Banner -->
-  <div class="banner flex flex-col items-center">
-    <h1 class="flex items-center gap-2">
+<!-- Banner -->
+<div class="relative w-full h-[140px] overflow-hidden text-white">
+
+  <!-- Video nền (giữ như baner cũ) -->
+  <video autoplay muted loop playsinline class="absolute top-0 left-0 w-full h-full object-cover">
+    <source src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/banner.mp4.mp4" type="video/mp4">
+    Trình duyệt của bạn không hỗ trợ video.
+  </video>
+
+  <!-- Overlay đen mờ -->
+  <div class="absolute inset-0 bg-black/40"></div>
+
+  <!-- Video góc trái -->
+  <div class="absolute top-0 left-1 w-[250px] h-[140px] overflow-hidden rounded-lg shadow-lg z-20">
+    <video autoplay muted loop playsinline class="w-full h-full object-cover">
+      <source src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/banner.mp4.mp4" type="video/mp4">
+      Trình duyệt của bạn không hỗ trợ video.
+    </video>
+  </div>
+
+  <!-- Nội dung chữ/logo -->
+  <div class="relative z-30 flex flex-col items-center justify-center h-full text-center">
+    <h1 class="flex items-center gap-3">
       <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" 
-           class="w-11 h-11 inline-block neon-bluewhite" 
-           alt="Logo XUKA 4.0">
+           class="w-11 h-11 inline-block neon-bluewhite" alt="Logo XUKA 4.0">
       <span class="text-3xl font-bold">XUKA 4.0</span>
       <span class="text-lg font-bold ml-2 text-yellow-300">xuka.com.vn</span>
     </h1>
     <span class="text-base font-semibold">PHẦN MỀM TỔ CHỨC CÁC KỲ THI - KIỂM TRA</span>
   </div>
+</div>
 
   <!-- Navbar -->
-  <nav class="bg-yellow-300 shadow-md">
+  <nav class="bg-white-300 shadow-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between py-2">
         <div class="flex items-center space-x-3">
