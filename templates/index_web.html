@@ -157,9 +157,9 @@
 <!-- Banner -->
 <div class="relative w-full h-[140px] overflow-hidden text-white">
 
-  <!-- Video nền (giữ như baner cũ) -->
-  <video autoplay muted loop playsinline class="absolute top-0 left-0 w-full h-full object-cover">
-    <source src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/banner.mp4.mp4" type="video/mp4">
+  <!-- Video nền -->
+  <video id="bannerVideo" autoplay muted playsinline class="absolute top-0 left-0 w-full h-full object-cover">
+    <source id="bannerSource" src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/banner.mp4.mp4" type="video/mp4">
     Trình duyệt của bạn không hỗ trợ video.
   </video>
 
@@ -168,8 +168,8 @@
 
   <!-- Video góc trái -->
   <div class="absolute top-0 left-1 w-[250px] h-[140px] overflow-hidden rounded-lg shadow-lg z-20">
-    <video autoplay muted loop playsinline class="w-full h-full object-cover">
-      <source src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/banner.mp4.mp4" type="video/mp4">
+    <video id="cornerVideo" autoplay muted playsinline class="w-full h-full object-cover">
+      <source id="cornerSource" src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/banner.mp4.mp4" type="video/mp4">
       Trình duyệt của bạn không hỗ trợ video.
     </video>
   </div>
@@ -571,6 +571,41 @@
         }, 1000);
       }
     }
+    const playlist = [
+  "https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/banner.mp4.mp4",
+  "https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/x4.mp4.mp4"
+];
+
+
+  let currentIndex = 0;
+
+  const bannerVideo = document.getElementById('bannerVideo');
+  const bannerSource = document.getElementById('bannerSource');
+
+  const cornerVideo = document.getElementById('cornerVideo');
+  const cornerSource = document.getElementById('cornerSource');
+
+  function changeVideo(index) {
+    bannerSource.src = playlist[index];
+    cornerSource.src = playlist[index];
+
+    bannerVideo.load();
+    cornerVideo.load();
+
+    bannerVideo.play().catch(()=>{});
+    cornerVideo.play().catch(()=>{});
+  }
+
+  // khi 1 trong 2 video kết thúc thì đổi video mới
+  function handleEnded() {
+    currentIndex = (currentIndex + 1) % playlist.length;
+    changeVideo(currentIndex);
+  }
+
+  bannerVideo.addEventListener('ended', handleEnded);
+  cornerVideo.addEventListener('ended', handleEnded);
+
+
   </script>
 
   <!-- External JavaScript -->
