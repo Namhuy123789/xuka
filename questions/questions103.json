@@ -110,11 +110,6 @@
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Giải bất phương trình: (x - 4)^2 ≤ 0",
-    "lua_chon": {"A": "x = 4", "B": "x ≥ 4", "C": "x ≤ 4", "D": "x > 4"},
-    "dap_an_dung": "A"
-  },
-  {
     "noi_dung": "Giải hệ bất phương trình: { x + y ≤ 4; x ≥ 0; y ≥ 0 }",
     "lua_chon": {"A": "Miền tam giác giới hạn bởi các trục tọa độ và đường x+y=4", "B": "Miền vô nghiệm", "C": "Miền nửa mặt phẳng x+y≥4", "D": "Miền hình chữ nhật"},
     "dap_an_dung": "A"
