@@ -30,11 +30,6 @@
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Diện tích hình tròn có bán kính R là?",
-    "lua_chon": {"A": "πR", "B": "2πR", "C": "πR^2", "D": "R^2"},
-    "dap_an_dung": "C"
-  },
-  {
     "noi_dung": "Đạo hàm của hàm số y = x^3 là?",
     "lua_chon": {"A": "3x^2", "B": "x^2", "C": "3x", "D": "x^3"},
     "dap_an_dung": "A"
