@@ -231,16 +231,18 @@
     </aside>
 
     <!-- Main Column -->
-    <main id="main-column" class="flex flex-col gap-3 w-full sm:w-1/2">
-      <section id="qr-login" class="bg-white p-1 rounded-xl shadow text-center flex-1">
-        <div class="camera-box">
-          <div id="reader"></div>
-          <div class="qr-overlay" id="qrOverlay">
-            <div class="qr-frame">
-              <div class="scan-line"></div>
-            </div>
-          </div>
+  <main id="main-column" class="flex flex-col gap-3 w-full sm:w-1/2">
+  <section id="qr-login" 
+    class="bg-[url('/static/h.jpg')] bg-cover bg-center p-1 rounded-xl shadow text-center flex-1">
+
+    <div class="camera-box">
+      <div id="reader"></div>
+      <div class="qr-overlay" id="qrOverlay">
+        <div class="qr-frame">
+          <div class="scan-line"></div>
         </div>
+      </div>
+    </div>
         <p id="qr-error" class="text-red-600 mt-2 font-semibold hidden">QR không hợp lệ! Vui lòng thử lại hoặc kiểm tra camera.</p>
         <input type="file" id="qr-file" accept="image/*" class="hidden" />
         <div class="flex justify-center gap-4 mt-4">
