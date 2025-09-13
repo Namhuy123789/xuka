@@ -1,6 +1,6 @@
 /* Reset và font chung */
 body {
-  background-image: url("");
+  background-image: url("/static/h.jpg");
   background-size: cover;
   background-position: center;
   margin: 0;
@@ -141,3 +141,4 @@ body {
     max-height: 350px;
   }
 }
+
