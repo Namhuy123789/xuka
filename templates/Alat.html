@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alat VN</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .left-column {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .right-column {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .image-preview {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      cursor: zoom-in;
+      transition: transform 0.2s;
+    }
+    .image-preview:hover {
+      transform: scale(1.05);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      overflow: auto;
+    }
+    .modal-content {
+      max-width: 95%;
+      max-height: 95%;
+      object-fit: contain;
+      transform-origin: center;
+      transition: transform 0.2s;
+      cursor: crosshair;
+    }
+    .close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      color: white;
+      font-size: 40px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .close:hover {
+      color: #ff4444;
+    }
+    .zoom-controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 1100;
+    }
+    .zoom-btn {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 18px;
+      border-radius: 5px;
+    }
+    .zoom-btn:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+    .thumbnail {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      cursor: pointer;
+      margin: 5px;
+      border: 2px solid #ddd;
+    }
+    .thumbnail:hover {
+      border-color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="left-column">
+    <img src="{{ url_for('static', filename='Trang_3_ki_hieu_chung.jpg') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_3_ki_hieu_chung.jpg') }}')">
+    <img src="{{ url_for('static', filename='Trang_4_-_5.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_4_-_5.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_6-7_Hinh_the.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_6-7_Hinh_the.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_8___Dia_chat_khoang_san.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_8___Dia_chat_khoang_san.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_9_Khi_hau.jpg') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_9_Khi_hau.jpg') }}')">
+    <img src="{{ url_for('static', filename='Trang_10___He_thong_song_ngoi.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_10___He_thong_song_ngoi.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_11___Dat_dai.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_11___Dat_dai.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_12___Dong_thuc_vat.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_12___Dong_thuc_vat.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_13-mien-bac-bac-trung-bo.jpg') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_13-mien-bac-bac-trung-bo.jpg') }}')">
+    <img src="{{ url_for('static', filename='Trang_14___mien_Nam_Trung_Bo_va_Nam_Bo.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_14___mien_Nam_Trung_Bo_va_Nam_Bo.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_15_Dan_cu.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_15_Dan_cu.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_16_Dan_toc.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_16_Dan_toc.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_17_Kinh_te_chung.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_17_Kinh_te_chung.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_18_Nong_nghiep_chung.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_18_Nong_nghiep_chung.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_19_lua_cay_cong_nghiep_chan_nuoi.jpg') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_19_lua_cay_cong_nghiep_chan_nuoi.jpg') }}')">
+    <img src="{{ url_for('static', filename='Trang_20-lam-nghiep-thuy-san.jpg') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_20-lam-nghiep-thuy-san.jpg') }}')">
+    <img src="{{ url_for('static', filename='Trang_21_Cong_nghiep_chung.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_21_Cong_nghiep_chung.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_22-cong-nghiep-trong-diem.jpg') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_22-cong-nghiep-trong-diem.jpg') }}')">
+    <img src="{{ url_for('static', filename='Trang_23_Giao_thong.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_23_Giao_thong.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_24_Thuong_mai.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_24_Thuong_mai.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_25_Du_Lich.png') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_25_Du_Lich.png') }}')">
+    <img src="{{ url_for('static', filename='Trang_26-mien-bac-dong-bac-bac-bo.jpg') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_26-mien-bac-dong-bac-bac-bo.jpg') }}')">
+    <img src="{{ url_for('static', filename='Trang_27-bac-trung-bo.jpg') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_27-bac-trung-bo.jpg') }}')">
+    <img src="{{ url_for('static', filename='Trang_28-tay-nguyen-DHMT.jpg') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_28-tay-nguyen-DHMT.jpg') }}')">
+    <img src="{{ url_for('static', filename='Trang_29-dong-nam-bo-DBSCL.jpg') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_29-dong-nam-bo-DBSCL.jpg') }}')">
+    <img src="{{ url_for('static', filename='Trang_30-cac-vung-kinh-te-trong-diem.jpg') }}" 
+         class="thumbnail" 
+         onclick="previewImage('{{ url_for('static', filename='Trang_30-cac-vung-kinh-te-trong-diem.jpg') }}')">
+  </div>
+  <div class="right-column">
+    <img id="previewImage" 
+         src="{{ url_for('static', filename='Trang_3_ki_hieu_chung.jpg') }}" 
+         class="image-preview" 
+         onclick="openModal()">
+  </div>
+</div>
+
+<div class="modal" id="imageModal">
+  <span class="close" onclick="closeModal()">&times;</span>
+  <img src="" class="modal-content" id="modalImage">
+  <div class="zoom-controls">
+    <button class="zoom-btn" onclick="zoomIn()">+</button>
+    <button class="zoom-btn" onclick="zoomOut()">−</button>
+  </div>
+</div>
+
+<script>
+  let scale = 1;
+  let currentSrc = "{{ url_for('static', filename='Trang_3_ki_hieu_chung.jpg') }}";
+  let offsetX = 0;
+  let offsetY = 0;
+
+  function previewImage(src) {
+    currentSrc = src;
+    document.getElementById('previewImage').src = src;
+    scale = 1;
+    offsetX = 0;
+    offsetY = 0;
+    if (document.getElementById('imageModal').style.display === 'flex') {
+      updateModalImage();
+    }
+  }
+
+  function openModal() {
+    document.getElementById('imageModal').style.display = 'flex';
+    updateModalImage();
+  }
+
+  function closeModal() {
+    document.getElementById('imageModal').style.display = 'none';
+    scale = 1;
+    offsetX = 0;
+    offsetY = 0;
+    updateModalImage();
+  }
+
+  function updateModalImage() {
+    const modalImage = document.getElementById('modalImage');
+    modalImage.src = currentSrc;
+    modalImage.style.transform = `scale(${scale}) translate(${offsetX}px, ${offsetY}px)`;
+  }
+
+  function zoomIn() {
+    scale += 0.5;
+    updateModalImage();
+  }
+
+  function zoomOut() {
+    if (scale > 0.5) {
+      scale -= 0.5;
+      updateModalImage();
+    }
+  }
+
+  // Handle left-click to zoom in on a specific point and right-click to zoom out
+  document.getElementById('modalImage').addEventListener('mousedown', function(event) {
+    event.preventDefault(); // Prevent default browser actions
+    const modalImage = event.target;
+    const rect = modalImage.getBoundingClientRect();
+
+    if (event.button === 0) { // Left-click: Zoom in
+      // Calculate click coordinates relative to the image
+      const clickX = event.clientX - rect.left;
+      const clickY = event.clientY - rect.top;
+
+      // Calculate new center for zoom
+      const centerX = clickX - (rect.width / 2);
+      const centerY = clickY - (rect.height / 2);
+
+      // Zoom in and move image to center on clicked point
+      scale += 0.5;
+      offsetX = -centerX / scale;
+      offsetY = -centerY / scale;
+      updateModalImage();
+    } else if (event.button === 2) { // Right-click: Zoom out
+      zoomOut();
+    }
+  });
+
+  // Prevent default context menu on right-click
+  document.getElementById('modalImage').addEventListener('contextmenu', function(event) {
+    event.preventDefault();
+  });
+
+  // Close modal when clicking outside
+  window.onclick = function(event) {
+    const modal = document.getElementById('imageModal');
+    if (event.target === modal) {
+      closeModal();
+    }
+  }
+</script>
+
+</body>
+</html>
