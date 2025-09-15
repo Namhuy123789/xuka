@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, render_template, abort, redirect, url_for
+from flask import Flask, request, jsonify, send_from_directory, send_file, render_template, abort, redirect, url_for
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import NotFound  # Added to fix NameError
 from pathlib import Path
@@ -15,11 +15,14 @@ from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Hash import SHA256
 import base64
 from flask import send_from_directory
+import ctypes
+import subprocess
+import sys
+import os
+import google.generativeai as genai
+from dotenv import load_dotenv
 
-
-
-
-
+load_dotenv()
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change_this_secret_key")
@@ -44,6 +47,152 @@ limiter = Limiter(
     storage_uri="memory://",
     default_limits=["100 per 5 minutes"]
 )
+
+current_command = None
+
+
+# Lấy API key từ .env
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    raise ValueError("❌ GEMINI_API_KEY chưa được thiết lập trong .env")
+
+# Cấu hình Gemini
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel("gemini-1.5-flash")
+
+
+@app.route("/ask", methods=["POST"])
+@csrf.exempt
+def ask():
+    data = request.get_json(silent=True) or {}
+    user_msg = data.get("message", "").strip()
+    if not user_msg:
+        return jsonify({"error": "No message provided"}), 400
+
+    try:
+        resp = model.generate_content(
+            f"Bạn là trợ lý AI thông minh, trả lời mọi câu hỏi một cách chi tiết, chính xác và lịch sự.\n\nNgười dùng: {user_msg}"
+        )
+
+        # Kiểm tra cấu trúc response an toàn
+        reply = ""
+        if getattr(resp, "candidates", None):
+            parts = getattr(resp.candidates[0].content, "parts", [])
+            reply = "".join([getattr(p, "text", "") for p in parts]).strip()
+
+        if not reply:
+            reply = "AI không trả lời được câu hỏi này."
+
+        return jsonify({"reply": reply})
+
+    except Exception as e:
+        app.logger.exception(f"Lỗi /ask: {e}")
+        return jsonify({"error": str(e), "reply": "Lỗi server nội bộ"}), 500
+
+
+def is_admin():
+    """Kiểm tra xem chương trình có chạy bằng quyền Administrator hay không"""
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+if not is_admin():
+    # Nếu chưa có quyền admin thì restart lại bằng quyền admin
+    print("⚠️ Chương trình cần chạy bằng quyền Administrator. Đang khởi động lại...")
+    ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", sys.executable, " ".join(sys.argv), None, 1
+    )
+    sys.exit(0)
+
+
+
+
+
+def get_interfaces():
+    """Lấy danh sách tên interface mạng trên Windows"""
+    try:
+        result = subprocess.run(
+            ["netsh", "interface", "show", "interface"],
+            capture_output=True, text=True, check=True
+        )
+        lines = result.stdout.splitlines()
+        interfaces = []
+        for line in lines:
+            # bỏ dòng tiêu đề
+            if line.strip().startswith("Admin State") or line.strip().startswith("---") or not line.strip():
+                continue
+
+            # lấy tên interface từ cột cuối
+            parts = line.split()
+            if len(parts) >= 4:
+                iface = " ".join(parts[3:])
+                interfaces.append(iface)
+        return interfaces
+    except Exception as e:
+        print("[ERROR] Lấy danh sách interface thất bại:", e)
+        return []
+
+
+def set_network(state: str):
+    """Bật/tắt toàn bộ interface"""
+    interfaces = get_interfaces()
+    if not interfaces:
+        print("[ERROR] Không tìm thấy interface nào.")
+        return False
+
+    success = True
+    for iface in interfaces:
+        result = subprocess.run(
+            ["netsh", "interface", "set", "interface", iface, state],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            print(f"[ERROR] {iface} -> {result.stderr.strip()}")
+            success = False
+        else:
+            print(f"[INFO] {iface} -> {state}")
+    return success
+
+
+
+
+# Hàm ngắt kết nối mạng
+def disable_network():
+    adapters = ["Wi-Fi", "Local Area Connection* 2"]  # thay theo netsh show interface
+    for adapter in adapters:
+        try:
+            subprocess.run(
+                ["netsh", "interface", "set", "interface", adapter, "disable"],
+                check=True,
+                shell=True
+            )
+            print(f"[INFO] Đã ngắt mạng trên {adapter}")
+        except Exception as e:
+            print(f"[ERROR] Không thể ngắt {adapter}: {e}")
+
+# Hàm bật lại kết nối mạng
+def enable_network():
+    adapters = ["Wi-Fi", "Local Area Connection* 2"]
+    for adapter in adapters:
+        try:
+            subprocess.run(
+                ["netsh", "interface", "set", "interface", adapter, "enable"],
+                check=True,
+                shell=True
+            )
+            print(f"[INFO] Đã bật lại mạng trên {adapter}")
+        except Exception as e:
+            print(f"[ERROR] Không thể bật {adapter}: {e}")
+
+
+
+def disconnect_network():
+    return set_network("disabled")
+
+
+def reconnect_network():
+    return set_network("enabled")
 
 # --- Helpers ---
 def load_users(file_path: Path):
@@ -299,6 +448,48 @@ def api_made():
     except Exception as e:
         app.logger.exception(f"Lỗi liệt kê mã đề: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+
+
+
+
+
+@app.route("/alat")
+def alat():
+    return render_template("Alat.html")
+
+
+
+
+
+@app.post("/api/exam/start")
+@csrf.exempt
+def api_exam_start():
+    global current_command
+    # Chỉ gửi lệnh cho client, không tự ngắt mạng server
+    current_command = "disconnect"
+    return jsonify({"status": "success", "msg": "Lệnh ngắt mạng đã được gửi đến client"})
+
+
+@app.post("/api/exam/submit")
+@csrf.exempt
+def api_exam_submit():
+    global current_command
+    # Chỉ gửi lệnh cho client, không tự bật mạng server
+    current_command = "reconnect"
+    return jsonify({"status": "success", "msg": "Lệnh khôi phục mạng đã được gửi đến client"})
+
+
+@app.get("/api/exam/command")
+def api_exam_command():
+    global current_command
+    # Client sẽ gọi endpoint này để lấy lệnh mới nhất
+    return jsonify({"command": current_command})
+
+
+
+
+
+
 
 @app.post("/api/login")
 @csrf.exempt
