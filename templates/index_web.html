@@ -24,6 +24,7 @@
 
   <!-- Math.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- External CSS -->
   <link rel="stylesheet" href="/static/styles.css">
@@ -74,10 +75,10 @@
       border-radius: 5px;
       margin-bottom: 10px;
       text-align: right;
-      height: 40px;
-      overflow: hidden; /* Ẩn cả thanh trượt ngang và dọc */
+      height: 60px;
+      overflow: hidden;
       font-family: monospace;
-      white-space: nowrap; /* Ngăn văn bản xuống dòng */
+      white-space: nowrap;
     }
     .buttons {
       display: grid;
@@ -154,27 +155,21 @@
     }
   </style>
 </head>
+<body>
+
 <!-- Banner -->
 <div class="relative w-full h-[140px] overflow-hidden text-white">
-
-  <!-- Video nền -->
   <video id="bannerVideo" autoplay muted playsinline class="absolute top-0 left-0 w-full h-full object-cover">
     <source id="bannerSource" src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/banner.mp4.mp4" type="video/mp4">
     Trình duyệt của bạn không hỗ trợ video.
   </video>
-
-  <!-- Overlay đen mờ -->
   <div class="absolute inset-0 bg-black/40"></div>
-
-  <!-- Video góc trái -->
   <div class="absolute top-0 left-1 w-[250px] h-[140px] overflow-hidden rounded-lg shadow-lg z-20">
     <video id="cornerVideo" autoplay muted playsinline class="w-full h-full object-cover">
       <source id="cornerSource" src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/banner.mp4.mp4" type="video/mp4">
       Trình duyệt của bạn không hỗ trợ video.
     </video>
   </div>
-
-  <!-- Nội dung chữ/logo -->
   <div class="relative z-30 flex flex-col items-center justify-center h-full text-center">
     <h1 class="flex items-center gap-3">
       <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" 
@@ -186,51 +181,56 @@
   </div>
 </div>
 
-  <!-- Navbar -->
-  <nav class="bg-white-300 shadow-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between py-2">
-        <div class="flex items-center space-x-3">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Vietnam.svg/1024px-Flag_of_Vietnam.svg.png"
-               alt="Cờ Việt Nam" class="h-6 w-8 rounded-sm shadow" loading="lazy">
-          <span class="text-blue-500 font-bold text-sm whitespace-nowrap truncate">
-            TRƯỜNG THPT PHƯỚC LONG - PHƯỜNG PHƯỚC LONG - ĐỒNG NAI
-          </span>
-        </div>
-        <div class="hidden md:flex space-x-4"></div>
+<!-- Navbar -->
+<nav class="bg-white-300 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between py-2">
+      <div class="flex items-center space-x-3">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Vietnam.svg/1024px-Flag_of_Vietnam.svg.png"
+             alt="Cờ Việt Nam" class="h-6 w-8 rounded-sm shadow" loading="lazy">
+        <span class="text-blue-500 font-bold text-sm whitespace-nowrap truncate">
+          TRƯỜNG THPT PHƯỚC LONG - PHƯỜNG PHƯỚC LONG - ĐỒNG NAI
+        </span>
       </div>
+      <div class="hidden md:flex space-x-4"></div>
     </div>
-  </nav>
+  </div>
+</nav>
 
-  <!-- Main Content -->
-  <div class="flex flex-col sm:flex-row justify-center items-stretch gap-6 sm:gap-8 px-8 sm:px-8 mt-3 main-container">
-    <!-- Left Column -->
-    <aside id="left-column" class="flex flex-col gap-3 w-full sm:w-1/3">
-      <div class="card h-full">
-        <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-2">📰 Tin mới từ VnExpress</h2>
-        <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
-          <li>
-            🌍 <a href="https://vnexpress.net/the-gioi" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">Tin tức thế giới</a><br>
-            <span class="text-gray-500">Tổng hợp nhanh những diễn biến chính trị, kinh tế, xã hội nổi bật trên thế giới.</span>
-          </li>
-        </ul>
-      </div>
-      <div class="card h-full">
-        <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
-          <li class="flex items-center gap-2">
-            <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" alt="Biểu tượng Xuka" class="w-4 h-4" loading="lazy">
-            <a href="https://xuka.com.vn/huongdan" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">xuka.com.vn</a>
-          </li>
-        </ul>
-        <section class="pt-4 border-t">
-          <div class="grid grid-cols-1 gap-4">
-            <iframe class="rounded-lg w-full aspect-video" src="https://www.youtube.com/embed/FxIGbF24gkU" title="Video hướng dẫn 1" loading="lazy" allowfullscreen></iframe>
-          </div>
-        </section>
-      </div>
-    </aside>
+<!-- Main Content -->
+<div class="flex flex-col sm:flex-row justify-center items-stretch gap-6 sm:gap-8 px-8 sm:px-8 mt-1 main-container">
+  <!-- Left Column -->
+  <!-- Left Column -->
+<aside id="left-column" class="flex flex-col gap-3 w-full sm:w-1/3">
 
-    <!-- Main Column -->
+    <div class="card h-full">
+      <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">🌍 TRỢ LÝ XUKA - AI</h2>
+    <div id="chat-box" class="h-60 overflow-y-auto border rounded-lg p-3 bg-gray-50 mb-4"></div>
+    <div class="flex">
+      <input id="msg" type="text" placeholder="Nhập câu hỏi..." 
+             class="flex-grow border rounded-l-lg px-3 py-2 focus:outline-none" />
+      <button onclick="sendMessage()" 
+              class="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700">
+        Gửi
+      </button>
+    </div>
+  </div>
+    <div class="card h-full">
+      <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
+        <li class="flex items-center gap-2">
+          <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" alt="Biểu tượng Xuka" class="w-4 h-4" loading="lazy">
+          <a href="https://xuka.com.vn/huongdan" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">xuka.com.vn</a>
+        </li>
+      </ul>
+      <section class="pt-4 border-t">
+        <div class="grid grid-cols-1 gap-4">
+          <iframe class="rounded-lg w-full aspect-video" src="https://www.youtube.com/embed/FxIGbF24gkU" title="Video hướng dẫn 1" loading="lazy" allowfullscreen></iframe>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <!-- Main Column -->
   <main id="main-column" class="flex flex-col gap-3 w-full sm:w-1/2">
   <section id="qr-login" 
     class="bg-[url('/static/h.jpg')] bg-cover bg-center p-1 rounded-xl shadow text-center flex-1">
@@ -243,341 +243,409 @@
         </div>
       </div>
     </div>
-        <p id="qr-error" class="text-red-600 mt-2 font-semibold hidden">QR không hợp lệ! Vui lòng thử lại hoặc kiểm tra camera.</p>
-        <input type="file" id="qr-file" accept="image/*" class="hidden" />
-        <div class="flex justify-center gap-4 mt-4">
-          <button id="flip-camera" 
-                  class="relative flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
-                         bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
-                         shadow-lg transform transition-all duration-200
-                         hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner
-                         group"
-                  aria-label="Chuyển camera">
-            <span class="group-hover:opacity-100 opacity-0 absolute -top-8 bg-gray-800 text-white text-xs rounded py-1 px-2 transition-opacity">Chuyển camera</span>
-            <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M4 14a8 8 0 0116 0 8 8 0 01-16 0z"/>
-              </svg>
-            </span>
-          </button>
-          <button id="upload-qr" 
-                  class="relative flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
-                         bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
-                         shadow-lg transform transition-all duration-200
-                         hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner
-                         group"
-                  aria-label="Tải lên mã QR">
-            <span class="group-hover:opacity-100 opacity-0 absolute -top-8 bg-gray-800 text-white text-xs rounded py-1 px-2 transition-opacity">Tải lên mã QR</span>
-            <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h4l3-3h4l3 3h4v14H3V7z" />
-                <circle cx="12" cy="13" r="4" stroke="white" stroke-width="2" />
-              </svg>
-            </span>
-          </button>
+
+ 
+    <div>
+      <p id="qr-error" class="text-red-600 mt-2 font-semibold hidden">QR không hợp lệ! Vui lòng thử lại hoặc kiểm tra camera.</p>
+      <input type="file" id="qr-file" accept="image/*" class="hidden" />
+      <div class="flex justify-center gap-4 mt-4">
+        <button id="toggle-camera" 
+                class="relative flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
+                       bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
+                       shadow-lg transform transition-all duration-200
+                       hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner
+                       group"
+                aria-label="Bật/Tắt camera">
+          <span class="group-hover:opacity-100 opacity-0 absolute -top-8 bg-gray-800 text-white text-xs rounded py-1 px-2 transition-opacity">Bật/Tắt camera</span>
+          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14m-3 2V8m0 8l-4.553 2.276A1 1 0 013 15.382V8.618a1 1 0 011.447-.894L9 10"/>
+            </svg>
+          </span>
+		  Bật/Tắt 
+        </button>
+        <button id="flip-camera" 
+                class="relative flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
+                       bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
+                       shadow-lg transform transition-all duration-200
+                       hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner
+                       group"
+                aria-label="Chuyển camera">
+          <span class="group-hover:opacity-100 opacity-0 absolute -top-8 bg-gray-800 text-white text-xs rounded py-1 px-2 transition-opacity">Chuyển camera</span>
+          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M4 14a8 8 0 0116 0 8 8 0 01-16 0z"/>
+            </svg>
+          </span>
+		  Lật 
+        </button>
+        <button id="upload-qr" 
+                class="relative flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-semibold
+                       bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
+                       shadow-lg transform transition-all duration-200
+                       hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner
+                       group"
+                aria-label="Tải lên mã QR">
+          <span class="group-hover:opacity-100 opacity-0 absolute -top-8 bg-gray-800 text-white text-xs rounded py-1 px-2 transition-opacity">Tải lên mã QR</span>
+          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h4l3-3h4l3 3h4v14H3V7z" />
+              <circle cx="12" cy="13" r="4" stroke="white" stroke-width="2" />
+            </svg>
+          </span>
+		  Tải ảnh
+        </button>
+		 
+      </div>
+  
+
+    <div id="button-group" class="flex flex-col items-center gap-4 mt-6">
+	<a href="/huongdan" 
+     class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
+            bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500
+            shadow-lg transform transition-all duration-200
+            hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner w-60 text-center"
+     aria-label="Hướng dẫn">
+    <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6l-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-5l-2 2z" />
+      </svg>
+    </span>
+    Hướng dẫn
+  </a>
+  <a href="/tronde" 
+     class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
+            bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
+            shadow-lg transform transition-all duration-200
+            hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner w-60 text-center"
+     aria-label="Quản trị">
+    <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8 4a8 8 0 11-16 0 8 8 0 0116 0z" />
+      </svg>
+    </span>
+    Quản trị
+  </a>
+
+  <a href="/xuka" 
+     class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
+            bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
+            shadow-lg transform transition-all duration-200
+            hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner w-60 text-center"
+     aria-label="Đánh giá">
+    <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.28 3.945a1 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.28 3.945c.3.921-.755 1.688-1.54 1.118l-3.36-2.44a1 1 0 00-1.175 0l-3.36 2.44c-.785.57-1.84-.197-1.54-1.118l1.28-3.945a1 1 0 00-.364-1.118l-3.36-2.44c-.783-.57-.38-1.81.588-1.81h4.15a1 1 0 00.95-.69l1.28-3.945z" />
+      </svg>
+    </span>
+    Đánh giá
+  </a>
+
+  
+</div>
+
+  </main>
+ 
+  </section>
+  <!-- Right Column -->
+  
+ <!-- Right Column -->
+<aside id="right-column" class="flex flex-col gap-3 w-full sm:w-1/3">
+
+    <div class="card h-full">
+      <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">📰 TIỆN ÍCH XUKA</h2>
+      <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
+       <li>🌍 <a href="https://dnis.dongnai.gov.vn/" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">Hệ thống văn bản Sở GD&ĐT Đồng Nai</a><br><span class="text-gray-500">Hệ thống văn bản chỉ đạo điều hành ngành GD&ĐT Đồng Nai.</span></li>
+	   <li>🌍 <a href="https://vnexpress.net/the-gioi" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">Tin tức thế giới</a><br><span class="text-gray-500">Tổng hợp nhanh những diễn biến chính trị, kinh tế, xã hội nổi bật trên thế giới.</span></li>
+	   <li>🌍 <a href="https://vnexpress.net/khoa-hoc-cong-nghe" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">Khoa học công nghệ</a><br><span class="text-gray-500">Cập nhật khoa học và công nghệ mới nhất</span></li>
+      </ul>
+    </div>
+    <div class="card h-full">
+      <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
+        <li class="flex items-center gap-2">
+          <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" alt="Biểu tượng Xuka" class="w-4 h-4" loading="lazy">
+          <a href="https://xuka.com.vn/huongdan" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">xuka.com.vn</a>
+        </li>
+      </ul>
+      <section class="pt-4 border-t">
+        <div class="grid grid-cols-1 gap-4">
+          <iframe class="rounded-lg w-full aspect-video" src="https://www.youtube.com/embed/l_4eslm2VEY" title="Video hướng dẫn 2" loading="lazy" allowfullscreen></iframe>
         </div>
       </section>
+    </div>
+  </aside>
+</div>
 
-      <div id="button-group" class="flex flex-wrap justify-center gap-4">
-        <a href="/tronde" class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
-                                bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
-                                shadow-lg transform transition-all duration-200
-                                hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner"
-           aria-label="Quản trị">
-          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8 4a8 8 0 11-16 0 8 8 0 0116 0z" />
-            </svg>
-          </span>
-        </a>
-        <a href="/xuka" class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
-                                bg-gradient-to-r from-green-400 via-teal-500 to-blue-500
-                                shadow-lg transform transition-all duration-200
-                                hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner"
-           aria-label="Đánh giá">
-          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.28 3.945a1 
-                 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 
-                 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.28 
-                 3.945c.3.921-.755 1.688-1.54 1.118l-3.36-2.44a1 
-                 1 0 00-1.175 0l-3.36 2.44c-.785.57-1.84-.197-1.54-1.118l1.28-3.945a1 
-                 1 0 00-.364-1.118l-3.36-2.44c-.783-.57-.38-1.81.588-1.81h4.15a1 
-                 1 0 00.95-.69l1.28-3.945z" />
-            </svg>
-          </span>
-        </a>
-        <a href="/huongdan" class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold
-                                bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500
-                                shadow-lg transform transition-all duration-200
-                                hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner"
-           aria-label="Hướng dẫn">
-          <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6l-2-2H5a2 2 0 00-2 2v14a2 2 0 
-                 002 2h14a2 2 0 002-2V6a2 2 0 
-                 00-2-2h-5l-2 2z" />
-            </svg>
-            Hướng dẫn
-          </span>
-        </a>
-      </div>
-    </main>
+<!-- Account Login -->
+<section id="account-login" class="max-w-md mx-auto bg-white p-6 rounded shadow hidden">
+  <h1 class="text-2xl font-bold mb-4">Đăng Nhập Tài Khoản</h1>
+  <form id="account-login-form">
+    <div class="mb-4">
+      <label for="username" class="block font-semibold">Tên đăng nhập:</label>
+      <input id="username" name="username" type="text" class="w-full border p-2 rounded" autocomplete="username" />
+    </div>
+    <div class="mb-4">
+      <label for="password" class="block font-semibold">Mật khẩu:</label>
+      <input id="password" name="password" type="password" class="w-full border p-2 rounded" autocomplete="current-password" />
+    </div>
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Đăng nhập</button>
+    <p id="login-error" class="text-red-600 mt-2 font-semibold hidden">Sai tài khoản hoặc mật khẩu! Vui lòng kiểm tra lại.</p>
+  </form>
+</section>
 
-    <!-- Right Column -->
-    <aside id="right-column" class="flex flex-col gap-3 w-full sm:w-1/3">
-      <div class="card h-full">
-        <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">📰 SỞ GD&ĐT ĐỒNG NAI</h2>
-        <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
-          <li>🌍 <a href="https://dnis.dongnai.gov.vn/" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">Hệ thống văn bản</a><br><span class="text-gray-500">Hệ thống văn bản chỉ đạo điều hành ngành GD&ĐT Đồng Nai.</span></li>
-        </ul>
+<!-- Candidate Information -->
+<section id="login-form" class="max-w-xl mx-auto bg-white p-6 rounded shadow hidden">
+  <h1 class="text-2xl font-bold mb-4">Thông Tin Thí Sinh</h1>
+  <div class="mb-4">
+    <label for="hoten" class="block font-semibold">Họ và tên:</label>
+    <input id="hoten" name="hoten" type="text" class="w-full border p-2 rounded" />
+  </div>
+  <div class="mb-4">
+    <label for="sbd" class="block font-semibold">Số báo danh:</label>
+    <input id="sbd" name="sbd" type="text" class="w-full border p-2 rounded" />
+  </div>
+  <div class="mb-4">
+    <label for="ngaysinh" class="block font-semibold">Ngày sinh:</label>
+    <input id="ngaysinh" name="ngaysinh" type="date" class="w-full border p-2 rounded" />
+  </div>
+  <div class="mb-4">
+    <label for="made" class="block font-semibold">Mã đề:</label>
+    <select id="made" name="made" class="w-full border p-2 rounded">
+      <option value="">-- Chọn mã đề --</option>
+    </select>
+  </div>
+  <p id="form-error" class="text-red-600 mt-2 font-semibold hidden">Vui lòng kiểm tra lại thông tin!</p>
+  <button id="btn-start-exam" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Bắt đầu thi</button>
+</section>
+
+<!-- Exam Section -->
+<section id="exam-container" class="max-w-6xl mx-auto p-6 bg-white rounded shadow hidden">
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+    <!-- Left Column: Candidate Info, Timer, Progress, Review List -->
+    <aside class="md:col-span-2 bg-white p-4 rounded-2xl shadow-lg flex flex-col gap-6">
+      <div class="pb-4 border-b">
+        <h2 class="text-lg font-bold text-blue-600 flex items-center gap-2">
+          <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.364 4.56a9 9 0 01-13.243 13.243z" />
+          </svg>
+          Thông tin 
+        </h2>
+        <div class="mt-2 space-y-1 text-gray-700 text-sm">
+          <p><span class="font-semibold"></span> <span id="info-hoten">--</span></p>
+          <p><span class="font-semibold">SBD:</span> <span id="info-sbd">--</span></p>
+          <p><span class="font-semibold">Mã đề:</span> <span id="info-made">--</span></p>
+        </div>
+      </div>
+      <div class="pb-4 border-b">
+        <h2 class="text-lg font-bold text-blue-600 flex items-center gap-2">
+          <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Thời gian 
+        </h2>
+        <p id="countdown" class="text-red-600 font-extrabold text-3xl mt-2 tracking-wider">--:--</p>
+      </div>
+      <div class="pb-4 border-b">
+        <h2 class="text-lg font-bold text-blue-600 flex items-center gap-2">
+          <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          Tiến độ 
+        </h2>
+        <div class="w-full bg-gray-200 rounded-full h-3 mt-3 overflow-hidden">
+          <div id="progress-bar" class="bg-green-500 h-3 w-0 transition-all duration-500"></div>
+        </div>
+        <p id="progress-text" class="text-sm mt-2 text-gray-600">0 / 0 câu</p>
+      </div>
+      <div>
+        <h2 class="text-lg font-bold text-blue-700 mb-2">🔖 Đánh dấu</h2>
+        <ul id="review-list" class="list-disc list-inside text-gray-700 text-sm"></ul>
       </div>
       <div class="card h-full">
+        <h2 class="text-base font-bold text-blue-800 border-b pb-2 mb-3">🌍 ALAT VN</h2>
         <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
-          <li class="flex items-center gap-2">
-            <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" alt="Biểu tượng Xuka" class="w-4 h-4" loading="lazy">
-            <a href="https://xuka.com.vn/huongdan" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">xuka.com.vn</a>
+          <li>
+            <a href="{{ url_for('alat') }}" 
+               class="text-blue-600 hover:underline" 
+               target="_blank" 
+               rel="noopener noreferrer">
+              Mở Alat
+              <img src="{{ url_for('static', filename='Trang_6-7_Hinh_the.png') }}" 
+                   class="thumbnail" 
+                   onclick="previewImage('{{ url_for('static', filename='Trang_6-7_Hinh_the.png') }}')">
+            </a>
           </li>
         </ul>
-        <section class="pt-4 border-t">
-          <div class="grid grid-cols-1 gap-4">
-            <iframe class="rounded-lg w-full aspect-video" src="https://www.youtube.com/embed/l_4eslm2VEY" title="Video hướng dẫn 2" loading="lazy" allowfullscreen></iframe>
-          </div>
-        </section>
+      </div>
+    </aside>
+
+    <!-- Questions -->
+    <main class="md:col-span-7 bg-white p-4 rounded shadow">
+      <h1 class="text-2xl font-bold mb-4 text-center">BÀI THI TRẮC NGHIỆM</h1>
+      <p id="exam-notice" class="text-red-600 font-bold mb-4 hidden">Chế độ thi: Phím bị khóa và mạng bị ngắt để đảm bảo công bằng.</p>
+      <div id="questions" class="space-y-6"></div>
+      <div class="flex justify-center mt-6">
+        <button id="btn-submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700">Nộp bài</button>
+      </div>
+      <p id="result" class="mt-4 text-green-600 font-bold text-center"></p>
+    </main>
+
+    <!-- Right Column: Answer Sheet, Calculator -->
+    <aside class="md:col-span-3 bg-white p-4 rounded shadow">
+      <h2 class="text-lg font-bold text-blue-700 mb-2">📑 Bảng trả lời</h2>
+      <div id="answer-sheet" class="grid grid-cols-5 gap-2 text-sm"></div>
+      <div class="calculator mt-2">
+        <div class="brand-header">
+          <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" alt="Logo Xuka" class="neon-bluewhite">
+          <span>XUKA 4.O</span>
+        </div>
+        <div id="display" class="display">0</div>
+        <div class="buttons">
+          <button class="clr" onclick="clearDisplay()">AC</button>
+          <button class="op" onclick="append('(')">(</button>
+          <button class="op" onclick="append(')')">)</button>
+          <button class="op" onclick="append('^')">xʸ</button>
+          <button class="op" onclick="del()">DEL</button>
+          <button class="op" onclick="append('sin(')">sin</button>
+          <button class="op" onclick="append('cos(')">cos</button>
+          <button class="op" onclick="append('tan(')">tan</button>
+          <button class="op" onclick="append('sqrt(')">√</button>
+          <button class="op" onclick="append('pi')">π</button>
+          <button class="op" onclick="append('log(')">log</button>
+          <button class="op" onclick="append('ln(')">ln</button>
+          <button class="op" onclick="append('exp(')">eˣ</button>
+          <button class="op" onclick="append('e')">e</button>
+          <button class="op" onclick="append('%')">%</button>
+          <button class="num" onclick="append('7')">7</button>
+          <button class="num" onclick="append('8')">8</button>
+          <button class="num" onclick="append('9')">9</button>
+          <button class="op" onclick="append('/')">÷</button>
+          <button class="op" onclick="append('!')">n!</button>
+          <button class="num" onclick="append('4')">4</button>
+          <button class="num" onclick="append('5')">5</button>
+          <button class="num" onclick="append('6')">6</button>
+          <button class="op" onclick="append('*')">×</button>
+          <button class="op" onclick="append('^2')">x²</button>
+          <button class="num" onclick="append('1')">1</button>
+          <button class="num" onclick="append('2')">2</button>
+          <button class="num" onclick="append('3')">3</button>
+          <button class="op" onclick="append('-')">−</button>
+          <button class="eq" onclick="calculate()">=</button>
+          <button class="num" onclick="append('0')">0</button>
+          <button class="num" onclick="append('.')">.</button>
+          <button class="op" onclick="append(',')">,</button>
+          <button class="op" onclick="append('+')">+</button>
+        </div>
       </div>
     </aside>
   </div>
+</section>
 
-  <!-- Account Login -->
-  <section id="account-login" class="max-w-md mx-auto bg-white p-6 rounded shadow hidden">
-    <h1 class="text-2xl font-bold mb-4">Đăng Nhập Tài Khoản</h1>
-    <form id="account-login-form">
-      <div class="mb-4">
-        <label for="username" class="block font-semibold">Tên đăng nhập:</label>
-        <input id="username" name="username" type="text" class="w-full border p-2 rounded" autocomplete="username" />
-      </div>
-      <div class="mb-4">
-        <label for="password" class="block font-semibold">Mật khẩu:</label>
-        <input id="password" name="password" type="password" class="w-full border p-2 rounded" autocomplete="current-password" />
-      </div>
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Đăng nhập</button>
-      <p id="login-error" class="text-red-600 mt-2 font-semibold hidden">Sai tài khoản hoặc mật khẩu! Vui lòng kiểm tra lại.</p>
-    </form>
-  </section>
+<!-- Result -->
+<section id="result-container" class="max-w-2xl mx-auto p-6 bg-white rounded shadow mt-10 hidden"></section>
 
-  <!-- Candidate Information -->
-  <section id="login-form" class="max-w-xl mx-auto bg-white p-6 rounded shadow hidden">
-    <h1 class="text-2xl font-bold mb-4">Thông Tin Thí Sinh</h1>
-    <div class="mb-4">
-      <label for="hoten" class="block font-semibold">Họ và tên:</label>
-      <input id="hoten" name="hoten" type="text" class="w-full border p-2 rounded" />
-    </div>
-    <div class="mb-4">
-      <label for="sbd" class="block font-semibold">Số báo danh:</label>
-      <input id="sbd" name="sbd" type="text" class="w-full border p-2 rounded" />
-    </div>
-    <div class="mb-4">
-      <label for="ngaysinh" class="block font-semibold">Ngày sinh:</label>
-      <input id="ngaysinh" name="ngaysinh" type="date" class="w-full border p-2 rounded" />
-    </div>
-    <div class="mb-4">
-      <label for="made" class="block font-semibold">Mã đề:</label>
-      <select id="made" name="made" class="w-full border p-2 rounded">
-        <option value="">-- Chọn mã đề --</option>
-      </select>
-    </div>
-    <p id="form-error" class="text-red-600 mt-2 font-semibold hidden">Vui lòng kiểm tra lại thông tin!</p>
-    <button id="btn-start-exam" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Bắt đầu thi</button>
-  </section>
+<!-- Footer -->
+<footer class="mt-10 py-4 text-center text-gray-700 text-sm font-medium">
+  Bản quyền © 2025 <span class="font-bold text-red-600">PHẠM HUY TUÂN</span> · ĐT: <a href="tel:0389897989" class="text-blue-600 hover:underline">0389 897 989</a>
+</footer>
 
-  <!-- Exam Section -->
-  <section id="exam-container" class="max-w-6xl mx-auto p-6 bg-white rounded shadow hidden">
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-      <!-- Left Column: Candidate Info, Timer, Progress, Review List -->
-      <aside class="md:col-span-2 bg-white p-4 rounded-2xl shadow-lg flex flex-col gap-6">
-        <div class="pb-4 border-b">
-          <h2 class="text-lg font-bold text-blue-600 flex items-center gap-2">
-            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.364 4.56a9 9 0 01-13.243 13.243z" />
-            </svg>
-            Thông tin 
-          </h2>
-          <div class="mt-2 space-y-1 text-gray-700 text-sm">
-            <p><span class="font-semibold"></span> <span id="info-hoten">--</span></p>
-            <p><span class="font-semibold">SBD:</span> <span id="info-sbd">--</span></p>
-            <p><span class="font-semibold">Mã đề:</span> <span id="info-made">--</span></p>
-          </div>
-        </div>
+<!-- MathJax Config -->
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/mhchem'] },
+    tex: {
+      packages: { '[+]': ['mhchem'] },
+      inlineMath: [['\\(', '\\)'], ['$', '$']]
+    },
+    options: {
+      skipHtmlTags: ['script', 'style', 'textarea', 'pre', 'code']
+    }
+  };
+</script>
 
-        <div class="pb-4 border-b">
-          <h2 class="text-lg font-bold text-blue-600 flex items-center gap-2">
-            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Thời gian 
-          </h2>
-          <p id="countdown" class="text-red-600 font-extrabold text-3xl mt-2 tracking-wider">--:--</p>
-        </div>
 
-        <div class="pb-4 border-b">
-          <h2 class="text-lg font-bold text-blue-600 flex items-center gap-2">
-            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            Tiến độ 
-          </h2>
-          <div class="w-full bg-gray-200 rounded-full h-3 mt-3 overflow-hidden">
-            <div id="progress-bar" class="bg-green-500 h-3 w-0 transition-all duration-500"></div>
-          </div>
-          <p id="progress-text" class="text-sm mt-2 text-gray-600">0 / 0 câu</p>
-        </div>
+<!-- Calculator Script -->
+<script>
+  const display = document.getElementById("display");
+  let expr = "";
 
-        <div>
-          <h2 class="text-lg font-bold text-blue-700 mb-2">🔖 Câu đánh dấu</h2>
-          <ul id="review-list" class="list-disc list-inside text-gray-700 text-sm"></ul>
-        </div>
-      </aside>
+  function updateDisplay() {
+    display.textContent = expr || "0";
+    display.scrollLeft = display.scrollWidth; // Auto scroll to the end
+  }
 
-      <!-- Questions -->
-      <main class="md:col-span-7 bg-white p-4 rounded shadow">
-        <h1 class="text-2xl font-bold mb-4 text-center">BÀI THI TRẮC NGHIỆM</h1>
-        <p id="exam-notice" class="text-red-600 font-bold mb-4 hidden">Chế độ thi: Phím bị khóa và mạng bị ngắt để đảm bảo công bằng.</p>
-        <div id="questions" class="space-y-6"></div>
-        <div class="flex justify-center mt-6">
-          <button id="btn-submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700">Nộp bài</button>
-        </div>
-        <p id="result" class="mt-4 text-green-600 font-bold text-center"></p>
-      </main>
+  function append(val) {
+    expr += val;
+    updateDisplay();
+  }
 
-      <!-- Right Column: Answer Sheet, Calculator -->
-      <aside class="md:col-span-3 bg-white p-4 rounded shadow">
-        <h2 class="text-lg font-bold text-blue-700 mb-2">📑 Bảng trả lời</h2>
-        <div id="answer-sheet" class="grid grid-cols-5 gap-2 text-sm"></div>
-        <div class="calculator mt-4">
-          <div class="brand-header">
-            <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" alt="Logo Xuka" class="neon-bluewhite">
-            <span>xuka.com.vn</span>
-          </div>
-          <div id="display" class="display">0</div>
-          <div class="buttons">
-            <button class="clr" onclick="clearDisplay()">AC</button>
-            <button class="op" onclick="append('(')">(</button>
-            <button class="op" onclick="append(')')">)</button>
-            <button class="op" onclick="append('^')">xʸ</button>
-            <button class="op" onclick="del()">DEL</button>
+  function clearDisplay() {
+    expr = "";
+    updateDisplay();
+  }
 
-            <button class="op" onclick="append('sin(')">sin</button>
-            <button class="op" onclick="append('cos(')">cos</button>
-            <button class="op" onclick="append('tan(')">tan</button>
-            <button class="op" onclick="append('sqrt(')">√</button>
-            <button class="op" onclick="append('pi')">π</button>
+  function del() {
+    expr = expr.slice(0, -1);
+    updateDisplay();
+  }
 
-            <button class="op" onclick="append('log(')">log</button>
-            <button class="op" onclick="append('ln(')">ln</button>
-            <button class="op" onclick="append('exp(')">eˣ</button>
-            <button class="op" onclick="append('e')">e</button>
-            <button class="op" onclick="append('%')">%</button>
-
-            <button class="num" onclick="append('7')">7</button>
-            <button class="num" onclick="append('8')">8</button>
-            <button class="num" onclick="append('9')">9</button>
-            <button class="op" onclick="append('/')">÷</button>
-            <button class="op" onclick="append('!')">n!</button>
-
-            <button class="num" onclick="append('4')">4</button>
-            <button class="num" onclick="append('5')">5</button>
-            <button class="num" onclick="append('6')">6</button>
-            <button class="op" onclick="append('*')">×</button>
-            <button class="op" onclick="append('^2')">x²</button>
-
-            <button class="num" onclick="append('1')">1</button>
-            <button class="num" onclick="append('2')">2</button>
-            <button class="num" onclick="append('3')">3</button>
-            <button class="op" onclick="append('-')">−</button>
-            <button class="eq" onclick="calculate()">=</button>
-
-            <button class="num" onclick="append('0')">0</button>
-            <button class="num" onclick="append('.')">.</button>
-            <button class="op" onclick="append(',')">,</button>
-            <button class="op" onclick="append('+')">+</button>
-          </div>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <!-- Result -->
-  <section id="result-container" class="max-w-2xl mx-auto p-6 bg-white rounded shadow mt-10 hidden"></section>
-
-  <!-- Footer -->
-  <footer class="mt-10 py-4 text-center text-gray-700 text-sm font-medium">
-    Bản quyền © 2025 <span class="font-bold text-red-600">PHẠM HUY TUÂN</span> · ĐT: <a href="tel:0389897989" class="text-blue-600 hover:underline">0389 897 989</a>
-  </footer>
-
-  <!-- MathJax Config -->
-  <script>
-    window.MathJax = {
-      loader: { load: ['[tex]/mhchem'] },
-      tex: {
-        packages: { '[+]': ['mhchem'] },
-        inlineMath: [['\\(', '\\)'], ['$', '$']]
-      },
-      options: {
-        skipHtmlTags: ['script', 'style', 'textarea', 'pre', 'code']
+  function calculate() {
+    try {
+      if (!expr) {
+        display.textContent = "0";
+        return;
       }
-    };
-  </script>
-
-  <!-- Calculator Script -->
-  <script>
-    const display = document.getElementById("display");
-    let expr = "";
-
-    function updateDisplay() {
-      display.textContent = expr || "0";
-      display.scrollLeft = display.scrollWidth; // Auto scroll to the end
-    }
-
-    function append(val) {
-      expr += val;
+      let result = math.evaluate(expr);
+      if (isNaN(result) || !isFinite(result)) {
+        throw new Error("Invalid result");
+      }
+      expr = result.toString();
       updateDisplay();
-    }
-
-    function clearDisplay() {
-      expr = "";
-      updateDisplay();
-    }
-
-    function del() {
-      expr = expr.slice(0, -1);
-      updateDisplay();
-    }
-
-    function calculate() {
-      try {
-        if (!expr) {
-          display.textContent = "0";
-          return;
-        }
-        let result = math.evaluate(expr);
-        if (isNaN(result) || !isFinite(result)) {
-          throw new Error("Invalid result");
-        }
-        expr = result.toString();
+    } catch (e) {
+      display.textContent = "Lỗi";
+      setTimeout(() => {
+        expr = "";
         updateDisplay();
-      } catch (e) {
-        display.textContent = "Lỗi";
-        setTimeout(() => {
-          expr = "";
-          updateDisplay();
-        }, 1000);
-      }
+      }, 1000);
     }
-    const playlist = [
-  "https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/banner.mp4.mp4",
-  "https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/x4.mp4.mp4"
-];
+  }
+</script>
 
+<!-- External JavaScript -->
+<script src="/static/script.js" defer></script>
+<script>
+  async function callExamAPI(url) {
+    try {
+      const res = await fetch(url, { method: "POST" });
+      const data = await res.json();
+      alert(data.msg); // Hiển thị thông báo nhanh
+      return data;
+    } catch (err) {
+      alert("❌ Lỗi kết nối tới server!");
+      return null;
+    }
+  }
+
+  // Khi bấm nút BẮT ĐẦU THI
+  document.getElementById("btn-start-exam").addEventListener("click", async () => {
+    const result = await callExamAPI("/api/exam/start");
+    if (result && result.status === "success") {
+      document.getElementById("exam-notice").classList.remove("hidden");
+    }
+  });
+
+  // Khi bấm nút NỘP BÀI
+  document.getElementById("btn-submit").addEventListener("click", async () => {
+    const result = await callExamAPI("/api/exam/submit");
+    if (result && result.status === "success") {
+      document.getElementById("result").innerText = "✅ Bài thi đã được nộp thành công!";
+    }
+  });
+
+  const playlist = [
+    "https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/banner.mp4.mp4",
+    "https://raw.githubusercontent.com/Namhuy123789/xuka/main/static/x4.mp4.mp4"
+  ];
 
   let currentIndex = 0;
 
@@ -598,7 +666,6 @@
     cornerVideo.play().catch(()=>{});
   }
 
-  // khi 1 trong 2 video kết thúc thì đổi video mới
   function handleEnded() {
     currentIndex = (currentIndex + 1) % playlist.length;
     changeVideo(currentIndex);
@@ -606,11 +673,168 @@
 
   bannerVideo.addEventListener('ended', handleEnded);
   cornerVideo.addEventListener('ended', handleEnded);
+  
+ 
+document.addEventListener("DOMContentLoaded", async () => {
+  let html5QrCode = null;
+  const toggleBtn = document.getElementById("toggle-camera");
+  const flipBtn = document.getElementById("flip-camera");
+  const qrFileInput = document.getElementById("qr-file");
+  const qrResultDisplay = document.getElementById("qr-result");
+
+  let isCameraOn = false;
+  let currentCameraId = null;
+  let devices = await Html5Qrcode.getCameras();
+
+  async function startQrCamera(cameraId = null) {
+    if (!devices.length) {
+      alert("❌ Không tìm thấy camera!");
+      return;
+    }
+    currentCameraId = cameraId || devices[0].id;
+
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode("reader");
+    }
+
+    try {
+      await html5QrCode.start(
+        { deviceId: { exact: currentCameraId } },
+        { fps: 10, qrbox: 250 },
+        qrCodeMessage => {
+          console.log("✅ Mã QR:", qrCodeMessage);
+          if (qrResultDisplay) qrResultDisplay.textContent = qrCodeMessage;
+        }
+      );
+      isCameraOn = true;
+      toggleBtn.classList.remove("from-green-400", "to-blue-500");
+      toggleBtn.classList.add("from-red-500", "to-pink-500");
+    } catch (err) {
+      console.error("❌ Lỗi khi start camera:", err);
+    }
+  }
+
+ async function stopQrCamera() {
+  if (isCameraOn && html5QrCode) {
+    try {
+      await html5QrCode.stop();
+      await html5QrCode.clear();
+    } catch (err) {
+      console.warn("⚠️ Lỗi khi stop camera:", err);
+    }
+
+    // 🛑 dừng tất cả track trong video
+    document.querySelectorAll("video").forEach(v => {
+      if (v.srcObject) {
+        v.srcObject.getTracks().forEach(track => track.stop());
+        v.srcObject = null;
+      }
+    });
+
+    // 🛑 giải phóng toàn bộ camera còn sống bằng enumerateDevices
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      for (const device of devices) {
+        if (device.kind === "videoinput") {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: device.deviceId }
+          });
+          stream.getTracks().forEach(track => track.stop());
+        }
+      }
+    } catch (err) {
+      console.log("Không thể quét thiết bị:", err);
+    }
+
+    html5QrCode = null;
+    isCameraOn = false;
+
+    toggleBtn.classList.remove("from-red-500", "to-pink-500");
+    toggleBtn.classList.add("from-green-400", "to-blue-500");
+  }
+}
 
 
-  </script>
+  // Toggle camera
+  toggleBtn.addEventListener("click", async () => {
+    toggleBtn.disabled = true;
+    if (isCameraOn) {
+      await stopQrCamera();
+    } else {
+      await startQrCamera(currentCameraId);
+    }
+    toggleBtn.disabled = false;
+  });
 
-  <!-- External JavaScript -->
-  <script src="/static/script.js" defer></script>
+  // Flip camera
+  flipBtn.addEventListener("click", async () => {
+    if (devices.length <= 1) return alert("⚠️ Chỉ có một camera!");
+    const nextIndex =
+      (devices.findIndex(d => d.id === currentCameraId) + 1) % devices.length;
+    toggleBtn.disabled = true;
+    await stopQrCamera();
+    // delay nhỏ để giải phóng camera trước khi bật lại
+    setTimeout(() => startQrCamera(devices[nextIndex].id), 300);
+    toggleBtn.disabled = false;
+  });
+
+  // Upload QR từ file
+  qrFileInput.addEventListener("change", async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (isCameraOn) await stopQrCamera();
+
+    try {
+      const tempScanner = new Html5Qrcode("reader");
+      const result = await tempScanner.scanFile(file, true);
+      console.log("✅ Mã QR từ ảnh:", result);
+      if (qrResultDisplay) qrResultDisplay.textContent = result;
+      await tempScanner.clear();
+    } catch (err) {
+      alert("❌ Không đọc được QR từ ảnh: " + err);
+    } finally {
+      qrFileInput.value = "";
+    }
+  });
+});
+
+async function sendMessage(){
+      const input = document.getElementById("msg");
+      const chatBox = document.getElementById("chat-box");
+      const msg = input.value.trim();
+      if(!msg) return;
+
+      // hiển thị tin nhắn của bạn
+      chatBox.innerHTML += `<div class="text-right mb-2">
+          <span class="inline-block bg-blue-500 text-white px-3 py-1 rounded-lg">
+            ${msg}
+          </span>
+        </div>`;
+      input.value = "";
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // gọi API Flask
+      try {
+        const res = await fetch("/ask", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({message: msg})
+        });
+        const data = await res.json();
+        const reply = data.reply || data.error;
+
+        // hiển thị câu trả lời giám thị ảo
+        chatBox.innerHTML += `<div class="text-left mb-2">
+            <span class="inline-block bg-gray-200 text-gray-800 px-3 py-1 rounded-lg">
+              ${reply}
+            </span>
+          </div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch (err) {
+        chatBox.innerHTML += `<div class="text-red-600">Lỗi: ${err}</div>`;
+      }
+    }
+</script>
 </body>
 </html>
