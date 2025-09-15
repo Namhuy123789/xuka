@@ -1,5 +1,49 @@
 
 const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://127.0.0.1:5000' : 'https://xuka.com.vn';
+
+
+// Hàm gọi API disable network
+async function disableNetwork() {
+    try {
+        await fetch(`${API_BASE}/api/exam/start`, { method: "POST" });
+        console.log("Đã ngắt mạng");
+    } catch (err) {
+        console.error("Lỗi khi ngắt mạng:", err);
+    }
+}
+
+// Hàm gọi API enable network
+async function enableNetwork() {
+    try {
+        await fetch(`${API_BASE}/api/exam/submit`, { method: "POST" });
+        console.log("Đã bật lại mạng");
+    } catch (err) {
+        console.error("Lỗi khi bật mạng:", err);
+    }
+}
+
+
+// Khi bắt đầu thi
+async function startExam(made) {
+    // gọi API ngắt mạng
+    await disableNetwork();
+
+    // phần code gốc load đề thi
+    console.log("Bắt đầu thi với mã đề:", made);
+    // ... code load câu hỏi ...
+}
+
+// Khi nộp bài
+async function submitExam() {
+    // phần code gốc nộp bài
+    console.log("Nộp bài...");
+
+    // gọi API bật lại mạng
+    await enableNetwork();
+}
+
+
+
 let time = 0;
 let timer = null;
 let questionData = [];
@@ -318,6 +362,23 @@ function updateProgress() {
 
 }
 
+
+
+// Hàm xử lý biểu thức có dấu quan hệ
+function wrapRelationalExpressions(s) {
+  const relationalExpr = /(?:\([^\)]+\)\s*(?:\^\{\d+\}|\^\d+)?|[A-Za-z0-9\\\{\}\^\(\)]+(?:\s*[-+*/]\s*[A-Za-z0-9\\\{\}\^\(\)]+)*)\s*(?:\\le|\\ge|\\neq|<=|>=|≤|≥|≠|=|<|>)\s*(?:\([^\)]+\)\s*(?:\^\{\d+\}|\^\d+)?|[A-Za-z0-9\\\{\}\^\(\)]+)/g;
+
+  return s.replace(relationalExpr, function(match) {
+    const args = arguments;
+    const offset = args[args.length - 2];
+    const str = args[args.length - 1];
+    if (typeof isInsideMath === "function" && isInsideMath(str, offset)) return match;
+    return `\\(${match.trim()}\\)`;
+  });
+}
+
+
+
 function applyGeneralFormatting(s) {
   s = String(s || "");
   s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
@@ -332,16 +393,46 @@ function applyGeneralFormatting(s) {
   s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
   s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
   s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");
-  const subMap = { '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9' };
+  
+
+  // Superscript trong ngoặc, ví dụ e^(2x)
+  s = s.replace(/([A-Za-z0-9π)])\^\(([^)]+)\)/g, (_, base, sup) => `${base}^{${sup}}`);
+
+  // Superscript số đơn, ví dụ x^2
+  s = s.replace(/([A-Za-z0-9π)\]])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
+
+  // Dấu câu + khoảng trắng (chỉ thêm nếu không có sẵn)
+  s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
+
+  // Loại bỏ khoảng trắng thừa
+  s = s.replace(/\s{2,}/g, " ");
+
+  // Subscript & superscript Unicode
+  const subMap = { '₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9' };
+  const supMap = { '⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9' };
   s = s.replace(/[\u2080-\u2089]/g, m => subMap[m] || m);
+  s = s.replace(/[\u2070-\u2079]/g, m => `^${supMap[m] || m}`);
+
   return s;
 }
 
+
+function wrapMath(expr) {
+  if (!expr) return "";
+  expr = expr.trim();
+  // avoid double wrapping
+  if (/^\\\(.*\\\)$/.test(expr)) return expr;
+  return `\\(${expr}\\)`;
+}
 function processMathContent(content) {
   let s = applyGeneralFormatting(content);
+  s = wrapRelationalExpressions(s);
+  s = s.replace(/\s{2,}/g, " ").trim();
   s = s.replace(/([^\s])∫/g, "$1 ∫");
   s = s.replace(/∫([^\s])/g, "∫ $1");
   s = s.replace(/([^\s])dx\b/gi, "$1 dx");
+  s = s.replace(/([^\s])\\pi/g, "$1 \\pi");
+  s = s.replace(/\\pi([^\s])/g, "\\pi $1");
   s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos|ln|log)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
   s = s.replace(/\bGiảihệbấtphươngtrình\b/gi, "Giải hệ bất phương trình");
   s = s.replace(/\bGiảibấtphươngtrình\b/gi, "Giải bất phương trình");
@@ -349,11 +440,17 @@ function processMathContent(content) {
   s = s.replace(/\blog\(([^)]+)\)/gi, (_, arg) => `\\log(${arg.trim()})`);
   s = s.replace(/ln\(([^)]+)\)/gi, (_, arg) => `\\ln(${arg.trim()})`);
   s = s.replace(/frac\(([^,]+),([^)]+)\)/gi, (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
-  s = s.replace(/\b([A-Za-z0-9]+)\/([A-Za-z0-9]+)\b/g, (_, a, b) => `\\frac{${a}}{${b}}`);
+  // Updated fraction rule to handle LaTeX commands like \pi
+  s = s.replace(/\b((?:\\(?:pi|sqrt|log|ln|sum|int|frac)\{[^}]*\}|[A-Za-z0-9]+|[0-9]+))\/((?:\\(?:pi|sqrt|log|ln|sum|int|frac)\{[^}]*\}|[A-Za-z0-9]+|[0-9]+))\b/g,
+    (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
   s = s.replace(/sqrt\[(\d+)\]\(([^)]+)\)/gi, (_, n, val) => `\\sqrt[${n}]{${val.trim()}}`);
   s = s.replace(/sqrt\(([^)]+)\)/gi, (_, val) => `\\sqrt{${val.trim()}}`);
   s = s.replace(/([A-Za-z])_(\d+)/g, (_, base, sub) => `${base}_{${sub}}`);
   s = s.replace(/([A-Za-z0-9])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
+
+  // 👇 bổ sung rule cho ( ... )^n
+  s = s.replace(/\)\s*\^(\d+)/g, (_, sup) => `)^{${sup}}`);
+
   s = s.replace(/int_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
     `\\int${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
   );
@@ -552,6 +649,11 @@ function renderQuestions(questions) {
   typeset(container);
 }
 
+
+
+
+
+
 function renderAnswerSheet() {
   const sheet = qs('#answer-sheet');
   sheet.innerHTML = '';
@@ -650,14 +752,15 @@ async function submitExam(autoByTime) {
     const isCorrect = (kieu === 'trac_nghiem') && selected && correctKey && selected.toUpperCase() === correctKey.toUpperCase();
     if (isCorrect) score++;
     answers.push({
-      cau: i + 1,
-      noi_dung: q.noi_dung,
-      da_chon: processExamContent(selectedContent),
-      dap_an_dung: processExamContent(correctContent),
-      dung: !!isCorrect,
-      kieu,
-      goi_y_dap_an: q.goi_y_dap_an || ''
-    });
+  cau: i + 1,
+  noi_dung: q.noi_dung, // đã xử lý rồi
+  da_chon: selectedContent, // giữ nguyên, KHÔNG chạy processExamContent nữa
+  dap_an_dung: correctContent, // giữ nguyên
+  dung: !!isCorrect,
+  kieu,
+  goi_y_dap_an: q.goi_y_dap_an || ''
+});
+
   });
   const finalScore = questionData.length ? (score / questionData.length * 10).toFixed(2) : '0.00';
   clearTempStorage();
@@ -724,6 +827,13 @@ function downloadDOC(name, made) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+
+
+
+
+
+
 
 function downloadPDF(name, made, answers, finalScore, formattedDate) {
   try {
