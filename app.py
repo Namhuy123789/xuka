@@ -15,7 +15,6 @@ from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Hash import SHA256
 import base64
 from flask import send_from_directory
-import ctypes
 import subprocess
 import sys
 import os
@@ -90,20 +89,7 @@ def ask():
         return jsonify({"error": str(e), "reply": "Lỗi server nội bộ"}), 500
 
 
-def is_admin():
-    """Kiểm tra xem chương trình có chạy bằng quyền Administrator hay không"""
-    try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
-        return False
 
-if not is_admin():
-    # Nếu chưa có quyền admin thì restart lại bằng quyền admin
-    print("⚠️ Chương trình cần chạy bằng quyền Administrator. Đang khởi động lại...")
-    ctypes.windll.shell32.ShellExecuteW(
-        None, "runas", sys.executable, " ".join(sys.argv), None, 1
-    )
-    sys.exit(0)
 
 
 
