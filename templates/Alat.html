@@ -188,9 +188,10 @@
          onclick="previewImage('{{ url_for('static', filename='Trang_30-cac-vung-kinh-te-trong-diem.jpg') }}')">
   </div>
   <div class="right-column">
-    <img src="{{ url_for('static', filename='Trang_3_ki_hieu_chung.jpg') }}" 
-         class="thumbnail" 
-         onclick="previewImage('{{ url_for('static', filename='Trang_3_ki_hieu_chung.jpg') }}')">
+    <img id="previewImage" 
+         src="{{ url_for('static', filename='Trang_3_ki_hieu_chung.jpg') }}" 
+         class="image-preview" 
+         onclick="openModal()">
   </div>
 </div>
 
@@ -293,3 +294,4 @@
 </body>
 
 </html>
+
