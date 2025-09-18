@@ -105,9 +105,8 @@
   </footer>
 
   <script>
-    const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-      ? "http://127.0.0.1:5000"
-      : "https://xuka.com.vn";
+   // Luôn gọi API theo domain hiện tại (origin), tránh nhầm sang domain khác
+   const API_BASE = window.location.origin;
 
     const MASTER_PASSPHRASE = 'thay-bang-chuoi-bi-mat';
     const te = new TextEncoder();
