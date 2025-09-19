@@ -18,9 +18,12 @@
   <!-- DOMPurify -->
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" defer></script>
 
-  <!-- MathJax -->
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" defer></script>
+   <!-- MathJax -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer onerror="alert('Không thể tải MathJax. Vui lòng kiểm tra kết nối mạng.')"></script>
 
+  <!-- Math.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js" defer></script>
+  
   <!-- External CSS -->
   <link rel="stylesheet" href="/static/styles.css">
 
@@ -31,7 +34,7 @@
   <div class="banner">
     <h1>
        <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" 
-     class="w-11 h-11 inline-block neon-bluewhite" 
+     class="w-11 h-15 inline-block neon-bluewhite" 
      alt="Xuka">
 
 	<style>
@@ -41,6 +44,7 @@
 			  drop-shadow(0 0 12px #aafcff)  /* xanh nhạt */
 			  drop-shadow(0 0 18px #ffffff); /* trắng */
 	}
+	
 	</style>
       <span class="text-3xl sm:text-4xl font-bold">XUKA 4.0</span>
       <span class="text-lg sm:text-xl font-bold ml-2 text-yellow-300">xuka.com.vn</span><br>
@@ -49,7 +53,7 @@
   </div>
 
   <!-- Navbar -->
-  <nav class="bg-white-300 py-2 shadow-md">
+  <nav class="bg-yellow-300 py-2 shadow-md">
     <div class="flex items-center px-4 space-x-3">
       <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Vietnam.svg/1024px-Flag_of_Vietnam.svg.png"
            alt="Cờ Việt Nam" class="h-7 w-9 rounded-sm shadow" aria-label="Cờ Việt Nam" loading="lazy">
@@ -121,6 +125,7 @@
                   hover:scale-105 hover:shadow-2xl active:scale-95 active:shadow-inner
                   touch-action-manipulation"
            aria-label="Quản trị">
+		   
           <span class="border-2 border-white rounded-full p-1 flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" 
                  viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -129,6 +134,7 @@
                        4-1.79 4-4-1.79-4-4-4zm8 4a8 8 0 11-16 0 
                        8 8 0 0116 0z" />
             </svg>
+			
           </span>
         </a>
         <a href="/xuka" 
@@ -233,7 +239,21 @@
     Bản quyền © 2025 <span class="font-bold text-red-600">PHẠM HUY TUÂN</span> · ĐT: <a href="tel:0389897989" class="text-blue-600 hover:underline">0389 897 989</a>
   </footer>
 
-  <!-- External JavaScript -->
-  <script src="/static/script1.js" defer></script>
+ <!-- MathJax Config -->
+<script>
+  window.MathJax = {
+    loader: { load: ['[tex]/mhchem'] },
+    tex: {
+      packages: { '[+]': ['mhchem'] },
+      inlineMath: [['\\(', '\\)'], ['$', '$']]
+    },
+    options: {
+      skipHtmlTags: ['script', 'style', 'textarea', 'pre', 'code']
+    }
+  };
+</script>
+
+<script src="/static/script1.js" defer></script>
+
 </body>
 </html>
