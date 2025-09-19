@@ -20,7 +20,13 @@ const safeHTML = (html) => DOMPurify.sanitize(String(html || ''), { USE_PROFILES
 const nsKey = (key) => `xuka_${currentMade || 'unknown'}_${key}`;
 const typeset = (el) => {
   if (window.MathJax?.typesetPromise) {
-    MathJax.typesetPromise([el]).catch(err => console.error('MathJax Error:', err));
+    MathJax.typesetPromise([el]).catch(err => {
+      console.error('MathJax Error:', err);
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'text-red-600';
+      errorDiv.textContent = 'Lỗi hiển thị công thức toán học. Vui lòng kiểm tra kết nối hoặc thử lại!';
+      el.appendChild(errorDiv);
+    });
   }
 };
 
@@ -409,9 +415,22 @@ function updateCountdown() {
   }
 }
 
+function wrapRelationalExpressions(s) {
+  const relationalExpr = /(?:\([^\)]+\)\s*(?:\^\{\d+\}|\^\d+)?|[A-Za-z0-9\\\{\}\^\(\)]+(?:\s*[-+*/]\s*[A-Za-z0-9\\\{\}\^\(\)]+)*)\s*(?:\\le|\\ge|\\neq|<=|>=|≤|≥|≠|=|<|>)\s*(?:\([^\)]+\)\s*(?:\^\{\d+\}|\^\d+)?|[A-Za-z0-9\\\{\}\^\(\)]+)/g;
+  return s.replace(relationalExpr, function(match) {
+    const args = arguments;
+    const offset = args[args.length - 2];
+    const str = args[args.length - 1];
+    if (typeof isInsideMath === "function" && isInsideMath(str, offset)) return match;
+    return `\\(${match.trim()}\\)`;
+  });
+}
+
 function applyGeneralFormatting(s) {
   s = String(s || "");
-  s = s.replace(/−/g, "-").replace(/π/g, "\\pi");
+  s = s.replace(/< \/ span>/g, ""); // Remove malformed < / span> tags
+  s = s.replace(/π/g, "\\pi");
+  
   s = s.replace(/(\d+)\s*\n\s*(\+|\-|\)|\*|\/|\^)/g, "$1 $2");
   s = s.replace(/(\^)\s*\n\s*(\d+)/g, "$1$2");
   s = s.replace(/([a-zA-Z])\s*\n\s*([a-zA-Z])/g, "$1 $2");
@@ -423,16 +442,38 @@ function applyGeneralFormatting(s) {
   s = s.replace(/([a-zA-Z])(\d)/g, "$1 $2");
   s = s.replace(/(\d)([a-zA-Z])/g, "$1 $2");
   s = s.replace(/\s*([+\-*/=])\s*/g, " $1 ");
-  const subMap = { '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9' };
-  s = s.replace(/[\u2080-\u2089]/g, m => subMap[m] || m);
+  s = s.replace(/([A-Za-z0-9π)])\^\(([^)]+)\)/g, (_, base, sup) => `${base}^{${sup}}`);
+  s = s.replace(/([A-Za-z0-9π)\]])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
+  s = s.replace(/([.,;:!?])([^\s])/g, "$1 $2");
+  s = s.replace(/\s{2,}/g, " ");
+  const subMap = { '₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9' };
+  const supMap = { '⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9' };
+  s = s.replace(/[\u2080-\u2089]/g, m => `_{${subMap[m] || m}}`);
+  s = s.replace(/[\u2070-\u2079]/g, m => `^{${supMap[m] || m}}`);
+
+  
+
+ 
+  
   return s;
+}
+
+function wrapMath(expr) {
+  if (!expr) return "";
+  expr = expr.trim();
+  if (/^\\\(.*\\\)$/.test(expr)) return expr;
+  return `\\(${expr}\\)`;
 }
 
 function processMathContent(content) {
   let s = applyGeneralFormatting(content);
+  s = wrapRelationalExpressions(s);
+  s = s.replace(/\s{2,}/g, " ").trim();
   s = s.replace(/([^\s])∫/g, "$1 ∫");
   s = s.replace(/∫([^\s])/g, "∫ $1");
   s = s.replace(/([^\s])dx\b/gi, "$1 dx");
+  s = s.replace(/([^\s])\\pi/g, "$1 \\pi");
+  s = s.replace(/\\pi([^\s])/g, "\\pi $1");
   s = s.replace(/\b(sin|cos|tan|cot|sec|csc|arctan|arcsin|arccos|ln|log)\s*([A-Za-z0-9\\pi])/gi, "$1 $2");
   s = s.replace(/\bGiảihệbấtphươngtrình\b/gi, "Giải hệ bất phương trình");
   s = s.replace(/\bGiảibấtphươngtrình\b/gi, "Giải bất phương trình");
@@ -440,11 +481,13 @@ function processMathContent(content) {
   s = s.replace(/\blog\(([^)]+)\)/gi, (_, arg) => `\\log(${arg.trim()})`);
   s = s.replace(/ln\(([^)]+)\)/gi, (_, arg) => `\\ln(${arg.trim()})`);
   s = s.replace(/frac\(([^,]+),([^)]+)\)/gi, (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
-  s = s.replace(/\b([A-Za-z0-9]+)\/([A-Za-z0-9]+)\b/g, (_, a, b) => `\\frac{${a}}{${b}}`);
+  s = s.replace(/\b((?:\\(?:pi|sqrt|log|ln|sum|int|frac)\{[^}]*\}|[A-Za-z0-9]+|[0-9]+))\/((?:\\(?:pi|sqrt|log|ln|sum|int|frac)\{[^}]*\}|[A-Za-z0-9]+|[0-9]+))\b/g,
+    (_, a, b) => `\\frac{${a.trim()}}{${b.trim()}}`);
   s = s.replace(/sqrt\[(\d+)\]\(([^)]+)\)/gi, (_, n, val) => `\\sqrt[${n}]{${val.trim()}}`);
   s = s.replace(/sqrt\(([^)]+)\)/gi, (_, val) => `\\sqrt{${val.trim()}}`);
   s = s.replace(/([A-Za-z])_(\d+)/g, (_, base, sub) => `${base}_{${sub}}`);
   s = s.replace(/([A-Za-z0-9])\^(\d+)/g, (_, base, sup) => `${base}^{${sup}}`);
+  s = s.replace(/\)\s*\^(\d+)/g, (_, sup) => `)^{${sup}}`);
   s = s.replace(/int_([^_]+)(?:_([^_]+))?([^]*?)(?=\s|$)/gi, (_, from, to, body) =>
     `\\int${from ? `_{${from}}` : ""}${to ? `^{${to}}` : ""}${body.trim()}`
   );
@@ -478,6 +521,7 @@ function processChemistryContent(content) {
   let s = applyGeneralFormatting(content);
   s = s.replace(/H_2O/g, "\\ce{H2O}");
   s = s.replace(/CO_2/g, "\\ce{CO2}");
+  s = s.replace(/([A-Z][a-z]?)(\d+)/g, '$1<sub>$2</sub>');
   s = s.replace(/([A-Z][a-z]?)_(\d+)/g, (_, elem, num) => `\\ce{${elem}${num}}`);
   s = s.replace(/([A-Z][a-z]?)(\d+)/g, "\\ce{$1_$2}");
   s = s.replace(/([A-Z][a-z]?)[\s]*([0-9]+)/g, (_, elem, num) => `${elem}${num}`);
@@ -527,9 +571,28 @@ function isInsideMath(str, offset) {
   return lastOpen > lastClose;
 }
 
+function validateQuestion(q) {
+  const qq = { ...q };
+  if (qq.lua_chon && typeof qq.lua_chon === 'object') {
+    for (const k in qq.lua_chon) {
+      if (Object.prototype.hasOwnProperty.call(qq.lua_chon, k)) {
+        if (qq.lua_chon[k].includes('< / span>')) {
+          console.warn(`Malformed option in question ${qq.noi_dung}: ${qq.lua_chon[k]}`);
+          qq.lua_chon[k] = qq.lua_chon[k].replace(/< \/ span>/g, '');
+        }
+      }
+    }
+  }
+  if (qq.dap_an_dung && qq.dap_an_dung.includes('< / span>')) {
+    console.warn(`Malformed correct answer in question ${qq.noi_dung}: ${qq.dap_an_dung}`);
+    qq.dap_an_dung = qq.dap_an_dung.replace(/< \/ span>/g, '');
+  }
+  return qq;
+}
+
 function processAllQuestions(questions) {
   return questions.map(q => {
-    const qq = { ...q };
+    const qq = validateQuestion({ ...q });
     qq.noi_dung = processExamContent(qq.noi_dung);
     if (qq.lua_chon && typeof qq.lua_chon === 'object') {
       for (const k in qq.lua_chon) {
@@ -565,6 +628,7 @@ function renderQuestions(questions) {
     return;
   }
   container.innerHTML = '';
+  console.log('[DEBUG] Rendering questions:', questions.map(q => q.noi_dung));
   const unansweredLabel = document.createElement('p');
   unansweredLabel.id = 'unanswered-count';
   unansweredLabel.className = 'text-red-600 font-bold mb-4';
@@ -657,6 +721,31 @@ function clearTempStorage() {
 
 qs('#btn-submit')?.addEventListener('click', () => submitExam(false));
 
+function updateReviewList() {
+  const reviewList = qs('#review-list');
+  reviewList.innerHTML = '';
+  const flagged = JSON.parse(localStorage.getItem(nsKey('flaggedQuestions')) || '[]');
+  flagged.forEach(i => {
+    const li = document.createElement('li');
+    li.innerHTML = `Câu ${i + 1}`;
+    li.className = 'cursor-pointer hover:underline';
+    li.onclick = () => qs(`#q${i}`).scrollIntoView({ behavior: 'smooth' });
+    reviewList.appendChild(li);
+  });
+  typeset(reviewList);
+}
+
+function toggleReview(index) {
+  const flagged = JSON.parse(localStorage.getItem(nsKey('flaggedQuestions')) || '[]');
+  if (flagged.includes(index)) {
+    flagged.splice(flagged.indexOf(index), 1);
+  } else {
+    flagged.push(index);
+  }
+  localStorage.setItem(nsKey('flaggedQuestions'), JSON.stringify(flagged));
+  updateReviewList();
+}
+
 async function submitExam(autoByTime) {
   clearInterval(timer);
   const name = qs('#hoten')?.value.trim();
@@ -693,8 +782,8 @@ async function submitExam(autoByTime) {
     answers.push({
       cau: i + 1,
       noi_dung: q.noi_dung,
-      da_chon: processExamContent(selectedContent),
-      dap_an_dung: processExamContent(correctContent),
+      da_chon: selectedContent,
+      dap_an_dung: correctContent,
       dung: !!isCorrect,
       kieu,
       goi_y_dap_an: q.goi_y_dap_an || ''
@@ -706,7 +795,7 @@ async function submitExam(autoByTime) {
   const formattedDate = now.toLocaleString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
   let fileContent = `<div><strong>KẾT QUẢ BÀI THI</strong></div>` +
     `<div>Họ tên: ${safeHTML(name)}</div>` +
-    `<div>SBD: ${safeHTML(sbd)}</div>` +
+    `<div>SBD: ${safeHTML(sbd)}</div >` +
     `<div>Ngày sinh: ${safeHTML(dob)}</div>` +
     `<div>Mã đề: ${safeHTML(made)}</div>` +
     `<div>Điểm: ${safeHTML(finalScore)}/10</div>` +
