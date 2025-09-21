@@ -20,9 +20,6 @@ import sys
 import google.generativeai as genai
 from dotenv import load_dotenv
 from pathlib import Path
-
-
-# NEW imports for DB + hashing
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -33,7 +30,9 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change_this_secret_key"
 
 
 
+
 # --- Database config (SQLite) ---
+
 
 
 # Thư mục lưu kết quả và DB trên Render
@@ -47,7 +46,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH.as_posix()}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
 
 
 
