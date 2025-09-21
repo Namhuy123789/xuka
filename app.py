@@ -23,6 +23,9 @@ from pathlib import Path
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
+
+BASE_DIR = Path(__file__).parent.resolve()
 load_dotenv()
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
