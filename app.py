@@ -17,7 +17,6 @@ import base64
 import ctypes
 import subprocess
 import sys
-import csv
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -535,13 +534,12 @@ def serve_questions_file(filename):
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
 # Route lưu kết quả
+
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
     try:
         data = request.get_json(silent=True) or {}
-        username = str(data.get("username", "unknown")).strip()
-        password = str(data.get("password", "")).strip()
         hoten = str(data.get("hoten", "unknown")).strip()
         sbd = str(data.get("sbd", "N/A")).strip()
         ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
@@ -552,90 +550,81 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Load đề thi
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
         if filepath_de.exists():
-            with open(filepath_de, "r", encoding="utf-8") as f:
-                question_data = json.load(f)
+            try:
+                with open(filepath_de, "r", encoding="utf-8") as f:
+                    question_data = json.load(f)
+            except Exception as e:
+                app.logger.error(f"Lỗi đọc file đề: {e}")
+                question_data = []
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
+        filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        filepath = RESULTS_DIR / filename
 
-        # --- TXT ---
-        txt_filename = f"KQ_{safe_name}_{made}_{timestamp}.txt"
-        txt_path = RESULTS_DIR / txt_filename
-        txt_lines = [
+        # ✅ log debug
+        app.logger.info(f"[DEBUG] Chuẩn bị lưu kết quả: {filepath.resolve()}")
+
+        lines = [
             "KẾT QUẢ BÀI THI",
-            f"Tài khoản: {username}",
-            f"Mật khẩu hash: {generate_password_hash(password)}",
             f"Họ tên: {hoten}",
             f"SBD: {sbd}",
             f"Ngày sinh: {ngaysinh}",
             f"Mã đề: {made}",
             f"Điểm: {diem}/10",
-            f"Nộp lúc: {datetime.now().strftime('%H:%M:%S, %d/%m/%Y')}",
-            "",
-            "=== Nội dung đề thi ===",
+            f"Nộp lúc: {timestamp}",
+            ""
         ]
-        for i, q in enumerate(question_data, 1):
-            txt_lines.append(f"Câu {i}: {q.get('noi_dung', '')}")
-            if q.get("kieu_cau_hoi") == "trac_nghiem":
-                txt_lines.append(f"  Đáp án đúng: {q.get('dap_an_dung', '')}")
-            elif q.get("kieu_cau_hoi") == "tu_luan":
-                txt_lines.append(f"  Gợi ý đáp án: {q.get('goi_y_dap_an', '')}")
-            txt_lines.append("")
 
-        txt_lines.append("=== Kết quả học sinh ===")
         for a in answers:
             cau = a.get("cau", "N/A")
-            noi_dung = a.get("noi_dung", "")
+            noi_dung = a.get("noi_dung", "Không có nội dung")
             kieu = a.get("kieu", "trac_nghiem").lower()
-            txt_lines.append(f"Câu {cau}: {noi_dung}")
+
+            try:
+                idx = int(cau) - 1
+                if 0 <= idx < len(question_data):
+                    cau_goc = question_data[idx]
+                else:
+                    cau_goc = {}
+            except (ValueError, TypeError):
+                cau_goc = {}
+
+            lines.append(f"Câu {cau}: {noi_dung}")
+
             if kieu == "tu_luan":
-                txt_lines.append(f"  Bạn chọn: {a.get('tra_loi_hoc_sinh', '[Chưa trả lời]')}")
+                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
+                goi_y = a.get("goi_y_dap_an", "").strip()
+                lines.append(f"  Bạn chọn: {tra_loi}")
+                if goi_y:
+                    lines.append(f"  Gợi ý đáp án: {goi_y}")
             elif kieu == "trac_nghiem":
-                txt_lines.append(f"  Bạn chọn: {a.get('da_chon', '(chưa chọn)')}")
-            txt_lines.append("")
-        txt_path.write_text("\n".join(txt_lines), encoding="utf-8")
+                da_chon = a.get("da_chon", "(chưa chọn)")
+                dap_an_dung = cau_goc.get("dap_an_dung", "")
+                lines.append(f"  Bạn chọn: {da_chon}")
+                if dap_an_dung:
+                    lines.append(f"  Đáp án đúng: {dap_an_dung}")
+            else:
+                tra_loi = a.get("tra_loi_hoc_sinh", a.get("da_chon", "(chưa trả lời)"))
+                lines.append(f"  Bạn trả lời: {tra_loi}")
 
-        # --- JSON ---
-        json_filename = f"KQ_{safe_name}_{made}_{timestamp}.json"
-        json_path = RESULTS_DIR / json_filename
-        json_data = {
-            "username": username,
-            "password_hash": generate_password_hash(password),
-            "hoten": hoten,
-            "sbd": sbd,
-            "ngaysinh": ngaysinh,
-            "made": made,
-            "diem": diem,
-            "timestamp": timestamp,
-            "answers": answers,
-            "questions": question_data
-        }
-        with open(json_path, "w", encoding="utf-8") as f:
-            json.dump(json_data, f, ensure_ascii=False, indent=2)
+            lines.append("")
 
-        # --- CSV ---
-        csv_filename = f"KQ_{safe_name}_{made}_{timestamp}.csv"
-        csv_path = RESULTS_DIR / csv_filename
-        with open(csv_path, "w", encoding="utf-8", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Câu", "Nội dung", "Kiểu", "Đáp án đúng", "Bạn chọn"])
-            for i, a in enumerate(answers):
-                idx = int(a.get("cau", i+1)) - 1
-                q = question_data[idx] if idx < len(question_data) else {}
-                dap_an_dung = q.get("dap_an_dung", "") if q.get("kieu_cau_hoi") == "trac_nghiem" else q.get("goi_y_dap_an", "")
-                da_chon = a.get("da_chon", a.get("tra_loi_hoc_sinh", "(chưa chọn)"))
-                writer.writerow([a.get("cau"), a.get("noi_dung"), a.get("kieu"), dap_an_dung, da_chon])
+        try:
+            filepath.write_text("\n".join(lines), encoding="utf-8")
+            app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
+        except Exception as e:
+            app.logger.error(f"Lỗi ghi file: {e}")
+            return jsonify({"status": "error", "msg": f"Lỗi ghi file: {str(e)}"}), 500
 
         return jsonify({
             "status": "saved",
-            "txt_file": str(txt_path),
-            "json_file": str(json_path),
-            "csv_file": str(csv_path)
+            "text": "\n".join(lines),
+            "download": f"/download/{filename}"
         })
 
     except Exception as e:
