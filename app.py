@@ -72,6 +72,47 @@ limiter = Limiter(
 
 current_command = None
 
+# Lấy API key từ .env
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    raise ValueError("❌ GEMINI_API_KEY chưa được thiết lập trong .env")
+
+# Cấu hình Gemini
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel("gemini-1.5-flash")
+
+
+@app.route("/ask", methods=["POST"])
+@csrf.exempt
+def ask():
+    data = request.get_json(silent=True) or {}
+    user_msg = data.get("message", "").strip()
+    if not user_msg:
+        return jsonify({"error": "No message provided"}), 400
+
+    try:
+        resp = model.generate_content(
+            f"Bạn là trợ lý AI thông minh, trả lời mọi câu hỏi một cách chi tiết, chính xác và lịch sự.\n\nNgười dùng: {user_msg}"
+        )
+
+        # Kiểm tra cấu trúc response an toàn
+        reply = ""
+        if getattr(resp, "candidates", None):
+            parts = getattr(resp.candidates[0].content, "parts", [])
+            reply = "".join([getattr(p, "text", "") for p in parts]).strip()
+
+        if not reply:
+            reply = "AI không trả lời được câu hỏi này."
+
+        return jsonify({"reply": reply})
+
+    except Exception as e:
+        app.logger.exception(f"Lỗi /ask: {e}")
+        return jsonify({"error": str(e), "reply": "Lỗi server nội bộ"}), 500
+
+
+
+
 # --- User model ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
