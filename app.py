@@ -19,6 +19,8 @@ import subprocess
 import sys
 import google.generativeai as genai
 from dotenv import load_dotenv
+from pathlib import Path
+
 
 # NEW imports for DB + hashing
 from flask_sqlalchemy import SQLAlchemy
@@ -29,12 +31,26 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change_this_secret_key")
 
+
+
 # --- Database config (SQLite) ---
-BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "app.db"
+
+
+# Thư mục lưu kết quả và DB trên Render
+RESULTS_DIR = Path("/var/data/results")
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)  # tạo folder nếu chưa có
+
+# File SQLite DB nằm trong RESULTS_DIR
+DB_PATH = RESULTS_DIR / "app.db"
+
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH.as_posix()}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
+
+
+
+
 
 # Đường dẫn thư mục (một số biến vẫn dùng)
 QUESTIONS_DIR = BASE_DIR / "questions"
