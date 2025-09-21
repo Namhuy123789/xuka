@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory, send_file, render_template, abort, redirect, url_for
 from werkzeug.utils import secure_filename
-from werkzeug.exceptions import NotFound  # Added to fix NameError
+from werkzeug.exceptions import NotFound
 from pathlib import Path
 from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
@@ -14,23 +14,33 @@ from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Hash import SHA256
 import base64
-from flask import send_from_directory
+import ctypes
 import subprocess
 import sys
-import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+
+# NEW imports for DB + hashing
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
 load_dotenv()
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change_this_secret_key")
 
-# Đường dẫn thư mục
+# --- Database config (SQLite) ---
 BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "app.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH.as_posix()}"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+# Đường dẫn thư mục (một số biến vẫn dùng)
 QUESTIONS_DIR = BASE_DIR / "questions"
 RESULTS_DIR = BASE_DIR / "results"
 STATIC_DIR = BASE_DIR / "static"
+# legacy files (optional) : nếu bạn muốn migrate từ file cũ
 USERS_FILE = STATIC_DIR / "users.json"
 ADMIN_FILE = STATIC_DIR / "users1.json"
 
@@ -49,198 +59,102 @@ limiter = Limiter(
 
 current_command = None
 
+# --- User model ---
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(300), nullable=False)
+    hoten = db.Column(db.String(255), nullable=True)
+    sbd = db.Column(db.String(100), nullable=True)
+    ngaysinh = db.Column(db.String(50), nullable=True)
+    role = db.Column(db.String(20), default="user")  # 'user' or 'admin'
 
-# Lấy API key từ .env
+    def check_password(self, password_plain: str) -> bool:
+        return check_password_hash(self.password_hash, password_plain)
+
+    def to_dict(self, include_sensitive=False):
+        d = {
+            "id": self.id,
+            "username": self.username,
+            "hoten": self.hoten or "",
+            "sbd": self.sbd or "",
+            "ngaysinh": self.ngaysinh or "",
+            "role": self.role
+        }
+        if include_sensitive:
+            d["password_hash"] = self.password_hash
+        return d
+
+# Initialize DB and tables
+with app.app_context():
+    db.create_all()
+
+    # Migrate legacy JSON users if present (only once)
+    def _migrate_json_to_db(json_path: Path, role: str = "user"):
+        if not json_path.exists():
+            return 0
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if not isinstance(data, list):
+                return 0
+            migrated = 0
+            for item in data:
+                uname = str(item.get("username", "")).strip()
+                pwd = item.get("password", "")
+                hoten = item.get("hoten", "")
+                sbd = item.get("sbd", "")
+                ngaysinh = item.get("ngaysinh", "")
+                if not uname or not pwd:
+                    continue
+                if User.query.filter_by(username=uname).first():
+                    continue
+                # If password looks like a hash (starts with pbkdf2 or method), then store as-is; otherwise hash it.
+                # We'll just hash the password (safe).
+                hashed = generate_password_hash(pwd)
+                u = User(username=uname, password_hash=hashed, hoten=hoten, sbd=sbd, ngaysinh=ngaysinh, role=role)
+                db.session.add(u)
+                migrated += 1
+            if migrated:
+                db.session.commit()
+                # optionally rename the legacy file to prevent repeated migration
+                try:
+                    backup = json_path.with_suffix(".json.bak")
+                    json_path.rename(backup)
+                except Exception:
+                    pass
+            return migrated
+        except Exception as e:
+            app.logger.exception(f"Lỗi migrate {json_path}: {e}")
+            return 0
+
+    # run migration for admin and users files (if exist)
+    migrated_admins = _migrate_json_to_db(ADMIN_FILE, role="admin")
+    migrated_users = _migrate_json_to_db(USERS_FILE, role="user")
+    if migrated_admins or migrated_users:
+        app.logger.info(f"Đã migrate users: admins={migrated_admins}, users={migrated_users}")
+
+# Lấy API key từ .env cho Gemini
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     raise ValueError("❌ GEMINI_API_KEY chưa được thiết lập trong .env")
 
-# Cấu hình Gemini
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-
-@app.route("/ask", methods=["POST"])
-@csrf.exempt
-def ask():
-    data = request.get_json(silent=True) or {}
-    user_msg = data.get("message", "").strip()
-    if not user_msg:
-        return jsonify({"error": "No message provided"}), 400
-
-    try:
-        resp = model.generate_content(
-            f"Bạn là trợ lý AI thông minh, trả lời mọi câu hỏi một cách chi tiết, chính xác và lịch sự.\n\nNgười dùng: {user_msg}"
-        )
-
-        # Kiểm tra cấu trúc response an toàn
-        reply = ""
-        if getattr(resp, "candidates", None):
-            parts = getattr(resp.candidates[0].content, "parts", [])
-            reply = "".join([getattr(p, "text", "") for p in parts]).strip()
-
-        if not reply:
-            reply = "AI không trả lời được câu hỏi này."
-
-        return jsonify({"reply": reply})
-
-    except Exception as e:
-        app.logger.exception(f"Lỗi /ask: {e}")
-        return jsonify({"error": str(e), "reply": "Lỗi server nội bộ"}), 500
-
-
-
-
-
-
-
-
-def get_interfaces():
-    """Lấy danh sách tên interface mạng trên Windows"""
-    try:
-        result = subprocess.run(
-            ["netsh", "interface", "show", "interface"],
-            capture_output=True, text=True, check=True
-        )
-        lines = result.stdout.splitlines()
-        interfaces = []
-        for line in lines:
-            # bỏ dòng tiêu đề
-            if line.strip().startswith("Admin State") or line.strip().startswith("---") or not line.strip():
-                continue
-
-            # lấy tên interface từ cột cuối
-            parts = line.split()
-            if len(parts) >= 4:
-                iface = " ".join(parts[3:])
-                interfaces.append(iface)
-        return interfaces
-    except Exception as e:
-        print("[ERROR] Lấy danh sách interface thất bại:", e)
-        return []
-
-
-def set_network(state: str):
-    """Bật/tắt toàn bộ interface"""
-    interfaces = get_interfaces()
-    if not interfaces:
-        print("[ERROR] Không tìm thấy interface nào.")
-        return False
-
-    success = True
-    for iface in interfaces:
-        result = subprocess.run(
-            ["netsh", "interface", "set", "interface", iface, state],
-            capture_output=True, text=True
-        )
-        if result.returncode != 0:
-            print(f"[ERROR] {iface} -> {result.stderr.strip()}")
-            success = False
-        else:
-            print(f"[INFO] {iface} -> {state}")
-    return success
-
-
-
-
-# Hàm ngắt kết nối mạng
-def disable_network():
-    adapters = ["Wi-Fi", "Local Area Connection* 2"]  # thay theo netsh show interface
-    for adapter in adapters:
-        try:
-            subprocess.run(
-                ["netsh", "interface", "set", "interface", adapter, "disable"],
-                check=True,
-                shell=True
-            )
-            print(f"[INFO] Đã ngắt mạng trên {adapter}")
-        except Exception as e:
-            print(f"[ERROR] Không thể ngắt {adapter}: {e}")
-
-# Hàm bật lại kết nối mạng
-def enable_network():
-    adapters = ["Wi-Fi", "Local Area Connection* 2"]
-    for adapter in adapters:
-        try:
-            subprocess.run(
-                ["netsh", "interface", "set", "interface", adapter, "enable"],
-                check=True,
-                shell=True
-            )
-            print(f"[INFO] Đã bật lại mạng trên {adapter}")
-        except Exception as e:
-            print(f"[ERROR] Không thể bật {adapter}: {e}")
-
-
-
-def disconnect_network():
-    return set_network("disabled")
-
-
-def reconnect_network():
-    return set_network("enabled")
-
-# --- Helpers ---
-def load_users(file_path: Path):
-    if not file_path.exists():
-        print(f"[WARN] File {file_path} không tồn tại, trả về danh sách rỗng")
-        return []
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            if not isinstance(data, list):
-                print(f"[WARN] File {file_path} không có định dạng danh sách hợp lệ")
-                return []
-            return data
-    except json.JSONDecodeError as e:
-        app.logger.error(f"Lỗi giải mã JSON trong {file_path}: {e}")
-        return []
-    except Exception as e:
-        app.logger.error(f"Lỗi đọc file {file_path}: {e}")
-        return []
-
-def list_exam_codes():
-    codes = []
-    pattern = re.compile(r'^questions(\d{3,})\.json$')
-    for p in QUESTIONS_DIR.glob("questions*.json"):
-        m = pattern.match(p.name)
-        if m:
-            code = m.group(1)
-            if code.isdigit():
-                codes.append(code)
-    return sorted(set(codes), key=lambda x: int(x))
-
+# --- Crypto / QR helper functions (unchanged, just reused) ---
 MASTER_PASSPHRASE = os.environ.get("MASTER_PASSPHRASE", "thay-bang-chuoi-bi-mat")
 
 def decrypt_qr_data(encrypted_data: str):
     try:
-        print(f"[DEBUG] Nhận qr_value: {encrypted_data}")
+        app.logger.debug(f"Nhận qr_value: {encrypted_data}")
         parts = encrypted_data.split('.')
         if len(parts) != 4 or parts[0] != 'v1':
             raise ValueError("Định dạng mã QR không hợp lệ (phải là v1.<salt>.<iv>.<ciphertext+tag>)")
 
-        print(f"[DEBUG] Phân tích qr_value: salt={parts[1]}, iv={parts[2]}, ct_and_tag={parts[3]}")
-        
-        try:
-            salt = base64.b64decode(parts[1], validate=True)
-            print("[DEBUG] Giải mã base64 salt thành công")
-        except Exception as e:
-            print(f"[ERROR] Lỗi giải mã base64 salt: {str(e)}")
-            raise ValueError(f"QR chứa base64 không hợp lệ (salt): {str(e)}")
-        
-        try:
-            iv = base64.b64decode(parts[2], validate=True)
-            print("[DEBUG] Giải mã base64 iv thành công")
-        except Exception as e:
-            print(f"[ERROR] Lỗi giải mã base64 iv: {str(e)}")
-            raise ValueError(f"QR chứa base64 không hợp lệ (iv): {str(e)}")
-        
-        try:
-            ct_and_tag = base64.b64decode(parts[3], validate=True)
-            print("[DEBUG] Giải mã base64 ct_and_tag thành công")
-        except Exception as e:
-            print(f"[ERROR] Lỗi giải mã base64 ct_and_tag: {str(e)}")
-            raise ValueError(f"QR chứa base64 không hợp lệ (ciphertext+tag): {str(e)}")
+        salt = base64.b64decode(parts[1], validate=True)
+        iv = base64.b64decode(parts[2], validate=True)
+        ct_and_tag = base64.b64decode(parts[3], validate=True)
 
         if len(ct_and_tag) < 16:
             raise ValueError("Ciphertext không hợp lệ (thiếu tag)")
@@ -256,7 +170,7 @@ def decrypt_qr_data(encrypted_data: str):
         cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
         plaintext = cipher.decrypt_and_verify(ciphertext, tag)
         data = json.loads(plaintext.decode("utf-8"))
-        print(f"[DEBUG] Giải mã QR thành công: {data}")
+        app.logger.debug(f"Giải mã QR thành công: {data}")
         return data
 
     except (ValueError, KeyError, json.JSONDecodeError) as e:
@@ -266,7 +180,8 @@ def decrypt_qr_data(encrypted_data: str):
         app.logger.error(f"Lỗi giải mã QR: {e}")
         raise
 
-# --- Routes ---
+# --- Routes and APIs (modified to use DB) ---
+
 @app.post("/api/decrypt_qr")
 @csrf.exempt
 def api_decrypt_qr():
@@ -276,9 +191,12 @@ def api_decrypt_qr():
             return jsonify({"status": "error", "msg": "Dữ liệu JSON không hợp lệ"}), 400
 
         qr_value = str(data.get("qr_value", "")).strip()
-        print(f"[DEBUG] Giá trị qr_value nhận được: {qr_value}")
+        app.logger.debug(f"Giá trị qr_value nhận được: {qr_value}")
         if not qr_value:
             return jsonify({"status": "error", "msg": "Thiếu dữ liệu QR"}), 400
+
+        username = password = hoten = sbd = ngaysinh = ""
+        parsed_from_v1 = False
 
         if qr_value.startswith('v1.'):
             try:
@@ -288,6 +206,7 @@ def api_decrypt_qr():
                 hoten = decoded_data.get("hoten", "").strip()
                 sbd = decoded_data.get("sbd", "").strip()
                 ngaysinh = decoded_data.get("ngaysinh", "").strip()
+                parsed_from_v1 = True
             except Exception as e:
                 return jsonify({"status": "error", "msg": f"Lỗi giải mã QR: {str(e)}"}), 400
         else:
@@ -297,29 +216,29 @@ def api_decrypt_qr():
                     "msg": "Mã QR không hợp lệ, phải có dạng username:password hoặc v1.<salt>.<iv>.<data>"
                 }), 400
             username, password = qr_value.split(":", 1)
-            hoten, sbd, ngaysinh = "", "", ""
 
-        admins = load_users(ADMIN_FILE)
-        for user in admins:
-            if user.get("username") == username and user.get("password") == password:
-                return jsonify({
-                    "status": "success",
-                    "role": "admin",
-                    "user": user,
-                    "redirect": url_for('index')
-                }), 200
+        # tìm admin
+        admin = User.query.filter_by(username=username, role="admin").first()
+        if admin and admin.check_password(password):
+            return jsonify({
+                "status": "success",
+                "role": "admin",
+                "user": admin.to_dict(),
+                "redirect": url_for('index')
+            }), 200
 
-        users = load_users(USERS_FILE)
-        for user in users:
-            if user.get("username") == username and user.get("password") == password:
-                return jsonify({
-                    "status": "success",
-                    "role": "user",
-                    "user": user,
-                    "redirect": url_for('index')
-                }), 200
+        # tìm user
+        user = User.query.filter_by(username=username, role="user").first()
+        if user and user.check_password(password):
+            return jsonify({
+                "status": "success",
+                "role": "user",
+                "user": user.to_dict(),
+                "redirect": url_for('index')
+            }), 200
 
-        if qr_value.startswith('v1.') and username and password:
+        # nếu qr dạng v1 và không tồn tại tài khoản, trả lại thông tin đã giải mã (cho phép truy cập tạm)
+        if parsed_from_v1 and username and password:
             return jsonify({
                 "status": "success",
                 "role": "user",
@@ -354,13 +273,14 @@ def login():
         if not username or not password:
             return jsonify({"status": "error", "msg": "Thiếu tên đăng nhập hoặc mật khẩu"}), 400
 
+        user = User.query.filter_by(username=username).first()
+        if not user or not user.check_password(password):
+            return jsonify({"status": "error", "msg": "Sai tên đăng nhập hoặc mật khẩu"}), 401
+
         return jsonify({
             "status": "success",
-            "role": "user",
-            "user": {
-                "username": username,
-                "password": password
-            },
+            "role": user.role,
+            "user": user.to_dict(),
             "redirect": url_for("index")
         }), 200
 
@@ -368,6 +288,7 @@ def login():
         app.logger.error(f"Lỗi /login: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server"}), 500
 
+# socket handlers and simple routes stay the same
 @app.route('/alochat')
 def alochat():
     return render_template('alochat.html')
@@ -435,48 +356,31 @@ def api_made():
         app.logger.exception(f"Lỗi liệt kê mã đề: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-
-
-
-
 @app.route("/alat")
 def alat():
     return render_template("Alat.html")
 
-
-
-
-
+# exam network control endpoints (unchanged)
 @app.post("/api/exam/start")
 @csrf.exempt
 def api_exam_start():
     global current_command
-    # Chỉ gửi lệnh cho client, không tự ngắt mạng server
     current_command = "disconnect"
     return jsonify({"status": "success", "msg": "Lệnh ngắt mạng đã được gửi đến client"})
-
 
 @app.post("/api/exam/submit")
 @csrf.exempt
 def api_exam_submit():
     global current_command
-    # Chỉ gửi lệnh cho client, không tự bật mạng server
     current_command = "reconnect"
     return jsonify({"status": "success", "msg": "Lệnh khôi phục mạng đã được gửi đến client"})
-
 
 @app.get("/api/exam/command")
 def api_exam_command():
     global current_command
-    # Client sẽ gọi endpoint này để lấy lệnh mới nhất
     return jsonify({"command": current_command})
 
-
-
-
-
-
-
+# API login/register that frontend uses
 @app.post("/api/login")
 @csrf.exempt
 @limiter.limit("10/minute")
@@ -489,35 +393,19 @@ def api_login():
         if not username or not password:
             return jsonify({"status": "error", "msg": "Thiếu username hoặc password"}), 400
 
-        admins = load_users(ADMIN_FILE)
-        for user in admins:
-            if user.get("username") == username and user.get("password") == password:
-                return jsonify({
-                    "status": "success",
-                    "role": "admin",
-                    "user": {
-                        "username": user.get("username", ""),
-                        "hoten": user.get("hoten", ""),
-                        "sbd": user.get("sbd", ""),
-                        "ngaysinh": user.get("ngaysinh", "")
-                    },
-                    "redirect": url_for('index')
-                }), 200
-
-        users = load_users(USERS_FILE)
-        for user in users:
-            if user.get("username") == username and user.get("password") == password:
-                return jsonify({
-                    "status": "success",
-                    "role": "user",
-                    "user": {
-                        "username": user.get("username", ""),
-                        "hoten": user.get("hoten", ""),
-                        "sbd": user.get("sbd", ""),
-                        "ngaysinh": user.get("ngaysinh", "")
-                    },
-                    "redirect": url_for('index')
-                }), 200
+        user = User.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            return jsonify({
+                "status": "success",
+                "role": user.role,
+                "user": {
+                    "username": user.username,
+                    "hoten": user.hoten or "",
+                    "sbd": user.sbd or "",
+                    "ngaysinh": user.ngaysinh or ""
+                },
+                "redirect": url_for('index')
+            }), 200
 
         return jsonify({"status": "fail", "msg": "Sai tài khoản hoặc mật khẩu"}), 401
 
@@ -540,27 +428,13 @@ def api_register():
         if not username or not password:
             return jsonify({"status": "error", "msg": "Thiếu username hoặc password"}), 400
 
-        if not USERS_FILE.exists():
-            USERS_FILE.write_text("[]", encoding="utf-8")
-
-        with open(USERS_FILE, "r", encoding="utf-8") as f:
-            try:
-                users = json.load(f)
-            except json.JSONDecodeError:
-                users = []
-
-        if any(u.get("username") == username for u in users):
+        if User.query.filter_by(username=username).first():
             return jsonify({"status": "error", "msg": "Tài khoản đã tồn tại"}), 400
 
-        users.append({
-            "username": username,
-            "password": password,
-            "hoten": hoten,
-            "sbd": sbd,
-            "ngaysinh": ngaysinh
-        })
-        with open(USERS_FILE, "w", encoding="utf-8") as f:
-            json.dump(users, f, ensure_ascii=False, indent=2)
+        hashed_pw = generate_password_hash(password)
+        new_user = User(username=username, password_hash=hashed_pw, hoten=hoten, sbd=sbd, ngaysinh=ngaysinh, role="user")
+        db.session.add(new_user)
+        db.session.commit()
 
         return jsonify({"status": "success", "msg": "Đăng ký thành công", "redirect": url_for('index')})
 
@@ -601,17 +475,13 @@ def api_list_made():
 def get_exam_codes():
     try:
         exam_dir = QUESTIONS_DIR
-        print("[DEBUG] Đang đọc thư mục:", exam_dir.resolve())
         if not exam_dir.exists():
-            app.logger.error("Thư mục đề thi không tồn tại!")
             return jsonify([])
 
         codes = [f.stem.replace("questions", "") for f in exam_dir.glob("questions*.json") if f.stem.startswith("questions") and f.stem[len("questions"):].isdigit()]
         if not codes:
-            app.logger.warning("Không tìm thấy mã đề nào trong thư mục questions!")
             return jsonify([])
 
-        print("[DEBUG] Mã đề tìm thấy:", codes)
         return jsonify(codes)
     except Exception as e:
         app.logger.exception(f"Lỗi lấy mã đề: {e}")
@@ -623,9 +493,7 @@ def get_questions():
         made = request.args.get("made", "000")
         filename = f"questions{made}.json"
         filepath = QUESTIONS_DIR / filename
-        print(f"[DEBUG] Đang tìm file: {filepath}")
         if not filepath.exists():
-            print(f"[ERROR] File không tồn tại: {filepath}")
             return jsonify({"status": "error", "msg": f"File {filename} không tồn tại"}), 404
 
         with open(filepath, encoding="utf-8") as f:
@@ -646,10 +514,8 @@ def get_questions():
                 q_processed["dap_an_dung"] = q.get("dap_an_dung", "")
             processed_questions.append(q_processed)
 
-        print(f"[DEBUG] Đã tải {len(processed_questions)} câu hỏi cho mã đề {made}")
         return jsonify(processed_questions)
     except json.JSONDecodeError as e:
-        print(f"[ERROR] File JSON không hợp lệ: {filepath}, lỗi: {str(e)}")
         return jsonify({"status": "error", "msg": "File câu hỏi không hợp lệ"}), 400
     except Exception as e:
         app.logger.exception(f"Lỗi tải câu hỏi: {e}")
@@ -659,16 +525,15 @@ def get_questions():
 def serve_questions_file(filename):
     try:
         filepath = QUESTIONS_DIR / filename
-        print(f"[DEBUG] Phục vụ file tĩnh: {filepath}")
         if filepath.exists():
             return send_file(filepath)
         else:
-            print(f"[ERROR] File không tồn tại: {filepath}")
             return jsonify({"status": "error", "msg": f"File {filename} không tồn tại"}), 404
     except Exception as e:
         app.logger.exception(f"Lỗi phục vụ file câu hỏi: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
+# Route lưu kết quả
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
@@ -699,6 +564,9 @@ def save_result():
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
+
+        # ✅ log debug
+        app.logger.info(f"[DEBUG] Chuẩn bị lưu kết quả: {filepath.resolve()}")
 
         lines = [
             "KẾT QUẢ BÀI THI",
@@ -747,6 +615,7 @@ def save_result():
 
         try:
             filepath.write_text("\n".join(lines), encoding="utf-8")
+            app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
         except Exception as e:
             app.logger.error(f"Lỗi ghi file: {e}")
             return jsonify({"status": "error", "msg": f"Lỗi ghi file: {str(e)}"}), 500
@@ -761,6 +630,16 @@ def save_result():
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
+
+# ✅ Route list toàn bộ file kết quả để kiểm tra
+@app.route("/list_results")
+def list_results():
+    try:
+        files = [f.name for f in RESULTS_DIR.glob("*.txt")]
+        return jsonify({"count": len(files), "files": files})
+    except Exception as e:
+        app.logger.error(f"Lỗi liệt kê results/: {e}")
+        return jsonify({"status": "error", "msg": "Không thể đọc thư mục results"}), 500
 
 
 @app.route('/static/sw.js')
@@ -787,7 +666,7 @@ def exam_session():
         made = request.args.get('made')
         if not made:
             return jsonify({"status": "error", "msg": "Mã đề không được cung cấp!"}), 400
-        
+
         duration_sec = 3600  # 1 giờ
         return jsonify({"status": "success", "duration_sec": duration_sec, "deadline": None})
     except Exception as e:
@@ -803,4 +682,19 @@ def handle_all(e):
     return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
 if __name__ == "__main__":
+    # Nếu muốn debug migration/have admin creation, có thể tạo admin mặc định ở đây (chỉ khi DB rỗng)
+    with app.app_context():
+        if not User.query.filter_by(role="admin").first():
+            default_admin_user = os.environ.get("DEFAULT_ADMIN_USER")
+            default_admin_pass = os.environ.get("DEFAULT_ADMIN_PASS")
+            if default_admin_user and default_admin_pass:
+                if not User.query.filter_by(username=default_admin_user).first():
+                    admin = User(
+                        username=default_admin_user,
+                        password_hash=generate_password_hash(default_admin_pass),
+                        role="admin"
+                    )
+                    db.session.add(admin)
+                    db.session.commit()
+                    app.logger.info("Đã tạo default admin từ ENV variables.")
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
