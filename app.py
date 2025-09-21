@@ -33,8 +33,6 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change_this_secret_key"
 
 # --- Database config (SQLite) ---
 
-
-
 # Thư mục lưu kết quả và DB trên Render
 RESULTS_DIR = Path("/var/data/results")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)  # tạo folder nếu chưa có
@@ -47,20 +45,18 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-
-
-
-# Đường dẫn thư mục (một số biến vẫn dùng)
+# Đường dẫn thư mục khác
 QUESTIONS_DIR = BASE_DIR / "questions"
-RESULTS_DIR = BASE_DIR / "results"
 STATIC_DIR = BASE_DIR / "static"
-# legacy files (optional) : nếu bạn muốn migrate từ file cũ
+
+# legacy files (optional)
 USERS_FILE = STATIC_DIR / "users.json"
 ADMIN_FILE = STATIC_DIR / "users1.json"
 
 # Tạo các thư mục nếu chưa tồn tại
-for directory in [QUESTIONS_DIR, RESULTS_DIR, STATIC_DIR]:
+for directory in [QUESTIONS_DIR, STATIC_DIR]:
     directory.mkdir(exist_ok=True)
+
 
 socketio = SocketIO(app, async_mode="threading")
 csrf = CSRFProtect(app)
@@ -548,7 +544,6 @@ def serve_questions_file(filename):
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
 # Route lưu kết quả
-
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
@@ -564,6 +559,7 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
+        # Load câu hỏi gốc (nếu có)
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
@@ -573,15 +569,13 @@ def save_result():
                     question_data = json.load(f)
             except Exception as e:
                 app.logger.error(f"Lỗi đọc file đề: {e}")
-                question_data = []
 
         timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
 
-        # ✅ log debug
-        app.logger.info(f"[DEBUG] Chuẩn bị lưu kết quả: {filepath.resolve()}")
+        app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
 
         lines = [
             "KẾT QUẢ BÀI THI",
@@ -601,10 +595,7 @@ def save_result():
 
             try:
                 idx = int(cau) - 1
-                if 0 <= idx < len(question_data):
-                    cau_goc = question_data[idx]
-                else:
-                    cau_goc = {}
+                cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
             except (ValueError, TypeError):
                 cau_goc = {}
 
@@ -616,15 +607,12 @@ def save_result():
                 lines.append(f"  Bạn chọn: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
-            elif kieu == "trac_nghiem":
+            else:  # trac_nghiem hoặc khác
                 da_chon = a.get("da_chon", "(chưa chọn)")
                 dap_an_dung = cau_goc.get("dap_an_dung", "")
                 lines.append(f"  Bạn chọn: {da_chon}")
                 if dap_an_dung:
                     lines.append(f"  Đáp án đúng: {dap_an_dung}")
-            else:
-                tra_loi = a.get("tra_loi_hoc_sinh", a.get("da_chon", "(chưa trả lời)"))
-                lines.append(f"  Bạn trả lời: {tra_loi}")
 
             lines.append("")
 
@@ -644,7 +632,6 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
-
 
 
 # ✅ Route list toàn bộ file kết quả để kiểm tra
