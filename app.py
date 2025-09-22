@@ -116,7 +116,9 @@ def add_security_headers(response):
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"] = "no-referrer-when-downgrade"
-    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+
+    # Cho phép camera, mic, location cho chính domain
+    response.headers["Permissions-Policy"] = "camera=(self), microphone=(self), geolocation=(self)"
 
     # CSP mở rộng để không chặn hiển thị
     csp = (
@@ -139,8 +141,6 @@ def add_security_headers(response):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
 
     return response
-
-
 
 
 # --- User model ---
