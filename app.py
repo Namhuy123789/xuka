@@ -111,6 +111,36 @@ def ask():
         return jsonify({"error": str(e), "reply": "Lỗi server nội bộ"}), 500
 
 
+@app.after_request
+def add_security_headers(response):
+    # Các header bảo mật cơ bản
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "no-referrer-when-downgrade"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+
+    # CSP cân bằng: chỉ cho phép một số CDN phổ biến
+    csp = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
+        "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https: wss:;"
+    )
+    response.headers["Content-Security-Policy"] = csp
+
+    # Bỏ COEP/COOP/CORP để không chặn CDN
+    for h in ("Cross-Origin-Embedder-Policy", "Cross-Origin-Opener-Policy", "Cross-Origin-Resource-Policy"):
+        if h in response.headers:
+            del response.headers[h]
+
+    # HSTS: chỉ bật khi chạy HTTPS
+    if request.is_secure or request.headers.get("X-Forwarded-Proto", "") == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+
+    return response
 
 
 
