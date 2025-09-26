@@ -22,7 +22,9 @@ from dotenv import load_dotenv
 from pathlib import Path
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from flask import Flask, send_file, Response
+import zipfile
+import io
 
 
 BASE_DIR = Path(__file__).parent.resolve()
@@ -39,6 +41,8 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change_this_secret_key"
 # Thư mục lưu kết quả và DB trên Render
 RESULTS_DIR = Path("/var/data/results")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)  # tạo folder nếu chưa có
+# Thư mục tải
+RESULTS_DIR = "/var/data/results"
 
 # File SQLite DB nằm trong RESULTS_DIR
 DB_PATH = RESULTS_DIR / "app.db"
@@ -81,6 +85,23 @@ if not api_key:
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
+@app.route("/download/all")
+def download_all():
+    # Tạo file zip trong bộ nhớ (không ghi ra ổ đĩa)
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for filename in os.listdir(RESULTS_DIR):
+            if filename.endswith(".txt"):  # chỉ lấy file kết quả
+                filepath = os.path.join(RESULTS_DIR, filename)
+                zf.write(filepath, arcname=filename)
+    memory_file.seek(0)
+
+    return send_file(
+        memory_file,
+        as_attachment=True,
+        download_name="all_results.zip",
+        mimetype="application/zip"
+    )
 
 @app.route("/ask", methods=["POST"])
 @csrf.exempt
