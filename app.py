@@ -25,6 +25,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, send_file, Response
 import zipfile
 import io
+from pathlib import Path
 
 
 BASE_DIR = Path(__file__).parent.resolve()
@@ -41,12 +42,8 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change_this_secret_key"
 # Thư mục lưu kết quả và DB trên Render
 RESULTS_DIR = Path("/var/data/results")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)  # tạo folder nếu chưa có
-# Thư mục tải
-RESULTS_DIR = "/var/data/results"
-
 # File SQLite DB nằm trong RESULTS_DIR
 DB_PATH = RESULTS_DIR / "app.db"
-
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH.as_posix()}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
