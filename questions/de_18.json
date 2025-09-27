@@ -1,0 +1,202 @@
+[
+  {
+    "noi_dung": "Câu 1: Nguyên tử khối của nguyên tố Oxi là bao nhiêu?",
+    "lua_chon": {
+      "A": "64",
+      "B": "32",
+      "C": "16",
+      "D": "8"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 2: Sản phẩm chính của phản ứng giữa axit và kim loại là?",
+    "lua_chon": {
+      "A": "Muối và khí hidro",
+      "B": "Chất rắn",
+      "C": "Bazơ",
+      "D": "Dung dịch muối"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 3: Phản ứng trung hòa giữa axit và bazơ tạo thành?",
+    "lua_chon": {
+      "A": "Khí và muối",
+      "B": "Chỉ muối",
+      "C": "Chỉ nước",
+      "D": "Muối và nước"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 4: Nguyên tố nào sau đây thuộc nhóm kim loại kiềm?",
+    "lua_chon": {
+      "A": "Ca",
+      "B": "Fe",
+      "C": "Mg",
+      "D": "Na"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 5: Dung dịch nào sau đây có tính bazơ mạnh?",
+    "lua_chon": {
+      "A": "NH₃",
+      "B": "H₂SO₄",
+      "C": "NaOH",
+      "D": "HCl"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 6: Số oxi hóa của S trong H2SO4 là?",
+    "lua_chon": {
+      "A": "+6",
+      "B": "+2",
+      "C": "+4",
+      "D": "0"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 7: Số mol của 44g CO₂ là?",
+    "lua_chon": {
+      "A": "2",
+      "B": "4",
+      "C": "3",
+      "D": "1"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 8: Hợp chất nào sau đây chứa liên kết ion?",
+    "lua_chon": {
+      "A": "CH₄",
+      "B": "H₂O",
+      "C": "CO₂",
+      "D": "NaCl"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 9: Tên gọi của hợp chất NaHCO₃ là?",
+    "lua_chon": {
+      "A": "Natri bicacbonat",
+      "B": "Natri cacbonat",
+      "C": "Natri oxit",
+      "D": "Natri clorua"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 10: Đơn vị của nồng độ mol là?",
+    "lua_chon": {
+      "A": "mol/g",
+      "B": "mol",
+      "C": "g/lít",
+      "D": "mol/lít"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 11: Dung dịch HCl có pH khoảng bao nhiêu?",
+    "lua_chon": {
+      "A": "5",
+      "B": "13",
+      "C": "7",
+      "D": "1"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 12: Hợp chất nào sau đây là oxit bazơ?",
+    "lua_chon": {
+      "A": "CO₂",
+      "B": "CaO",
+      "C": "P₂O₅",
+      "D": "SO₂"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 13: Dãy gồm toàn kim loại là?",
+    "lua_chon": {
+      "A": "N, Zn, F",
+      "B": "K, Mg, Cu",
+      "C": "Na, Fe, Cl",
+      "D": "H, O, Ag"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 14: Một mol NaCl có khối lượng là?",
+    "lua_chon": {
+      "A": "35.5g",
+      "B": "60g",
+      "C": "23g",
+      "D": "58.5g"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 15: H2 được điều chế trong phòng thí nghiệm bằng phản ứng nào?",
+    "lua_chon": {
+      "A": "Na + H2O",
+      "B": "Zn + HCl",
+      "C": "HCl + Cu",
+      "D": "H2SO4 + NaOH"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 16: Phản ứng nào sau đây là phản ứng oxi hóa – khử?",
+    "lua_chon": {
+      "A": "AgNO3 + NaCl → AgCl + NaNO3",
+      "B": "BaCl2 + H2SO4 → BaSO4 + 2HCl",
+      "C": "NaOH + HCl → NaCl + H2O",
+      "D": "Fe + CuSO4 → FeSO4 + Cu"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 17: Hóa trị của Oxi trong các hợp chất là?",
+    "lua_chon": {
+      "A": "+2",
+      "B": "+1",
+      "C": "−2",
+      "D": "0"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 18: Công thức hóa học của axit sunfuric là?",
+    "lua_chon": {
+      "A": "HNO3",
+      "B": "H2SO4",
+      "C": "H2SO3",
+      "D": "HCl"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 19: Chất nào sau đây là chất điện li mạnh?",
+    "lua_chon": {
+      "A": "NaCl",
+      "B": "CH3COOH",
+      "C": "H2O",
+      "D": "H2CO3"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 20: Dung dịch nào sau đây làm quỳ tím chuyển sang màu đỏ?",
+    "lua_chon": {
+      "A": "NaOH",
+      "B": "H2SO4",
+      "C": "Ba(OH)2",
+      "D": "NaCl"
+    },
+    "dap_an_dung": "B"
+  }
+]
