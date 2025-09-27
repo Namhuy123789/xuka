@@ -1,0 +1,202 @@
+[
+  {
+    "noi_dung": "Câu 1: Hợp chất nào sau đây chứa liên kết ion?",
+    "lua_chon": {
+      "A": "CO₂",
+      "B": "NaCl",
+      "C": "CH₄",
+      "D": "H₂O"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 2: Nguyên tử khối của nguyên tố Oxi là bao nhiêu?",
+    "lua_chon": {
+      "A": "32",
+      "B": "16",
+      "C": "64",
+      "D": "8"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 3: Số mol của 44g CO₂ là?",
+    "lua_chon": {
+      "A": "2",
+      "B": "4",
+      "C": "3",
+      "D": "1"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 4: Chất nào sau đây là chất điện li mạnh?",
+    "lua_chon": {
+      "A": "H2CO3",
+      "B": "H2O",
+      "C": "CH3COOH",
+      "D": "NaCl"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 5: Hóa trị của Oxi trong các hợp chất là?",
+    "lua_chon": {
+      "A": "+1",
+      "B": "+2",
+      "C": "0",
+      "D": "−2"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 6: Phản ứng nào sau đây là phản ứng oxi hóa – khử?",
+    "lua_chon": {
+      "A": "Fe + CuSO4 → FeSO4 + Cu",
+      "B": "BaCl2 + H2SO4 → BaSO4 + 2HCl",
+      "C": "NaOH + HCl → NaCl + H2O",
+      "D": "AgNO3 + NaCl → AgCl + NaNO3"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 7: Phản ứng trung hòa giữa axit và bazơ tạo thành?",
+    "lua_chon": {
+      "A": "Muối và nước",
+      "B": "Chỉ muối",
+      "C": "Khí và muối",
+      "D": "Chỉ nước"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 8: H2 được điều chế trong phòng thí nghiệm bằng phản ứng nào?",
+    "lua_chon": {
+      "A": "Na + H2O",
+      "B": "HCl + Cu",
+      "C": "H2SO4 + NaOH",
+      "D": "Zn + HCl"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 9: Dung dịch HCl có pH khoảng bao nhiêu?",
+    "lua_chon": {
+      "A": "1",
+      "B": "7",
+      "C": "5",
+      "D": "13"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 10: Công thức hóa học của axit sunfuric là?",
+    "lua_chon": {
+      "A": "H2SO4",
+      "B": "HCl",
+      "C": "HNO3",
+      "D": "H2SO3"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 11: Hợp chất nào sau đây là oxit bazơ?",
+    "lua_chon": {
+      "A": "P₂O₅",
+      "B": "SO₂",
+      "C": "CO₂",
+      "D": "CaO"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 12: Nguyên tố nào sau đây thuộc nhóm kim loại kiềm?",
+    "lua_chon": {
+      "A": "Ca",
+      "B": "Fe",
+      "C": "Mg",
+      "D": "Na"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 13: Dãy gồm toàn kim loại là?",
+    "lua_chon": {
+      "A": "N, Zn, F",
+      "B": "K, Mg, Cu",
+      "C": "H, O, Ag",
+      "D": "Na, Fe, Cl"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 14: Một mol NaCl có khối lượng là?",
+    "lua_chon": {
+      "A": "60g",
+      "B": "58.5g",
+      "C": "35.5g",
+      "D": "23g"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 15: Sản phẩm chính của phản ứng giữa axit và kim loại là?",
+    "lua_chon": {
+      "A": "Chất rắn",
+      "B": "Bazơ",
+      "C": "Muối và khí hidro",
+      "D": "Dung dịch muối"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 16: Dung dịch nào sau đây làm quỳ tím chuyển sang màu đỏ?",
+    "lua_chon": {
+      "A": "NaOH",
+      "B": "H2SO4",
+      "C": "Ba(OH)2",
+      "D": "NaCl"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 17: Tên gọi của hợp chất NaHCO₃ là?",
+    "lua_chon": {
+      "A": "Natri cacbonat",
+      "B": "Natri bicacbonat",
+      "C": "Natri clorua",
+      "D": "Natri oxit"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 18: Đơn vị của nồng độ mol là?",
+    "lua_chon": {
+      "A": "mol/lít",
+      "B": "mol/g",
+      "C": "g/lít",
+      "D": "mol"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 19: Dung dịch nào sau đây có tính bazơ mạnh?",
+    "lua_chon": {
+      "A": "NH₃",
+      "B": "H₂SO₄",
+      "C": "HCl",
+      "D": "NaOH"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 20: Số oxi hóa của S trong H2SO4 là?",
+    "lua_chon": {
+      "A": "+6",
+      "B": "0",
+      "C": "+4",
+      "D": "+2"
+    },
+    "dap_an_dung": "A"
+  }
+]
