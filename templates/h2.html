@@ -259,85 +259,84 @@
     }
 
    // 🔹 Hàm chuyển UTF-8 sang Base64
-  function utf8ToBase64(str) {
-    return btoa(unescape(encodeURIComponent(str)));
+ function utf8ToBase64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+async function uploadToGitHub() {
+  const token = document.getElementById('github-token').value.trim();
+  const status = document.getElementById('status');
+
+  if (!token) {
+    status.textContent = '❌ Vui lòng nhập GitHub Personal Access Token!';
+    return;
+  }
+  if (!allTests.length) {
+    status.textContent = '❌ Vui lòng trộn đề trước khi tải lên!';
+    return;
   }
 
-  async function uploadToGitHub() {
-    const token = document.getElementById('github-token').value.trim();
-    const status = document.getElementById('status');
+  status.textContent = '⏳ Đang tải lên GitHub...';
 
-    if (!token) {
-      status.textContent = '❌ Vui lòng nhập GitHub Personal Access Token!';
-      return;
-    }
-    if (!allTests.length) {
-      status.textContent = '❌ Vui lòng trộn đề trước khi tải lên!';
-      return;
-    }
+  const repoOwner = 'Namhuy123789';  // sửa thành tên bạn
+  const repoName = 'xuka';           // sửa vì repo bạn là xuka
+  const branch = 'main';             // nhánh mặc định là main
 
-    status.textContent = '⏳ Đang tải lên GitHub...';
-    const repoOwner = 'huybo43534';
-    const repoName = 'xuka4';
-    const branch = 'main';
+  try {
+    for (const test of allTests) {
+      const path = `questions/de_${test.de_so.toString().padStart(2, '0')}.json`;
+      const content = utf8ToBase64(JSON.stringify(test.noi_dung_de, null, 2));
 
-    try {
-      for (const test of allTests) {
-        const path = `questions/de_${test.de_so.toString().padStart(2, '0')}.json`;
-
-        // 🔹 Encode JSON với UTF-8 an toàn
-        const content = utf8ToBase64(JSON.stringify(test.noi_dung_de, null, 2));
-
-        // Check nếu file đã tồn tại để lấy SHA
-        let sha = null;
-        try {
-          const getFileRes = await fetch(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}?ref=${branch}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/vnd.github+json',
-              },
-            }
-          );
-          if (getFileRes.ok) {
-            const fileData = await getFileRes.json();
-            sha = fileData.sha;
-          }
-        } catch (e) {
-          // File chưa tồn tại → bỏ qua
-        }
-
-        // 🔹 Upload file
-        const response = await fetch(
-          `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`,
+      let sha = null;
+      try {
+        const getFileRes = await fetch(
+          `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}?ref=${branch}`,
           {
-            method: 'PUT',
             headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/vnd.github+json',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              message: `Add/Update de_${test.de_so.toString().padStart(2, '0')}.json`,
-              content: content,
-              branch: branch,
-              sha: sha, // Nếu file tồn tại thì kèm SHA
-            }),
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/vnd.github+json',
+            }
           }
         );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Lỗi khi tải lên file!');
+        if (getFileRes.ok) {
+          const fileData = await getFileRes.json();
+          sha = fileData.sha;
         }
+      } catch (e) {
+        // file chưa tồn tại
       }
 
-      status.textContent = '✅ Đã tải lên tất cả các file đề thi lên GitHub!';
-    } catch (error) {
-      status.textContent = `❌ Lỗi khi tải lên GitHub: ${error.message}`;
+      const response = await fetch(
+        `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: `Add/Update de_${test.de_so.toString().padStart(2, '0')}.json`,
+            content: content,
+            branch: branch,
+            sha: sha,
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi tải lên file!');
+      } else {
+        // Có thể log tên file thành công
+        console.log("Uploaded:", path);
+      }
     }
+    status.textContent = '✅ Đã tải lên tất cả các file đề thi lên GitHub!';
+  } catch (error) {
+    status.textContent = `❌ Lỗi khi tải lên GitHub: ${error.message}`;
   }
+}
 
 
     function shuffleArray(arr) {
