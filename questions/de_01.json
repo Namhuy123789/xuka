@@ -1,0 +1,202 @@
+[
+  {
+    "noi_dung": "Câu 1: Hợp chất nào sau đây là oxit bazơ?",
+    "lua_chon": {
+      "A": "CaO",
+      "B": "CO₂",
+      "C": "SO₂",
+      "D": "P₂O₅"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 2: Phản ứng trung hòa giữa axit và bazơ tạo thành?",
+    "lua_chon": {
+      "A": "Muối và nước",
+      "B": "Khí và muối",
+      "C": "Chỉ nước",
+      "D": "Chỉ muối"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 3: Dung dịch HCl có pH khoảng bao nhiêu?",
+    "lua_chon": {
+      "A": "13",
+      "B": "1",
+      "C": "7",
+      "D": "5"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 4: Sản phẩm chính của phản ứng giữa axit và kim loại là?",
+    "lua_chon": {
+      "A": "Bazơ",
+      "B": "Dung dịch muối",
+      "C": "Muối và khí hidro",
+      "D": "Chất rắn"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 5: Dung dịch nào sau đây làm quỳ tím chuyển sang màu đỏ?",
+    "lua_chon": {
+      "A": "NaCl",
+      "B": "H2SO4",
+      "C": "NaOH",
+      "D": "Ba(OH)2"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 6: Chất nào sau đây là chất điện li mạnh?",
+    "lua_chon": {
+      "A": "H2CO3",
+      "B": "NaCl",
+      "C": "CH3COOH",
+      "D": "H2O"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 7: Nguyên tố nào sau đây thuộc nhóm kim loại kiềm?",
+    "lua_chon": {
+      "A": "Ca",
+      "B": "Fe",
+      "C": "Mg",
+      "D": "Na"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 8: Dung dịch nào sau đây có tính bazơ mạnh?",
+    "lua_chon": {
+      "A": "H₂SO₄",
+      "B": "NH₃",
+      "C": "NaOH",
+      "D": "HCl"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 9: Nguyên tử khối của nguyên tố Oxi là bao nhiêu?",
+    "lua_chon": {
+      "A": "16",
+      "B": "32",
+      "C": "8",
+      "D": "64"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 10: Đơn vị của nồng độ mol là?",
+    "lua_chon": {
+      "A": "mol",
+      "B": "mol/g",
+      "C": "mol/lít",
+      "D": "g/lít"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 11: H2 được điều chế trong phòng thí nghiệm bằng phản ứng nào?",
+    "lua_chon": {
+      "A": "Na + H2O",
+      "B": "Zn + HCl",
+      "C": "HCl + Cu",
+      "D": "H2SO4 + NaOH"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 12: Hóa trị của Oxi trong các hợp chất là?",
+    "lua_chon": {
+      "A": "+1",
+      "B": "0",
+      "C": "−2",
+      "D": "+2"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 13: Hợp chất nào sau đây chứa liên kết ion?",
+    "lua_chon": {
+      "A": "H₂O",
+      "B": "CO₂",
+      "C": "NaCl",
+      "D": "CH₄"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 14: Tên gọi của hợp chất NaHCO₃ là?",
+    "lua_chon": {
+      "A": "Natri cacbonat",
+      "B": "Natri clorua",
+      "C": "Natri oxit",
+      "D": "Natri bicacbonat"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 15: Phản ứng nào sau đây là phản ứng oxi hóa – khử?",
+    "lua_chon": {
+      "A": "Fe + CuSO4 → FeSO4 + Cu",
+      "B": "NaOH + HCl → NaCl + H2O",
+      "C": "BaCl2 + H2SO4 → BaSO4 + 2HCl",
+      "D": "AgNO3 + NaCl → AgCl + NaNO3"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 16: Số oxi hóa của S trong H2SO4 là?",
+    "lua_chon": {
+      "A": "0",
+      "B": "+2",
+      "C": "+4",
+      "D": "+6"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 17: Dãy gồm toàn kim loại là?",
+    "lua_chon": {
+      "A": "K, Mg, Cu",
+      "B": "H, O, Ag",
+      "C": "N, Zn, F",
+      "D": "Na, Fe, Cl"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 18: Công thức hóa học của axit sunfuric là?",
+    "lua_chon": {
+      "A": "HNO3",
+      "B": "HCl",
+      "C": "H2SO4",
+      "D": "H2SO3"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 19: Một mol NaCl có khối lượng là?",
+    "lua_chon": {
+      "A": "35.5g",
+      "B": "58.5g",
+      "C": "60g",
+      "D": "23g"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 20: Số mol của 44g CO₂ là?",
+    "lua_chon": {
+      "A": "1",
+      "B": "3",
+      "C": "4",
+      "D": "2"
+    },
+    "dap_an_dung": "A"
+  }
+]
