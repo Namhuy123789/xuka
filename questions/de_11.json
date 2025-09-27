@@ -1,0 +1,202 @@
+[
+  {
+    "noi_dung": "Câu 1: Dãy gồm toàn kim loại là?",
+    "lua_chon": {
+      "A": "N, Zn, F",
+      "B": "H, O, Ag",
+      "C": "K, Mg, Cu",
+      "D": "Na, Fe, Cl"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 2: Tên gọi của hợp chất NaHCO₃ là?",
+    "lua_chon": {
+      "A": "Natri bicacbonat",
+      "B": "Natri clorua",
+      "C": "Natri oxit",
+      "D": "Natri cacbonat"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 3: Dung dịch nào sau đây có tính bazơ mạnh?",
+    "lua_chon": {
+      "A": "HCl",
+      "B": "NH₃",
+      "C": "NaOH",
+      "D": "H₂SO₄"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 4: Hóa trị của Oxi trong các hợp chất là?",
+    "lua_chon": {
+      "A": "+2",
+      "B": "+1",
+      "C": "−2",
+      "D": "0"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 5: Dung dịch nào sau đây làm quỳ tím chuyển sang màu đỏ?",
+    "lua_chon": {
+      "A": "NaCl",
+      "B": "NaOH",
+      "C": "H2SO4",
+      "D": "Ba(OH)2"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 6: Nguyên tố nào sau đây thuộc nhóm kim loại kiềm?",
+    "lua_chon": {
+      "A": "Mg",
+      "B": "Na",
+      "C": "Fe",
+      "D": "Ca"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 7: Sản phẩm chính của phản ứng giữa axit và kim loại là?",
+    "lua_chon": {
+      "A": "Muối và khí hidro",
+      "B": "Chất rắn",
+      "C": "Bazơ",
+      "D": "Dung dịch muối"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 8: Một mol NaCl có khối lượng là?",
+    "lua_chon": {
+      "A": "60g",
+      "B": "35.5g",
+      "C": "23g",
+      "D": "58.5g"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 9: Đơn vị của nồng độ mol là?",
+    "lua_chon": {
+      "A": "mol/lít",
+      "B": "g/lít",
+      "C": "mol",
+      "D": "mol/g"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 10: Hợp chất nào sau đây là oxit bazơ?",
+    "lua_chon": {
+      "A": "SO₂",
+      "B": "CaO",
+      "C": "CO₂",
+      "D": "P₂O₅"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 11: Chất nào sau đây là chất điện li mạnh?",
+    "lua_chon": {
+      "A": "NaCl",
+      "B": "H2O",
+      "C": "H2CO3",
+      "D": "CH3COOH"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 12: Số oxi hóa của S trong H2SO4 là?",
+    "lua_chon": {
+      "A": "+2",
+      "B": "0",
+      "C": "+4",
+      "D": "+6"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 13: Số mol của 44g CO₂ là?",
+    "lua_chon": {
+      "A": "3",
+      "B": "4",
+      "C": "1",
+      "D": "2"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 14: Nguyên tử khối của nguyên tố Oxi là bao nhiêu?",
+    "lua_chon": {
+      "A": "16",
+      "B": "32",
+      "C": "8",
+      "D": "64"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 15: Dung dịch HCl có pH khoảng bao nhiêu?",
+    "lua_chon": {
+      "A": "7",
+      "B": "5",
+      "C": "1",
+      "D": "13"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 16: H2 được điều chế trong phòng thí nghiệm bằng phản ứng nào?",
+    "lua_chon": {
+      "A": "Na + H2O",
+      "B": "Zn + HCl",
+      "C": "H2SO4 + NaOH",
+      "D": "HCl + Cu"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Câu 17: Công thức hóa học của axit sunfuric là?",
+    "lua_chon": {
+      "A": "H2SO4",
+      "B": "HNO3",
+      "C": "HCl",
+      "D": "H2SO3"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Câu 18: Phản ứng nào sau đây là phản ứng oxi hóa – khử?",
+    "lua_chon": {
+      "A": "BaCl2 + H2SO4 → BaSO4 + 2HCl",
+      "B": "AgNO3 + NaCl → AgCl + NaNO3",
+      "C": "Fe + CuSO4 → FeSO4 + Cu",
+      "D": "NaOH + HCl → NaCl + H2O"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Câu 19: Phản ứng trung hòa giữa axit và bazơ tạo thành?",
+    "lua_chon": {
+      "A": "Chỉ muối",
+      "B": "Chỉ nước",
+      "C": "Khí và muối",
+      "D": "Muối và nước"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Câu 20: Hợp chất nào sau đây chứa liên kết ion?",
+    "lua_chon": {
+      "A": "CH₄",
+      "B": "H₂O",
+      "C": "CO₂",
+      "D": "NaCl"
+    },
+    "dap_an_dung": "D"
+  }
+]
