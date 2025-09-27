@@ -36,6 +36,12 @@
       <div class="space-x-2">
         <button id="tabRegister" onclick="showTab('register')" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">TẠO TÀI KHOẢN & QR</button>
         <button id="tabShuffle" onclick="showTab('shuffle')" class="px-3 py-1 bg-gray-400 text-white rounded hover:bg-blue-700">TẠO ĐỀ THI</button>
+		<button id="tabShuffle" 
+        onclick="window.location.href='https://xuka.com.vn/download/all'" 
+        class="px-3 py-1 bg-gray-400 text-white rounded hover:bg-blue-700">
+  TẢI KẾT QUẢ THI
+</button>
+
       </div>
     </div>
   </div>
@@ -206,57 +212,67 @@
     }
 
     async function tronDe() {
-      let deGoc;
-      const status = document.getElementById('status');
-      try {
-        deGoc = JSON.parse(document.getElementById('inputDeGoc').value);
-        if (!Array.isArray(deGoc)) throw new Error('Dữ liệu không đúng!');
-      } catch (e) {
-        status.textContent = '❌ Lỗi JSON: ' + e.message;
-        return;
-      }
-      status.textContent = '⏳ Đang trộn và tạo file ZIP...';
-      allTests = []; // Reset and store generated tests
-      for (let i = 1; i <= 24; i++) {
-        const deTron = JSON.parse(JSON.stringify(deGoc));
-        shuffleArray(deTron);
-        deTron.forEach((cau, index) => {
-          const dapAnCu = cau.lua_chon[cau.dap_an_dung];
-          const luaChonArray = Object.entries(cau.lua_chon);
-          shuffleArray(luaChonArray);
-          const newLuaChon = {};
-          let newDapAn = '';
-          const keys = ['A', 'B', 'C', 'D'];
-          luaChonArray.forEach(([_, val], idx) => {
-            newLuaChon[keys[idx]] = val;
-            if (val === dapAnCu) newDapAn = keys[idx];
-          });
-          const noiDungGoc = cau.noi_dung.replace(/^Câu\s*\d+[:.]\s*/, '').trim();
-          cau.noi_dung = `Câu ${index + 1}: ${noiDungGoc}`;
-          cau.lua_chon = newLuaChon;
-          cau.dap_an_dung = newDapAn;
-        });
-        allTests.push({ de_so: i, noi_dung_de: deTron });
-      }
-      const zip = new JSZip();
-      allTests.forEach(test => {
-        zip.file(`de_${test.de_so.toString().padStart(2, '0')}.json`, JSON.stringify(test.noi_dung_de, null, 2));
+  let deGoc;
+  const status = document.getElementById('status');
+  try {
+    deGoc = JSON.parse(document.getElementById('inputDeGoc').value);
+    if (!Array.isArray(deGoc)) throw new Error('Dữ liệu không đúng!');
+  } catch (e) {
+    status.textContent = '❌ Lỗi JSON: ' + e.message;
+    return;
+  }
+
+  status.textContent = '⏳ Đang trộn và tạo file ZIP...';
+  allTests = []; // Reset and store generated tests
+
+  // Tạo 24 đề, từ questions101.json → questions124.json
+  for (let i = 101; i <= 124; i++) {
+    const deTron = JSON.parse(JSON.stringify(deGoc));
+    shuffleArray(deTron);
+
+    deTron.forEach((cau, index) => {
+      const dapAnCu = cau.lua_chon[cau.dap_an_dung];
+      const luaChonArray = Object.entries(cau.lua_chon);
+      shuffleArray(luaChonArray);
+
+      const newLuaChon = {};
+      let newDapAn = '';
+      const keys = ['A', 'B', 'C', 'D'];
+      luaChonArray.forEach(([_, val], idx) => {
+        newLuaChon[keys[idx]] = val;
+        if (val === dapAnCu) newDapAn = keys[idx];
       });
-      try {
-        const blob = await zip.generateAsync({ type: 'blob' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'de_thi_24.zip';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        status.textContent = '✅ Đã trộn và tải file ZIP về thành công!';
-      } catch (err) {
-        status.textContent = '❌ Lỗi khi tạo file ZIP: ' + err.message;
-      }
-    }
+
+      const noiDungGoc = cau.noi_dung.replace(/^Câu\s*\d+[:.]\s*/, '').trim();
+      cau.noi_dung = `Câu ${index + 1}: ${noiDungGoc}`;
+      cau.lua_chon = newLuaChon;
+      cau.dap_an_dung = newDapAn;
+    });
+
+    allTests.push({ fileName: `questions${i}.json`, content: deTron });
+  }
+
+  const zip = new JSZip();
+  allTests.forEach(test => {
+    zip.file(test.fileName, JSON.stringify(test.content, null, 2));
+  });
+
+  try {
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'questions_24.zip';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    status.textContent = '✅ Đã trộn và tải file ZIP về thành công!';
+  } catch (err) {
+    status.textContent = '❌ Lỗi khi tạo file ZIP: ' + err.message;
+  }
+}
+
 
    // 🔹 Hàm chuyển UTF-8 sang Base64
  function utf8ToBase64(str) {
@@ -279,13 +295,13 @@ async function uploadToGitHub() {
   status.textContent = '⏳ Đang tải lên GitHub...';
 
   const repoOwner = 'Namhuy123789';  // sửa thành tên bạn
-  const repoName = 'xuka';           // sửa vì repo bạn là xuka
-  const branch = 'main';             // nhánh mặc định là main
+  const repoName = 'xuka';           // sửa thành repo bạn
+  const branch = 'main';             // nhánh mặc định
 
   try {
     for (const test of allTests) {
-      const path = `questions/de_${test.de_so.toString().padStart(2, '0')}.json`;
-      const content = utf8ToBase64(JSON.stringify(test.noi_dung_de, null, 2));
+      const path = `questions/${test.fileName}`;
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(test.content, null, 2))));
 
       let sha = null;
       try {
@@ -303,7 +319,7 @@ async function uploadToGitHub() {
           sha = fileData.sha;
         }
       } catch (e) {
-        // file chưa tồn tại
+        // File chưa tồn tại thì bỏ qua
       }
 
       const response = await fetch(
@@ -316,7 +332,7 @@ async function uploadToGitHub() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            message: `Add/Update de_${test.de_so.toString().padStart(2, '0')}.json`,
+            message: `Add/Update ${test.fileName}`,
             content: content,
             branch: branch,
             sha: sha,
@@ -328,15 +344,15 @@ async function uploadToGitHub() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Lỗi khi tải lên file!');
       } else {
-        // Có thể log tên file thành công
         console.log("Uploaded:", path);
       }
     }
-    status.textContent = '✅ Đã tải lên tất cả các file đề thi lên GitHub!';
+    status.textContent = '✅ Đã tải lên tất cả 24 file đề thi lên GitHub!';
   } catch (error) {
     status.textContent = `❌ Lỗi khi tải lên GitHub: ${error.message}`;
   }
 }
+
 
 
     function shuffleArray(arr) {
