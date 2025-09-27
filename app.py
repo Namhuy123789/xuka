@@ -80,7 +80,7 @@ if not api_key:
 
 # Cấu hình Gemini
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("models/gemini-2.5-flash")
 
 @app.route("/download/all")
 def download_all():
@@ -236,13 +236,6 @@ with app.app_context():
     if migrated_admins or migrated_users:
         app.logger.info(f"Đã migrate users: admins={migrated_admins}, users={migrated_users}")
 
-# Lấy API key từ .env cho Gemini
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    raise ValueError("❌ GEMINI_API_KEY chưa được thiết lập trong .env")
-
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel("gemini-1.5-flash")
 
 # --- Crypto / QR helper functions (unchanged, just reused) ---
 MASTER_PASSPHRASE = os.environ.get("MASTER_PASSPHRASE", "thay-bang-chuoi-bi-mat")
