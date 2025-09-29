@@ -759,7 +759,6 @@ async function submitExam(autoByTime) {
       if (isCorrect) scoreTracNghiem1 += 0.25;
 
     } else if (kieu === 'dung_sai') {
-      // ✅ Đúng/Sai
       const daChonNorm = selected
         ? (selected.toUpperCase() === 'A' || selected.toUpperCase() === 'ĐÚNG' ? 'Đúng' : 'Sai')
         : '';
@@ -770,7 +769,6 @@ async function submitExam(autoByTime) {
       if (isCorrect) scoreDungSai += 0.25;
 
     } else if (kieu === 'trac_nghiem_nhieu') {
-      // ✅ Trắc nghiệm nhiều lựa chọn (tính partial)
       const correctArr = correctKey.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
       const selectedArr = selected ? selected.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : [];
       const matched = selectedArr.filter(ans => correctArr.includes(ans)).length;
@@ -781,7 +779,6 @@ async function submitExam(autoByTime) {
       isCorrect = partialScore === 0.25;
 
     } else if (kieu === 'tu_luan') {
-      // ✅ Tự luận: chấm theo mức độ trùng ý
       const daChonText = selected ? selected.trim() : '';
       const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
       let matchScore = 0;
@@ -822,30 +819,27 @@ async function submitExam(autoByTime) {
   const now = new Date();
   const formattedDate = now.toLocaleString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
 
+  // --- PHẦN HIỂN THỊ KẾT QUẢ ---
   let fileContent = `<div><strong>KẾT QUẢ BÀI THI</strong></div>` +
-    `<div>Họ tên: ${safeHTML(name)}</div>` +
-    `<div>SBD: ${safeHTML(sbd)}</div>` +
-    `<div>Ngày sinh: ${safeHTML(dob)}</div>` +
-    `<div>Mã đề: ${safeHTML(made)}</div>` +
+    `<div><strong>Họ tên:</strong> <strong>${safeHTML(name)}</strong></div>` +
+    `<div><strong>SBD:</strong> <strong>${safeHTML(sbd)}</strong></div>` +
+    `<div><strong>Ngày sinh:</strong> <strong>${safeHTML(dob)}</strong></div>` +
+    `<div><strong>Mã đề:</strong> <strong>${safeHTML(made)}</strong></div>` +
     `<div>Điểm Trắc nghiệm 1 lựa chọn: ${scoreTracNghiem1.toFixed(2)}</div>` +
     `<div>Điểm Đúng/Sai: ${scoreDungSai.toFixed(2)}</div>` +
     `<div>Điểm Tự luận: ${scoreTuLuan.toFixed(2)}</div>` +
-    `<div>Tổng điểm: ${finalScore}/10</div>` +
+    `<div><strong style="color:red;">Tổng điểm: ${finalScore}/10</strong></div>` +
     `<div>Nộp lúc: ${safeHTML(formattedDate)}</div><br>`;
 
   answers.forEach(ans => {
+    const color = ans.dung ? 'green' : 'red'; // Đúng xanh, sai đỏ
+    const symbol = ans.dung ? '✅' : '❌';
     fileContent += `<div style="margin-bottom: .75rem;">Câu ${ans.cau}: <span>${safeHTML(ans.noi_dung)}</span></div>`;
-    fileContent += `<div>Bạn chọn: <span>${safeHTML(ans.da_chon)}</span>`;
-    if (ans.kieu === 'trac_nghiem' || ans.kieu === 'dung_sai') {
-      fileContent += ` ${ans.dung ? '- ĐÚNG' : '- SAI'}</div>`;
-      if (ans.dap_an_dung) {
-        fileContent += `<div>Đáp án đúng: <span>${safeHTML(ans.dap_an_dung)}</span></div>`;
-      }
-    } else {
-      fileContent += `</div>`;
-      if (ans.goi_y_dap_an) {
-        fileContent += `<div>Gợi ý đáp án: <span>${safeHTML(ans.goi_y_dap_an)}</span></div>`;
-      }
+    fileContent += `<div>Bạn chọn: <span style="color:${color}; font-weight:bold;">${safeHTML(ans.da_chon)} ${symbol}</span></div>`;
+    if (ans.dap_an_dung) {
+      fileContent += `<div>Đáp án đúng: <span>${safeHTML(ans.dap_an_dung)}</span></div>`;
+    } else if (ans.goi_y_dap_an) {
+      fileContent += `<div>Gợi ý đáp án: <span>${safeHTML(ans.goi_y_dap_an)}</span></div>`;
     }
     fileContent += `<br>`;
   });
@@ -878,6 +872,7 @@ async function submitExam(autoByTime) {
     console.error('Lỗi lưu backend:', err);
   }
 }
+
 
 function downloadDOC(name, made) {
   const container = qs('#result-html');
@@ -958,4 +953,5 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
