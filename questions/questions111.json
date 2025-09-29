@@ -1,102 +1,200 @@
 [
   {
-    "noi_dung": "What is the formula for gravitational force?",
-    "lua_chon": { "A": "F = ma", "B": "F = mg", "C": "F = mv", "D": "F = mgh" },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "What is the SI unit of force?",
-    "lua_chon": { "A": "Joule", "B": "Watt", "C": "Newton", "D": "Pascal" },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "What is Ohm’s law?",
-    "lua_chon": { "A": "U = IR", "B": "F = ma", "C": "E = mc^2", "D": "P = IV" },
+    "noi_dung": "AI là viết tắt của cụm từ nào?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Artificial Intelligence",
+      "B": "Automated Intelligence",
+      "C": "Artificial Instruction",
+      "D": "Automatic Instruction"
+    },
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Which of these is a scalar quantity?",
-    "lua_chon": { "A": "Velocity", "B": "Force", "C": "Acceleration", "D": "Temperature" },
+    "noi_dung": "Khái niệm về AI được định nghĩa như thế nào?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Khả năng của con người thực hiện công việc thông minh",
+      "B": "Khả năng của máy tính thực hiện các công việc không đòi hỏi trí tuệ",
+      "C": "Khả năng của máy tính làm những công việc mang tính trí tuệ của con người",
+      "D": "Khả năng của máy tính tự sửa chữa"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Google Dịch sử dụng công nghệ AI để thực hiện nhiệm vụ gì?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Chẩn đoán bệnh",
+      "B": "Dịch thuật",
+      "C": "Điều khiển xe hơi",
+      "D": "Khuyến nghị video"
+    },
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Hệ chuyên gia MYCIN được phát triển trong lĩnh vực nào?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Tài chính",
+      "B": "Y học",
+      "C": "Giáo dục",
+      "D": "Thể thao"
+    },
+    "dap_an_dung":"B"
+  },
+  {
+    "noi_dung": "Trí tuệ nhân tạo hẹp (AI yếu) được thiết kế để làm gì?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Thực hiện mọi công việc như con người",
+      "B": "Thực hiện một nhiệm vụ cụ thể",
+      "C": "Giải quyết mọi vấn đề trong cuộc sống",
+      "D": "Tự học hỏi và tự cải thiện"
+    },
+    "dap_an_dung":"B"
+  },
+  {
+    "noi_dung": "Các năng lực trí tuệ thường được liên kết với AI không bao gồm khả năng nào sau đây?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Học",
+      "B": "Suy luận",
+      "C": "Nhận thức",
+      "D": "Ăn uống"
+    },
     "dap_an_dung": "D"
   },
   {
-    "noi_dung": "What does 'g' represent in physics?",
-    "lua_chon": { "A": "Velocity", "B": "Mass", "C": "Acceleration due to gravity", "D": "Friction force" },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Which law states that 'every action has an equal and opposite reaction'?",
-    "lua_chon": { "A": "Newton's First Law", "B": "Newton's Second Law", "C": "Newton's Third Law", "D": "Archimedes' Principle" },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "What is the SI unit of work?",
-    "lua_chon": { "A": "Watt", "B": "Joule", "C": "Newton", "D": "Ampere" },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "What is measured in Ohms?",
-    "lua_chon": { "A": "Power", "B": "Current", "C": "Resistance", "D": "Energy" },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Which device measures voltage?",
-    "lua_chon": { "A": "Ammeter", "B": "Voltmeter", "C": "Thermometer", "D": "Ohmmeter" },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "What is the formula for kinetic energy?",
-    "lua_chon": { "A": "E = mgh", "B": "E = mc^2", "C": "E = 1/2mv^2", "D": "E = qU" },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "What type of heat transfer involves fluid motion?",
-    "lua_chon": { "A": "Conduction", "B": "Radiation", "C": "Convection", "D": "Diffusion" },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Which instrument measures pressure?",
-    "lua_chon": { "A": "Voltmeter", "B": "Barometer", "C": "Ammeter", "D": "Micrometer" },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Frequency is measured in which unit?",
-    "lua_chon": { "A": "Hertz", "B": "Ohm", "C": "Watt", "D": "Joule" },
+    "noi_dung": "Khả năng nào không thuộc về AI?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Thực hiện các công việc cảm xúc như con người",
+      "B": "Hiểu và xử lí ngôn ngữ tự nhiên",
+      "C": "Vận dụng logic và tri thức để đưa ra quyết định",
+      "D": "Học từ dữ liệu và điều chỉnh hành vi dựa trên thông tin mới"
+    },
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Which formula represents conservation of energy?",
-    "lua_chon": { "A": "E_total = PE + KE", "B": "P = IV", "C": "F = ma", "D": "U = IR" },
+    "noi_dung": "Loại cáp nào thường được sử dụng trong mạng LAN?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Cáp mạng",
+      "B": "Cáp đồng trục",
+      "C": "Cáp điện thoại",
+      "D": "Cáp quang"
+    },
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "Which lens converges light rays?",
-    "lua_chon": { "A": "Concave", "B": "Convex", "C": "Flat", "D": "Reflective" },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "What is the process of liquid turning into gas called?",
-    "lua_chon": { "A": "Condensation", "B": "Evaporation", "C": "Melting", "D": "Freezing" },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Which quantity is a vector?",
-    "lua_chon": { "A": "Temperature", "B": "Mass", "C": "Acceleration", "D": "Energy" },
+    "noi_dung": "Thiết bị mạng nào dưới đây gửi dữ liệu đến tất cả các cổng khác khi nhận dữ liệu từ một cổng?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Router",
+      "B": "Switch",
+      "C": "Hub",
+      "D": "Access Point"
+    },
     "dap_an_dung": "C"
   },
   {
-    "noi_dung": "What formula represents Archimedes' principle?",
-    "lua_chon": { "A": "F = ρgV", "B": "F = ma", "C": "F = qE", "D": "P = IV" },
+    "noi_dung": "Thiết bị nào dưới đây không phải là thiết bị mạng thông dụng?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Hub",
+      "B": "Switch",
+      "C": "Router",
+      "D": "Máy in"
+    },
+    "dap_an_dung": "D"
+  },
+  {
+    "noi_dung": "Điểm truy cập không dây (Wireless Access Point - WAP) dùng để làm gì?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Kết nối tất cả các thiết bị đầu cuối trong một khu vực mà không cần cáp mạng",
+      "B": "Kết nối các máy tính qua Internet",
+      "C": "Kết nối trực tiếp vào LAN",
+      "D": "Chuyển tiếp dữ liệu qua mạng viễn thông"
+    },
     "dap_an_dung": "A"
   },
   {
-    "noi_dung": "What is the formula for pressure?",
-    "lua_chon": { "A": "P = F/A", "B": "P = mv", "C": "P = qU", "D": "P = E/t" },
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Who discovered the law of universal gravitation?",
-    "lua_chon": { "A": "Einstein", "B": "Newton", "C": "Galileo", "D": "Archimedes" },
+    "noi_dung": "Điểm truy cập không dây (WAP) được hiểu như thế nào?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Một bộ định tuyến không dây",
+      "B": "Một bộ thu phát Wi-Fi kết nối thiết bị đầu cuối trong mạng LAN",
+      "C": "Một loại cáp mạng",
+      "D": "Một thiết bị chuyển mạch mạng"
+    },
     "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Đâu là một ví dụ về ứng xử tích cực trong không gian mạng?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Tôn trọng quan điểm của người khác khi tham gia thảo luận",
+      "B": "Phát tán thông tin cá nhân của người khác",
+      "C": "Sử dụng ngôn từ thô tục trong các diễn đàn trực tuyến",
+      "D": "Gửi tin nhắn spam tới các địa chỉ email mà không được sự cho phép"
+    },
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "Trong không gian mạng, hành động nào sau đây được coi là không phù hợp?",
+    "kieu_cau_hoi": "trac_nghiem",
+    "lua_chon": {
+      "A": "Chia sẻ các nguồn thông tin hữu ích",
+      "B": "Xây dựng một blog cá nhân để chia sẻ kinh nghiệm",
+      "C": "Sử dụng ảnh cá nhân của người khác mà không xin phép",
+      "D": "Thảo luận và đưa ra ý kiến cá nhân trong các forum"
+    },
+    "dap_an_dung": "C"
+  },
+  {
+    "noi_dung": "Lĩnh vực dịch vụ nào được AI hỗ trợ mạnh mẽ?",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "AI hỗ trợ mạnh mẽ trong nhiều lĩnh vực dịch vụ, bao gồm trợ lý ảo và chatbot, dịch vụ khách hàng, tài chính ngân hàng, y tế, và giáo dục đào tạo."
+  },
+  {
+    "noi_dung": "AI được ứng dụng như thế nào trong việc điều khiển tự động?",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "AI giúp máy móc và thiết bị hoạt động tự động mà không cần sự can thiệp của con người, ví dụ như giám sát nguyên vật liệu, quét sản phẩm lỗi, và điều khiển thiết bị bay không người lái."
+  },
+  {
+    "noi_dung": "Switch trong mạng LAN có chức năng gì?",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Switch kết nối và chuyển tiếp dữ liệu giữa các thiết bị trong mạng LAN."
+  },
+  {
+    "noi_dung": "Cáp mạng RJ45 không kết nối qua cổng USB, mà cắm vào cổng LAN trên máy tính và Switch.",
+    "kieu_cau_hoi": "dung_sai",
+    "lua_chon": {"A": "đúng", "B": "sai"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "Không cần đặt tên chia sẻ cho ổ cứng; tên chia sẻ thường được đặt cho các thư mục hoặc máy in, không phải cho toàn bộ ổ cứng.",
+    "kieu_cau_hoi": "dung_sai",
+    "lua_chon": {"A": "đúng", "B": "sai"},
+    "dap_an_dung": "A"
+  },
+  {
+    "noi_dung": "AI trong lĩnh vực robotics đã phát triển những robot thông minh có khả năng giao tiếp đa ngôn ngữ, như robot Grace ở Hồng Kông.",
+    "kieu_cau_hoi": "dung_sai",
+    "lua_chon": {"A": "đúng", "B": "sai"},
+    "dap_an_dung": "B"
+  },
+  {
+    "noi_dung": "AI có khả năng tự động hóa nhiều công việc, điều này có thể dẫn đến áp lực thất nghiệp cho một số ngành nghề.",
+    "kieu_cau_hoi": "dung_sai",
+    "lua_chon": {"A": "đúng", "B": "sai"},
+    "dap_an_dung": "A"
   }
 ]
+  
+
