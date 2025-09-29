@@ -748,62 +748,122 @@ function toggleReview(index) {
 
 async function submitExam(autoByTime) {
   clearInterval(timer);
-  const name = qs('#hoten')?.value.trim();
-  const made = qs('#made')?.value;
+  const name = qs('#hoten').value.trim();
+  const made = qs('#made').value;
   currentMade = made;
-  const sbd = qs('#sbd')?.value.trim();
-  const dob = qs('#ngaysinh')?.value;
+  const sbd = qs('#sbd').value.trim();
+  const dob = qs('#ngaysinh').value;
+
   let unanswered = 0;
   questionData.forEach((q, i) => {
     if (!getAnswerValue(i)) unanswered++;
   });
+
   if (!autoByTime && unanswered > 0) {
     if (!confirm(`Bạn còn ${unanswered} câu chưa trả lời. Bạn có chắc muốn nộp bài không?`)) {
       timer = setInterval(updateCountdown, 1000);
       return;
     }
   }
+
   const answers = [];
-  let score = 0;
+  let scoreTracNghiem1 = 0; // Trắc nghiệm 1 lựa chọn
+  let scoreDungSai = 0;     // Đúng/Sai
+  let scoreTuLuan = 0;      // Tự luận
+
   questionData.forEach((q, i) => {
     const selected = getAnswerValue(i);
     const correctKey = q.dap_an_dung ? q.dap_an_dung.trim() : '';
     const kieu = (q.kieu_cau_hoi || 'trac_nghiem').toLowerCase();
     let selectedContent = '';
     let correctContent = '';
+    let isCorrect = false;
+
     if (kieu === 'trac_nghiem') {
       selectedContent = selected && q.lua_chon ? q.lua_chon[selected] : '(chưa chọn)';
       correctContent = correctKey && q.lua_chon ? q.lua_chon[correctKey] : '';
-    } else {
-      selectedContent = selected || '(chưa trả lời)';
+      isCorrect = selected && correctKey && selected.toUpperCase() === correctKey.toUpperCase();
+      if (isCorrect) scoreTracNghiem1 += 0.25;
+
+    } else if (kieu === 'dung_sai') {
+      // ✅ Đúng/Sai
+      const daChonNorm = selected
+        ? (selected.toUpperCase() === 'A' || selected.toUpperCase() === 'ĐÚNG' ? 'Đúng' : 'Sai')
+        : '';
+      const dapAnDungNorm = correctKey.toUpperCase() === 'A' ? 'Đúng' : 'Sai';
+      isCorrect = selected && daChonNorm === dapAnDungNorm;
+      selectedContent = selected ? daChonNorm : '(chưa chọn)';
+      correctContent = dapAnDungNorm;
+      if (isCorrect) scoreDungSai += 0.25;
+
+    } else if (kieu === 'trac_nghiem_nhieu') {
+      // ✅ Trắc nghiệm nhiều lựa chọn (tính partial)
+      const correctArr = correctKey.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+      const selectedArr = selected ? selected.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : [];
+      const matched = selectedArr.filter(ans => correctArr.includes(ans)).length;
+      const partialScore = correctArr.length ? (matched / correctArr.length) * 0.25 : 0;
+      scoreTracNghiem1 += partialScore;
+      selectedContent = selectedArr.join(', ') || '(chưa chọn)';
+      correctContent = correctArr.join(', ');
+      isCorrect = partialScore === 0.25;
+
+    } else if (kieu === 'tu_luan') {
+      // ✅ Tự luận: chấm theo mức độ trùng ý
+      const daChonText = selected ? selected.trim() : '';
+      const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
+      let matchScore = 0;
+
+      if (daChonText && goiY) {
+        const lcDaChon = daChonText.toLowerCase();
+        const lcGoiY = goiY.toLowerCase();
+
+        if (lcDaChon === lcGoiY) matchScore = 1;
+        else if (lcGoiY.includes(lcDaChon) || lcDaChon.includes(lcGoiY)) matchScore = 0.75;
+        else if (lcDaChon.split(' ').some(w => lcGoiY.includes(w))) matchScore = 0.5;
+        else if (lcDaChon.length > 0) matchScore = 0.25;
+        else matchScore = 0;
+      }
+
+      scoreTuLuan += matchScore;
+      selectedContent = daChonText || '(chưa trả lời)';
+      correctContent = goiY || '';
+      isCorrect = matchScore > 0;
     }
-    const isCorrect = (kieu === 'trac_nghiem') && selected && correctKey && selected.toUpperCase() === correctKey.toUpperCase();
-    if (isCorrect) score++;
+
     answers.push({
       cau: i + 1,
       noi_dung: q.noi_dung,
       da_chon: selectedContent,
       dap_an_dung: correctContent,
-      dung: !!isCorrect,
+      dung: isCorrect,
       kieu,
       goi_y_dap_an: q.goi_y_dap_an || ''
     });
   });
-  const finalScore = questionData.length ? (score / questionData.length * 10).toFixed(2) : '0.00';
+
+  const totalScore = scoreTracNghiem1 + scoreDungSai + scoreTuLuan;
+  const finalScore = Math.min(totalScore, 10).toFixed(2);
+
   clearTempStorage();
+
   const now = new Date();
   const formattedDate = now.toLocaleString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+
   let fileContent = `<div><strong>KẾT QUẢ BÀI THI</strong></div>` +
     `<div>Họ tên: ${safeHTML(name)}</div>` +
-    `<div>SBD: ${safeHTML(sbd)}</div >` +
+    `<div>SBD: ${safeHTML(sbd)}</div>` +
     `<div>Ngày sinh: ${safeHTML(dob)}</div>` +
     `<div>Mã đề: ${safeHTML(made)}</div>` +
-    `<div>Điểm: ${safeHTML(finalScore)}/10</div>` +
+    `<div>Điểm Trắc nghiệm 1 lựa chọn: ${scoreTracNghiem1.toFixed(2)}</div>` +
+    `<div>Điểm Đúng/Sai: ${scoreDungSai.toFixed(2)}</div>` +
+    `<div>Điểm Tự luận: ${scoreTuLuan.toFixed(2)}</div>` +
+    `<div>Tổng điểm: ${finalScore}/10</div>` +
     `<div>Nộp lúc: ${safeHTML(formattedDate)}</div><br>`;
+
   answers.forEach(ans => {
     fileContent += `<div style="margin-bottom: .75rem;">Câu ${ans.cau}: <span>${safeHTML(ans.noi_dung)}</span></div>`;
     fileContent += `<div>Bạn chọn: <span>${safeHTML(ans.da_chon)}</span>`;
-    if (ans.kieu === 'trac_nghiem') {
+    if (ans.kieu === 'trac_nghiem' || ans.kieu === 'dung_sai') {
       fileContent += ` ${ans.dung ? '- ĐÚNG' : '- SAI'}</div>`;
       if (ans.dap_an_dung) {
         fileContent += `<div>Đáp án đúng: <span>${safeHTML(ans.dap_an_dung)}</span></div>`;
@@ -816,30 +876,25 @@ async function submitExam(autoByTime) {
     }
     fileContent += `<br>`;
   });
+
   const resultDiv = qs('#result-container');
-  if (resultDiv) {
-    resultDiv.classList.remove('hidden');
-    resultDiv.innerHTML = `
-      <h1 class="text-2xl font-bold text-green-600 mb-4">✅ KẾT QUẢ BÀI THI</h1>
-      <p class="text-sm text-gray-500 mb-4">🕒 Nộp lúc: ${safeHTML(formattedDate)}</p>
-      <div id="result-html" class="result-scrollable">${fileContent}</div>
-      <div class="flex gap-4 mt-4">
-        <button id="btn-download-doc" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">⬇️ Tải kết quả .DOC</button>
-        <button id="btn-download-pdf" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">⬇️ Tải kết quả .PDF</button>
-      </div>
-    `;
-    typeset(resultDiv);
-  } else {
-    console.error('[ERROR] Không tìm thấy #result-container');
-  }
-  const examContainer = qs('#exam-container');
-  if (examContainer) {
-    examContainer.classList.add('hidden');
-  } else {
-    console.error('[ERROR] Không tìm thấy #exam-container');
-  }
+  resultDiv.classList.remove('hidden');
+  resultDiv.innerHTML = `
+    <h1 class="text-2xl font-bold text-green-600 mb-4">✅ KẾT QUẢ BÀI THI</h1>
+    <p class="text-sm text-gray-500 mb-4">🕒 Nộp lúc: ${safeHTML(formattedDate)}</p>
+    <div id="result-html" class="result-scrollable">${fileContent}</div>
+    <div class="flex gap-4 mt-4">
+      <button id="btn-download-doc" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">⬇️ Tải kết quả .DOC</button>
+      <button id="btn-download-pdf" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">⬇️ Tải kết quả .PDF</button>
+    </div>
+  `;
+
+  qs('#exam-container').classList.add('hidden');
+  typeset(resultDiv);
+
   qs('#btn-download-doc')?.addEventListener('click', () => downloadDOC(name, made));
   qs('#btn-download-pdf')?.addEventListener('click', () => downloadPDF(name, made, answers, finalScore, formattedDate));
+
   try {
     await fetch(`${API_BASE}/save_result`, {
       method: 'POST',
@@ -847,9 +902,10 @@ async function submitExam(autoByTime) {
       body: JSON.stringify({ hoten: name, sbd, ngaysinh: dob, made, diem: finalScore, answers })
     });
   } catch (err) {
-    console.error('[ERROR] Lỗi lưu backend:', err);
+    console.error('Lỗi lưu backend:', err);
   }
 }
+
 
 function downloadDOC(name, made) {
   const container = qs('#result-html');
@@ -956,3 +1012,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startQrScanner();
 });
+
