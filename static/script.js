@@ -779,7 +779,7 @@ async function submitExam(autoByTime) {
       isCorrect = partialScore === 0.25;
 
     
-     } else if (kieu === 'tu_luan') {
+    } else if (kieu === 'tu_luan') {
       const daChonText = selected ? selected.trim() : '';
       const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
       let matchScore = 0;
@@ -791,8 +791,9 @@ async function submitExam(autoByTime) {
         if (lcDaChon === lcGoiY) matchScore = 1;
         else if (lcGoiY.includes(lcDaChon) || lcDaChon.includes(lcGoiY)) matchScore = 0.75;
         else if (lcDaChon.split(' ').some(w => lcGoiY.includes(w))) matchScore = 0.5;
-        else if (lcDaChon.length > 0) matchScore = 0.25;
+        else if (lcDaChon.split(' ').some(w => lcGoiY.includes(w))) matchScore = 0.25;
         else matchScore = 0;
+
       }
 
       scoreTuLuan += matchScore;
@@ -956,6 +957,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
