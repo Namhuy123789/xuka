@@ -779,7 +779,7 @@ async function submitExam(autoByTime) {
       isCorrect = partialScore === 0.25;
 
     
-      } else if (kieu === 'tu_luan') {
+    } else if (kieu === 'tu_luan') {
       const result = gradeEssayAdvanced(selected, q.goi_y_dap_an || '');
       scoreTuLuan += result.score;
       selectedContent = result.selectedContent || '(chưa trả lời)';
@@ -940,6 +940,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
