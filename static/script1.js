@@ -806,11 +806,26 @@ async function submitExam(autoByTime) {
       isCorrect = partialScore === 0.25;
 
     } else if (kieu === 'tu_luan') {
-      const result = gradeEssayAdvanced(selected, q.goi_y_dap_an || '');
-      scoreTuLuan += result.score;
-      selectedContent = result.selectedContent || '(chưa trả lời)';
-      correctContent = result.correctContent || '';
-      isCorrect = result.isCorrect;
+      const daChonText = selected ? selected.trim() : '';
+      const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
+      let matchScore = 0;
+
+      if (daChonText && goiY) {
+        const lcDaChon = daChonText.toLowerCase();
+        const lcGoiY = goiY.toLowerCase();
+
+        if (similarity === 0) score = 0;
+        else if (similarity >= 0.8) score = 1;
+        else if (similarity >= 0.75) score = 0.75;
+        else if (similarity >= 0.5) score = 0.5;
+        else if (similarity >= 0.25) score = 0.25;
+        else score = 0;
+      }
+
+      scoreTuLuan += matchScore;
+      selectedContent = daChonText || '(chưa trả lời)';
+      correctContent = goiY || '';
+      isCorrect = matchScore > 0;
     }
     answers.push({
       cau: i + 1,
@@ -991,6 +1006,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startQrScanner();
 });
+
 
 
 
