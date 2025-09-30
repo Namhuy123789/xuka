@@ -814,12 +814,12 @@ async function submitExam(autoByTime) {
         const lcDaChon = daChonText.toLowerCase();
         const lcGoiY = goiY.toLowerCase();
 
-        if (similarity === 0) score = 0;
-        else if (similarity >= 0.8) score = 1;
-        else if (similarity >= 0.75) score = 0.75;
-        else if (similarity >= 0.5) score = 0.5;
-        else if (similarity >= 0.25) score = 0.25;
-        else score = 0;
+        if (lcDaChon === lcGoiY) matchScore = 1;
+        else if (lcGoiY.includes(lcDaChon) || lcDaChon.includes(lcGoiY)) matchScore = 0.75;
+        else if (lcDaChon.split(' ').some(w => lcGoiY.includes(w))) matchScore = 0.5;
+        else if (lcDaChon.split(' ').some(w => lcGoiY.includes(w))) matchScore = 0.25;
+        else matchScore = 0;
+
       }
 
       scoreTuLuan += matchScore;
@@ -1006,6 +1006,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startQrScanner();
 });
+
 
 
 
