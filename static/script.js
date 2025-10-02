@@ -780,11 +780,26 @@ async function submitExam(autoByTime) {
 
     
     } else if (kieu === 'tu_luan') {
-      const result = gradeEssayAdvanced(selected, q.goi_y_dap_an || '');
-      scoreTuLuan += result.score;
-      selectedContent = result.selectedContent || '(chưa trả lời)';
-      correctContent = result.correctContent || '';
-      isCorrect = result.isCorrect;
+      const daChonText = selected ? selected.trim() : '';
+      const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
+      let matchScore = 0;
+
+      if (daChonText && goiY) {
+        const lcDaChon = daChonText.toLowerCase();
+        const lcGoiY = goiY.toLowerCase();
+
+        if (lcDaChon === lcGoiY) matchScore = 1;
+        else if (lcGoiY.includes(lcDaChon) || lcDaChon.includes(lcGoiY)) matchScore = 0.75;
+        else if (lcDaChon.split(' ').some(w => lcGoiY.includes(w))) matchScore = 0.5;
+        else if (lcDaChon.split(' ').some(w => lcGoiY.includes(w))) matchScore = 0.25;
+        else matchScore = 0;
+
+      }
+
+      scoreTuLuan += matchScore;
+      selectedContent = daChonText || '(chưa trả lời)';
+      correctContent = goiY || '';
+      isCorrect = matchScore > 0;
     }
 
 
@@ -941,6 +956,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
