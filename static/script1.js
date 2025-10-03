@@ -806,27 +806,42 @@ async function submitExam(autoByTime) {
       isCorrect = partialScore === 0.25;
 
     } else if (kieu === 'tu_luan') {
-      const daChonText = selected ? selected.trim() : '';
-      const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
-      let matchScore = 0;
+  const daChonText = selected ? selected.trim() : '';
+  const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
+  let matchScore = 0;
 
-      if (daChonText && goiY) {
-        const lcDaChon = daChonText.toLowerCase();
-        const lcGoiY = goiY.toLowerCase();
+  if (daChonText && goiY) {
+    const lcDaChon = daChonText.toLowerCase();
+    const lcGoiY = goiY.toLowerCase();
 
-        if (lcDaChon === lcGoiY) matchScore = 1;
-        else if (lcGoiY.includes(lcDaChon) || lcDaChon.includes(lcGoiY)) matchScore = 0.75;
-        else if (lcDaChon.split(' ').some(w => lcGoiY.includes(w))) matchScore = 0.5;
-        else if (lcDaChon.split(' ').some(w => lcGoiY.includes(w))) matchScore = 0.25;
-        else matchScore = 0;
+    if (lcDaChon === lcGoiY) {
+      matchScore = 1; // Giống hệt
+    } else {
+      const wordsChosen = lcDaChon.split(/\s+/);
+      const wordsAnswer = lcGoiY.split(/\s+/);
 
+      // Đếm số từ trùng nhau
+      const overlap = wordsChosen.filter(w => wordsAnswer.includes(w));
+      const overlapRatio = overlap.length / wordsAnswer.length;
+
+      if (overlapRatio >= 0.75) {
+        matchScore = 0.75;  // Trùng nhiều từ
+      } else if (overlapRatio >= 0.5) {
+        matchScore = 0.5;   // ✅ Trùng khoảng một nửa số từ → cho 0.5
+      } else if (overlapRatio > 0) {
+        matchScore = 0.25;  // Có trùng một vài từ
+      } else {
+        matchScore = 0;     // Không trùng
       }
-
-      scoreTuLuan += matchScore;
-      selectedContent = daChonText || '(chưa trả lời)';
-      correctContent = goiY || '';
-      isCorrect = matchScore > 0;
     }
+  }
+
+  scoreTuLuan += matchScore;
+  selectedContent = daChonText || '(chưa trả lời)';
+  correctContent = goiY || '';
+  isCorrect = matchScore > 0;
+}
+
     answers.push({
       cau: i + 1,
       noi_dung: q.noi_dung,
@@ -1006,6 +1021,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startQrScanner();
 });
+
 
 
 
