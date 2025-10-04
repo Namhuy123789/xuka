@@ -76,17 +76,27 @@
   Bản quyền © 2025 <span class="font-bold text-red-600">PHẠM HUY TUÂN</span> · ĐT: <a href="tel:0389897989" class="text-blue-600 hover:underline">0389 897 989</a>
 </footer>
 <script>
-  const downloadBtn = document.getElementById('downloadBtn');
-  const qrImage = document.getElementById('qrImage');
+downloadBtn.addEventListener('click', () => {
+  const img = new Image();
+  img.crossOrigin = 'anonymous'; // cần để tránh lỗi CORS
+  img.src = qrImage.src;
 
-  downloadBtn.addEventListener('click', () => {
-    const link = document.createElement('a');
-    link.href = qrImage.src;
-    link.download = 'XUKA_QR.png'; // Tên file khi tải về
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    canvas.toBlob((blob) => {
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'XUKA_QR.png';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+  };
+});
 </script>
+
 </body>
 </html>
