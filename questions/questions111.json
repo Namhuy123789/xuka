@@ -157,19 +157,19 @@
     "noi_dung": "Lĩnh vực dịch vụ nào được AI hỗ trợ mạnh mẽ?",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "AI hỗ trợ mạnh mẽ trong nhiều lĩnh vực dịch vụ, bao gồm trợ lý ảo và chatbot, dịch vụ khách hàng, tài chính ngân hàng, y tế, và giáo dục đào tạo."
+    "goi_y_dap_an": "AI hỗ trợ mạnh mẽ trong nhiều lĩnh vực dịch vụ, bao gồm trợ lý ảo và chatbot, dịch vụ khách hàng, tài chính ngân hàng, y tế, và giáo dục đào tạo.(1 điểm)"
   },
   {
     "noi_dung": "AI được ứng dụng như thế nào trong việc điều khiển tự động?",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "AI giúp máy móc và thiết bị hoạt động tự động mà không cần sự can thiệp của con người, ví dụ như giám sát nguyên vật liệu, quét sản phẩm lỗi, và điều khiển thiết bị bay không người lái."
+    "goi_y_dap_an": "AI giúp máy móc và thiết bị hoạt động tự động mà không cần sự can thiệp của con người, ví dụ như giám sát nguyên vật liệu, quét sản phẩm lỗi, và điều khiển thiết bị bay không người lái.(1 điểm)"
   },
   {
     "noi_dung": "Switch trong mạng LAN có chức năng gì?",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Switch kết nối và chuyển tiếp dữ liệu giữa các thiết bị trong mạng LAN."
+    "goi_y_dap_an": "Switch kết nối và chuyển tiếp dữ liệu giữa các thiết bị trong mạng LAN.(1 điểm)"
   },
   {
     "noi_dung": "Cáp mạng RJ45 không kết nối qua cổng USB, mà cắm vào cổng LAN trên máy tính và Switch.",
