@@ -1,0 +1,423 @@
+{
+  "xe hơi": "ô tô",
+  "ôtô": "ô tô",
+  "xe bốn bánh": "ô tô",
+  "xe con": "ô tô",
+  "xe du lịch": "ô tô",
+
+  "xe cộ": "phương tiện",
+  "phương tiện đi lại": "phương tiện",
+  "phương tiện giao thông": "phương tiện",
+  "xe": "phương tiện",
+
+  "trò": "học sinh",
+  "học trò": "học sinh",
+  "người học": "học sinh",
+  "sinh viên": "học sinh",
+  "thiếu sinh": "học sinh",
+
+  "cô giáo": "giáo viên",
+  "thầy giáo": "giáo viên",
+  "giảng viên": "giáo viên",
+  "người dạy": "giáo viên",
+  "nhà giáo": "giáo viên",
+  "thầy cô": "giáo viên",
+
+  "nhà cửa": "nhà",
+  "ngôi nhà": "nhà",
+  "căn hộ": "nhà",
+  "tổ ấm": "nhà",
+  "căn nhà": "nhà",
+
+  "to": "lớn",
+  "khổng lồ": "lớn",
+  "vĩ đại": "lớn",
+  "cao lớn": "lớn",
+  "to lớn": "lớn",
+
+  "bé": "nhỏ",
+  "bé xíu": "nhỏ",
+  "bé tí": "nhỏ",
+  "nhỏ bé": "nhỏ",
+  "tí hon": "nhỏ",
+
+  "nhanh chóng": "nhanh",
+  "mau": "nhanh",
+  "tốc độ cao": "nhanh",
+  "gấp gáp": "nhanh",
+  "thần tốc": "nhanh",
+
+  "chậm chạp": "chậm",
+  "từ từ": "chậm",
+  "lề mề": "chậm",
+  "uể oải": "chậm",
+  "rề rà": "chậm",
+
+  "mừng": "vui",
+  "hạnh phúc": "vui",
+  "phấn khởi": "vui",
+  "sung sướng": "vui",
+  "hoan hỉ": "vui",
+  "vui vẻ": "vui",
+  "mãn nguyện": "vui",
+
+  "buồn bã": "buồn",
+  "khổ": "buồn",
+  "đau khổ": "buồn",
+  "tủi thân": "buồn",
+  "sầu": "buồn",
+  "tuyệt vọng": "buồn",
+  "bi thương": "buồn",
+  "sầu não": "buồn",
+
+  "tức giận": "giận",
+  "nổi nóng": "giận",
+  "cáu": "giận",
+  "bực mình": "giận",
+  "căm tức": "giận",
+  "giận dữ": "giận",
+  "nổi xung": "giận",
+
+  "lo lắng": "lo",
+  "băn khoăn": "lo",
+  "phiền muộn": "lo",
+  "trăn trở": "lo",
+  "bồn chồn": "lo",
+  "hồi hộp": "lo",
+
+  "yêu thương": "yêu",
+  "thương": "yêu",
+  "ái": "yêu",
+  "mến": "yêu",
+  "quý mến": "yêu",
+  "tình cảm": "yêu",
+  "ái tình": "yêu",
+
+  "ghét": "thù ghét",
+  "chán ghét": "thù ghét",
+  "căm ghét": "thù ghét",
+  "oán hận": "thù ghét",
+
+  "giúp": "hỗ trợ",
+  "hỗ trợ": "hỗ trợ",
+  "trợ giúp": "hỗ trợ",
+  "cứu giúp": "hỗ trợ",
+  "tương trợ": "hỗ trợ",
+
+  "xinh": "đẹp",
+  "xinh đẹp": "đẹp",
+  "đáng yêu": "đẹp",
+  "lộng lẫy": "đẹp",
+  "mỹ lệ": "đẹp",
+  "kiều diễm": "đẹp",
+  "lung linh": "đẹp",
+  "tươi đẹp": "đẹp",
+
+  "xấu xí": "xấu",
+  "thô kệch": "xấu",
+  "kém sắc": "xấu",
+  "tồi tàn": "xấu",
+
+  "khôn ngoan": "thông minh",
+  "lanh lợi": "thông minh",
+  "sáng dạ": "thông minh",
+  "tinh anh": "thông minh",
+  "nhanh trí": "thông minh",
+
+  "ngu": "dốt",
+  "ngu ngốc": "dốt",
+  "ngốc": "dốt",
+  "khờ": "dốt",
+  "ngốc nghếch": "dốt",
+
+  "già": "cao tuổi",
+  "lớn tuổi": "cao tuổi",
+  "người già": "cao tuổi",
+
+  "trẻ": "thiếu niên",
+  "tuổi trẻ": "thiếu niên",
+  "thanh niên": "thiếu niên",
+  "thiếu nhi": "trẻ em",
+  "nhi đồng": "trẻ em",
+  "em bé": "trẻ em",
+
+  "cha": "bố",
+  "ba": "bố",
+  "tía": "bố",
+  "thân phụ": "bố",
+
+  "mẹ": "má",
+  "u": "má",
+  "mẫu thân": "má",
+
+  "ông": "cụ ông",
+  "cụ ông": "cụ ông",
+
+  "bà": "cụ bà",
+  "lão bà": "cụ bà",
+
+  "trường học": "trường",
+  "trường lớp": "trường",
+  "nhà trường": "trường",
+  "học đường": "trường",
+
+  "thi cử": "kỳ thi",
+  "bài thi": "kỳ thi",
+  "bài kiểm tra": "kỳ thi",
+  "đề thi": "kỳ thi",
+
+  "đáp án": "trả lời",
+  "câu trả lời": "trả lời",
+  "lời giải": "trả lời",
+
+  "trời mưa": "mưa",
+  "mưa rơi": "mưa",
+  "mưa phùn": "mưa",
+  "mưa bão": "mưa",
+  "mưa to": "mưa",
+
+  "trời nắng": "nắng",
+  "nắng gắt": "nắng",
+  "nắng nóng": "nắng",
+  "ánh sáng mặt trời": "nắng",
+
+  "trời lạnh": "lạnh",
+  "giá lạnh": "lạnh",
+  "lạnh lẽo": "lạnh",
+  "rét": "lạnh",
+
+  "trời nóng": "nóng",
+  "oi bức": "nóng",
+  "nóng nực": "nóng",
+  "nực nội": "nóng",
+
+  "gió": "gió thổi",
+  "gió lùa": "gió",
+  "cuồng phong": "gió",
+  "bão": "gió",
+
+  "núi": "núi non",
+  "đỉnh núi": "núi",
+  "ngọn núi": "núi",
+  "sơn": "núi",
+
+  "sông": "dòng sông",
+  "sông ngòi": "dòng sông",
+  "dòng nước": "dòng sông",
+  "dòng chảy": "dòng sông",
+
+  "biển": "biển cả",
+  "đại dương": "biển cả",
+  "vùng biển": "biển cả",
+  "hải dương": "biển cả",
+
+  "đất": "mặt đất",
+  "thổ": "đất",
+  "địa cầu": "trái đất",
+  "trái đất": "địa cầu",
+
+  "trời": "bầu trời",
+  "bầu không": "bầu trời",
+  "thiên": "bầu trời",
+
+  "ngày": "ban ngày",
+  "sáng": "ban ngày",
+  "ban trưa": "ban ngày",
+
+  "đêm": "ban đêm",
+  "tối": "ban đêm",
+  "tối tăm": "ban đêm",
+
+  "chết": "tử vong",
+  "hi sinh": "tử vong",
+  "qua đời": "tử vong",
+  "ra đi": "tử vong",
+  "mất": "tử vong",
+
+  "sống": "cuộc sống",
+  "tồn tại": "cuộc sống",
+  "sinh tồn": "cuộc sống",
+  "đời": "cuộc sống",
+
+  "công ty": "doanh nghiệp",
+  "xí nghiệp": "doanh nghiệp",
+  "hãng": "doanh nghiệp",
+  "tập đoàn": "doanh nghiệp",
+
+  "cửa hàng": "quán",
+  "tiệm": "quán",
+  "quầy": "quán",
+
+  "tiền lương": "lương",
+  "lương bổng": "lương",
+  "thu nhập": "lương",
+
+  "chợ": "thị trường",
+  "thị tứ": "thị trường",
+  "khu buôn bán": "thị trường",
+
+  "cha mẹ": "bố mẹ",
+  "song thân": "bố mẹ",
+  "phụ mẫu": "bố mẹ",
+  "thân sinh": "bố mẹ",
+
+  "con": "con cái",
+  "con trẻ": "con cái",
+  "con nhỏ": "con cái",
+  "đứa trẻ": "con cái",
+
+  "anh chị em": "anh em",
+  "huynh đệ": "anh em",
+  "tỷ muội": "anh em",
+
+  "ông bà": "tổ tiên",
+  "tổ phụ": "tổ tiên",
+  "tổ mẫu": "tổ tiên",
+
+  "bạn bè": "bạn",
+  "bằng hữu": "bạn",
+  "tri kỷ": "bạn",
+  "bè bạn": "bạn",
+
+  "công việc": "việc làm",
+  "nghề": "nghề nghiệp",
+  "ngành nghề": "nghề nghiệp",
+  "sự nghiệp": "nghề nghiệp",
+  "chuyên môn": "nghề nghiệp",
+
+  "bài học": "bài giảng",
+  "tiết học": "bài giảng",
+  "giờ học": "bài giảng",
+  "môn học": "ngành học",
+  "ngành": "ngành học",
+
+  "sợ hãi": "sợ",
+  "hoảng sợ": "sợ",
+  "kinh hoàng": "sợ",
+  "run sợ": "sợ",
+  "lo sợ": "sợ",
+
+  "ngạc nhiên": "bất ngờ",
+  "kinh ngạc": "ngạc nhiên",
+  "sửng sốt": "ngạc nhiên",
+  "choáng váng": "ngạc nhiên",
+
+  "nói": "phát biểu",
+  "trò chuyện": "nói",
+  "tâm sự": "nói",
+  "trình bày": "nói",
+  "phát ngôn": "nói",
+
+  "viết": "ghi chép",
+  "chép": "ghi chép",
+  "ghi lại": "ghi chép",
+  "soạn thảo": "ghi chép",
+
+  "ngủ": "nghỉ ngơi",
+  "ngủ nghỉ": "nghỉ ngơi",
+  "ngủ say": "ngủ",
+  "chợp mắt": "ngủ",
+
+  "rừng rú": "rừng",
+  "rừng cây": "rừng",
+  "sơn lâm": "rừng",
+  "núi rừng": "rừng",
+
+  "ao hồ": "hồ",
+  "hồ nước": "hồ",
+  "đầm": "hồ",
+  "đầm lầy": "hồ",
+
+  "biển khơi": "biển",
+  "núi đồi": "núi",
+  "cao nguyên": "núi",
+  "dãy núi": "núi",
+
+  "đường": "con đường",
+  "lối đi": "con đường",
+  "ngõ": "con đường",
+  "ngõ hẻm": "con đường",
+
+  "người": "con người",
+  "nhân loại": "con người",
+  "loài người": "con người",
+  "nhân dân": "người dân",
+  "dân chúng": "người dân",
+  "quần chúng": "người dân",
+
+  "thành phố": "đô thị",
+  "thị xã": "đô thị",
+  "khu phố": "đô thị",
+  "đô thành": "đô thị",
+
+  "làng": "thôn",
+  "xóm": "thôn",
+  "thôn xóm": "thôn",
+  "ấp": "thôn",
+
+  "chó": "con chó",
+  "cún": "con chó",
+  "chó con": "con chó",
+
+  "mèo": "con mèo",
+  "miu": "con mèo",
+  "mèo con": "con mèo",
+
+  "trâu": "con trâu",
+  "bò": "con bò",
+  "ngựa": "con ngựa",
+  "gà": "con gà",
+  "kê": "con gà",
+  "gà trống": "con gà",
+  "gà mái": "con gà",
+
+  "chim": "con chim",
+  "điểu": "con chim",
+  "chim chóc": "con chim",
+
+  "cá": "con cá",
+  "ngư": "con cá",
+  "cá con": "con cá",
+
+  "cây": "cây cối",
+  "thực vật": "cây cối",
+  "cỏ cây": "cây cối",
+
+  "hoa": "bông hoa",
+  "bông": "bông hoa",
+  "đoá": "bông hoa",
+  "hoa lá": "bông hoa",
+
+  "lá": "chiếc lá",
+  "tàu lá": "chiếc lá",
+
+  "trái": "quả",
+  "hoa quả": "quả",
+  "trái cây": "quả",
+
+  "gạo": "cơm",
+  "cơm trắng": "cơm",
+
+  "bánh mì": "bánh",
+  "ổ bánh mì": "bánh mì",
+  "bánh": "bánh ngọt",
+
+  "áo": "quần áo",
+  "áo quần": "quần áo",
+  "y phục": "quần áo",
+  "trang phục": "quần áo",
+
+  "quần": "quần áo",
+  "quần dài": "quần",
+  "quần ngắn": "quần",
+
+  "mũ": "nón",
+  "mũ nón": "mũ",
+
+  "giày": "giày dép",
+  "dép": "giày dép",
+
+  "AI": "ai",
+  "ai": "ai",
+  "trí tuệ nhân tạo": "ai"
+}
