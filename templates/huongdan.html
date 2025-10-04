@@ -38,11 +38,21 @@
   <div class="flex flex-col items-center gap-6 w-full max-w-md mx-auto py-6 mt-24 px-4">
 
     <!-- Banner 1 -->
-    <div class="w-full bg-white bg-opacity-90 text-blue-800 font-semibold p-4 rounded shadow text-center">
-      <div class="text-lg font-bold mb-2">MÃ QR XUKA 4.0</div>
-      <center><img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/ok.png" alt="ok image">
-      <br><p>Dùng ĐT chụp QR và dùng ảnh QR để quét</p>
-    </div>
+    <!-- Banner 1 -->
+<div class="w-full bg-white bg-opacity-90 text-blue-800 font-semibold p-4 rounded shadow text-center">
+  <div class="text-lg font-bold mb-2">MÃ QR XUKA 4.0</div>
+  <center>
+    <img id="qrImage" src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/ok.png" alt="ok image" class="mb-2">
+    <br>
+    <p>Dùng ĐT chụp QR và dùng ảnh QR để quét</p>
+    <button id="downloadBtn" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+      Tải ảnh QR
+    </button>
+  </center>
+</div>
+
+
+
 
     <!-- Banner 2 -->
     <div class="w-full bg-white bg-opacity-90 text-blue-800 font-semibold p-4 rounded shadow text-sm">
@@ -65,5 +75,18 @@
   <footer class="mt-10 py-4 text-center  text-gray-700 text-sm font-medium rounded ">
   Bản quyền © 2025 <span class="font-bold text-red-600">PHẠM HUY TUÂN</span> · ĐT: <a href="tel:0389897989" class="text-blue-600 hover:underline">0389 897 989</a>
 </footer>
+<script>
+  const downloadBtn = document.getElementById('downloadBtn');
+  const qrImage = document.getElementById('qrImage');
+
+  downloadBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.href = qrImage.src;
+    link.download = 'XUKA_QR.png'; // Tên file khi tải về
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+</script>
 </body>
 </html>
