@@ -746,6 +746,115 @@ function toggleReview(index) {
   updateReviewList();
 }
 
+let synonyms = {};
+let synonymsLoaded = false;
+
+// Load từ đồng nghĩa
+async function loadSynonyms() {
+  try {
+    const res = await fetch("/static/synonyms.json");
+    synonyms = await res.json();
+    synonymsLoaded = true;
+    console.log("Đã load synonyms:", synonyms);
+  } catch (e) {
+    console.error("Không load được synonyms:", e);
+    synonymsLoaded = true; // dù lỗi vẫn tiếp tục, tránh chặn app
+  }
+}
+
+// Gọi khi trang vừa load
+window.addEventListener("DOMContentLoaded", loadSynonyms);
+
+// Hàm chờ synonyms load xong
+async function ensureSynonymsLoaded() {
+  if (!synonymsLoaded) {
+    await loadSynonyms(); // gọi luôn hàm loadSynonyms()
+  }
+}
+function areSynonyms(word1, word2) {
+  word1 = word1.toLowerCase().trim();
+  word2 = word2.toLowerCase().trim();
+
+  // nếu trùng nhau thì đúng
+  if (word1 === word2) return true;
+
+  // nếu trong synonyms có cả 2 từ và cùng chuẩn hoá về 1 từ gốc
+  if (synonyms[word1] && synonyms[word2]) {
+    return synonyms[word1].trim().toLowerCase() === synonyms[word2].trim().toLowerCase();
+  }
+
+  return false;
+}
+
+
+// Hàm chuẩn hóa text với từ đồng nghĩa
+// Hàm chuẩn hóa text với từ đồng nghĩa
+function normalizeTextWithSynonyms(text) {
+  if (!text) return "";
+
+  // Bỏ dấu câu + xuống dòng, chuẩn hóa khoảng trắng
+  let result = text
+    .toLowerCase()
+    .replace(/[.,!?;:()\[\]{}"'\n\r]/g, " ") // thay bằng space
+    .replace(/\s+/g, " ")                     // gom space liên tiếp
+    .trim();
+
+  // Sắp xếp key dài trước (cụm từ thay thế trước từ đơn)
+  const entries = Object.entries(synonyms).sort((a, b) => b[0].length - a[0].length);
+
+  for (const [key, value] of entries) {
+    const cleanKey = key.toLowerCase().trim();
+    const cleanVal = value.toLowerCase().trim();
+    const regex = new RegExp("\\b" + cleanKey + "\\b", "gi");
+    result = result.replace(regex, cleanVal);
+  }
+
+  // Chuẩn hóa lại lần nữa sau khi thay thế
+  result = result.replace(/\s+/g, " ").trim();
+
+  return result;
+}
+
+
+async function gradeEssayEnhanced(selected, q) {
+  await ensureSynonymsLoaded();
+
+  const daChonText = selected ? selected.trim() : '';
+  const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
+  if (!daChonText || !goiY) return 0;
+
+  const normChosen = normalizeTextWithSynonyms(daChonText);
+  const normAnswer = normalizeTextWithSynonyms(goiY);
+
+  // ✅ Nếu giống hệt sau khi normalize thì cho 1 điểm ngay
+  if (normChosen === normAnswer) {
+    return 1;
+  }
+
+  // Nếu không giống hệt thì so theo từ
+  const answerWords = normAnswer.split(/\s+/).filter(w => w);
+  let matchedCount = 0;
+  for (const w of answerWords) {
+    const regex = new RegExp("\\b" + w + "\\b", "i");
+    if (regex.test(normChosen)) matchedCount++;
+  }
+
+  const overlapRatio = matchedCount / answerWords.length;
+
+  let matchScore = 0;
+  if (overlapRatio >= 0.9) matchScore = 1;
+  else if (overlapRatio >= 0.7) matchScore = 0.75;
+  else if (overlapRatio >= 0.5) matchScore = 0.5;
+  else if (overlapRatio > 0) matchScore = 0.25;
+
+  return matchScore;
+}
+
+
+
+
+qs('#btn-submit')?.addEventListener('click', () => submitExam(false));
+
 async function submitExam(autoByTime) {
   clearInterval(timer);
   const name = qs('#hoten').value.trim();
@@ -767,17 +876,22 @@ async function submitExam(autoByTime) {
   }
 
   const answers = [];
-  let scoreTracNghiem1 = 0; // Trắc nghiệm 1 lựa chọn
-  let scoreDungSai = 0;     // Đúng/Sai
-  let scoreTuLuan = 0;      // Tự luận
+  let scoreTracNghiem1 = 0;
+  let scoreDungSai = 0;
+  let scoreTuLuan = 0;
 
-  questionData.forEach((q, i) => {
+  await ensureSynonymsLoaded(); // 🔹 đảm bảo synonyms đã load trước khi chấm
+
+  for (let i = 0; i < questionData.length; i++) {
+    const q = questionData[i];
     const selected = getAnswerValue(i);
     const correctKey = q.dap_an_dung ? q.dap_an_dung.trim() : '';
     const kieu = (q.kieu_cau_hoi || 'trac_nghiem').toLowerCase();
+
     let selectedContent = '';
     let correctContent = '';
     let isCorrect = false;
+    let matchScore = 0;
 
     if (kieu === 'trac_nghiem') {
       selectedContent = selected && q.lua_chon ? q.lua_chon[selected] : '(chưa chọn)';
@@ -806,84 +920,81 @@ async function submitExam(autoByTime) {
       isCorrect = partialScore === 0.25;
 
     } else if (kieu === 'tu_luan') {
-  const daChonText = selected ? selected.trim() : '';
-  const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
-  let matchScore = 0;
+      const daChonText = selected ? selected.trim() : '';
+      const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
 
-  if (daChonText && goiY) {
-    const lcDaChon = daChonText.toLowerCase();
-    const lcGoiY = goiY.toLowerCase();
+      if (daChonText && goiY) {
+        const normChosen = normalizeTextWithSynonyms(daChonText);
+        const normAnswer = normalizeTextWithSynonyms(goiY);
 
-    if (lcDaChon === lcGoiY) {
-      matchScore = 1; // Giống hệt
-    } else {
-      const wordsChosen = lcDaChon.split(/\s+/);
-      const wordsAnswer = lcGoiY.split(/\s+/);
+        if (normChosen === normAnswer) {
+          matchScore = 1;
+        } else {
+          const wordsChosen = normChosen.split(/\s+/);
+          const wordsAnswer = normAnswer.split(/\s+/);
+          const overlap = wordsChosen.filter(w => wordsAnswer.includes(w));
+          const overlapRatio = overlap.length / wordsAnswer.length;
 
-      // Đếm số từ trùng nhau
-      const overlap = wordsChosen.filter(w => wordsAnswer.includes(w));
-      const overlapRatio = overlap.length / wordsAnswer.length;
-
-      if (overlapRatio >= 0.75) {
-        matchScore = 0.75;  // Trùng nhiều từ
-      } else if (overlapRatio >= 0.5) {
-        matchScore = 0.5;   // ✅ Trùng khoảng một nửa số từ → cho 0.5
-      } else if (overlapRatio > 0) {
-        matchScore = 0.25;  // Có trùng một vài từ
-      } else {
-        matchScore = 0;     // Không trùng
+          if (overlapRatio >= 0.9) matchScore = 1;
+          else if (overlapRatio >= 0.7) matchScore = 0.75;
+          else if (overlapRatio >= 0.5) matchScore = 0.5;
+          else if (overlapRatio > 0) matchScore = 0.25;
+          else matchScore = 0;
+        }
       }
+
+      scoreTuLuan += matchScore;
+      selectedContent = daChonText || '(chưa trả lời)';
+      correctContent = goiY || '';
+      isCorrect = matchScore > 0;
     }
-  }
 
-  scoreTuLuan += matchScore;
-  selectedContent = daChonText || '(chưa trả lời)';
-  correctContent = goiY || '';
-  isCorrect = matchScore > 0;
-}
-
+    // 🟢 Lưu kết quả mỗi câu (kèm điểm riêng)
     answers.push({
       cau: i + 1,
       noi_dung: q.noi_dung,
       da_chon: selectedContent,
       dap_an_dung: correctContent,
       dung: isCorrect,
+      diem: matchScore, // 🔸 thêm điểm từng câu
       kieu,
       goi_y_dap_an: q.goi_y_dap_an || ''
     });
-  });
+  }
 
   const totalScore = scoreTracNghiem1 + scoreDungSai + scoreTuLuan;
   const finalScore = Math.min(totalScore, 10).toFixed(2);
-
   clearTempStorage();
 
   const now = new Date();
   const formattedDate = now.toLocaleString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
 
-  // --- PHẦN HIỂN THỊ KẾT QUẢ ---
-  let fileContent = `<div><strong>KẾT QUẢ BÀI THI</strong></div>` +
-    `<div><strong>Họ tên:</strong> <strong>${safeHTML(name)}</strong></div>` +
-    `<div><strong>SBD:</strong> <strong>${safeHTML(sbd)}</strong></div>` +
-    `<div><strong>Ngày sinh:</strong> <strong>${safeHTML(dob)}</strong></div>` +
-    `<div><strong>Mã đề:</strong> <strong>${safeHTML(made)}</strong></div>` +
-    `<div>Điểm Trắc nghiệm 1 lựa chọn: ${scoreTracNghiem1.toFixed(2)}</div>` +
-    `<div>Điểm Đúng/Sai: ${scoreDungSai.toFixed(2)}</div>` +
-    `<div>Điểm Tự luận: ${scoreTuLuan.toFixed(2)}</div>` +
-    `<div><strong style="color:red;">Tổng điểm: ${finalScore}/10</strong></div>` +
-    `<div>Nộp lúc: ${safeHTML(formattedDate)}</div><br>`;
+  // --- HIỂN THỊ KẾT QUẢ ---
+  let fileContent = `
+    <div><strong>KẾT QUẢ BÀI THI</strong></div>
+    <div><strong>Họ tên:</strong> ${safeHTML(name)}</div>
+    <div><strong>SBD:</strong> ${safeHTML(sbd)}</div>
+    <div><strong>Ngày sinh:</strong> ${safeHTML(dob)}</div>
+    <div><strong>Mã đề:</strong> ${safeHTML(made)}</div>
+    <div>Điểm Trắc nghiệm 1 lựa chọn: ${scoreTracNghiem1.toFixed(2)}</div>
+    <div>Điểm Đúng/Sai: ${scoreDungSai.toFixed(2)}</div>
+    <div>Điểm Tự luận: ${scoreTuLuan.toFixed(2)}</div>
+    <div><strong style="color:red;">Tổng điểm: ${finalScore}/10</strong></div>
+    <div>Nộp lúc: ${safeHTML(formattedDate)}</div><br>
+  `;
 
   answers.forEach(ans => {
-    const color = ans.dung ? 'green' : 'red'; // Đúng xanh, sai đỏ
+    const color = ans.dung ? 'green' : 'red';
     const symbol = ans.dung ? '✅' : '❌';
-    fileContent += `<div style="margin-bottom: .75rem;">Câu ${ans.cau}: <span>${safeHTML(ans.noi_dung)}</span></div>`;
-    fileContent += `<div>Bạn chọn: <span style="color:${color}; font-weight:bold;">${safeHTML(ans.da_chon)} ${symbol}</span></div>`;
-    if (ans.dap_an_dung) {
-      fileContent += `<div>Đáp án đúng: <span>${safeHTML(ans.dap_an_dung)}</span></div>`;
-    } else if (ans.goi_y_dap_an) {
-      fileContent += `<div>Gợi ý đáp án: <span>${safeHTML(ans.goi_y_dap_an)}</span></div>`;
-    }
-    fileContent += `<br>`;
+    const diemText = ans.kieu === 'tu_luan' ? ` (${ans.diem.toFixed(2)} điểm)` : '';
+    fileContent += `
+      <div style="margin-bottom: .75rem;">
+        <div><strong>Câu ${ans.cau}:</strong> ${safeHTML(ans.noi_dung)}</div>
+        <div>Bạn chọn: <span style="color:${color}; font-weight:bold;">${safeHTML(ans.da_chon)} ${symbol}${diemText}</span></div>
+        ${ans.dap_an_dung ? `<div>Đáp án đúng: ${safeHTML(ans.dap_an_dung)}</div>` : ""}
+        <br>
+      </div>
+    `;
   });
 
   const resultDiv = qs('#result-container');
@@ -914,6 +1025,7 @@ async function submitExam(autoByTime) {
     console.error('Lỗi lưu backend:', err);
   }
 }
+
 
 
 function downloadDOC(name, made) {
@@ -1021,9 +1133,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startQrScanner();
 });
-
-
-
-
-
-
