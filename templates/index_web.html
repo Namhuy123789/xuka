@@ -210,7 +210,7 @@
       <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
        <li>🌍 <a href="https://xuka.com.vn/huongdan" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">Hướng dẫn sử dụng XUKA 4.0</a><br><span class="text-gray-500">Hướng dẫn cách thức quét QR, đăng nhập, điền thông tin...</span></li>
 	   <li>🌍 <a href="https://xuka.com.vn/tronde" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">Quản trị hệ thống XUKA 4.0</a><br><span class="text-gray-500">Trong module này cho phép người quản trị tạo tài khoản đăng nhập, mật khẩu, mã QR....</span></li>
-	   <li>🌍 <a href="https://xuka.com.vn/xuka" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">Đánh giá phần mềm XUKA 4.0</a><br><span class="text-gray-500">Hệ thống thi online Xuka 4.0 đạt điểm 9.0/10. Đây là một hệ thống khá hoàn chỉnh, chuyên nghiệp.... </span></li>
+	   <li>🌍 <a href="https://xuka.com.vn/xuka" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">Đánh giá phần mềm XUKA 4.0</a><br><span class="text-gray-500">Hệ thống thi online Xuka 4.0 đạt điểm 9.0/10. Đây là một hệ thống khá hoàn chỉnh.. </span></li>
 	   <li>🌍 <a href="https://xuka.com.vn/tronde" target="_blank" rel="noopener" class="text-blue-600 font-semibold hover:underline">Tạo đề thi và tải kết quả</a><br><span class="text-gray-500">Cho phép tạo nhiều đề thi từ một đề, tải kết quả..</span></li>
       </ul>
     
@@ -841,51 +841,7 @@ async function sendMessage(){
         chatBox.innerHTML += `<div class="text-red-600">Lỗi: ${err}</div>`;
       }
     }
-	<script>
-async function submitExam() {
-  // Lấy dữ liệu câu trả lời từ form
-  const answers = [];
-  document.querySelectorAll(".question").forEach(q => {
-    answers.push({
-      qid: q.dataset.qid,
-      answer: q.querySelector("textarea, input:checked")?.value || ""
-    });
-  });
 
-  try {
-    // Gửi dữ liệu tới /save_result, backend sẽ chấm tự luận + trắc nghiệm
-    const res = await fetch("/save_result", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers })
-    });
-
-    const data = await res.json();
-
-    if (data.status === "success") {
-      alert("Bài thi đã nộp thành công!\nTổng điểm: " + data.total_score);
-      // Nếu muốn, hiển thị luôn điểm từng câu:
-      data.results.forEach(r => {
-        const qElem = document.querySelector(`.question[data-qid="${r.qid}"]`);
-        if (qElem) {
-          const feedback = document.createElement("div");
-          feedback.innerHTML = `<strong>Điểm:</strong> ${r.score} / ${r.max_score}<br>
-                                <strong>Đáp án đúng:</strong> ${r.correct_answer}`;
-          qElem.appendChild(feedback);
-        }
-      });
-    } else {
-      alert("Lỗi nộp bài: " + data.msg);
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Có lỗi xảy ra khi nộp bài.");
-  }
-}
-
-// Gắn sự kiện submit
-document.getElementById("submitBtn").addEventListener("click", submitExam);
-</script>
 
 <script src="/static/script.js"></script>
 
