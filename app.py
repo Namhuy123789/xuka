@@ -8,7 +8,6 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import re
 import json
-import os
 from flask_socketio import SocketIO, emit
 from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
@@ -26,19 +25,26 @@ from flask import Flask, send_file, Response
 import zipfile
 import io
 from pathlib import Path
+from vertexai.preview.language_models import TextGenerationModel
+import os
+from google.cloud import aiplatform
+from flask import Flask, request, jsonify
+from flask_wtf.csrf import CSRFProtect
+from difflib import SequenceMatcher
+import vertexai
+from vertexai.preview.generative_models import GenerativeModel
 
 
+# ✅ Đặt đường dẫn tới file JSON
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"C:\Users\Administrator\Desktop\xuka4_ready\theta-era-474201-n0-vertex-ai-service.json"
+print("✅ Vertex AI credentials loaded.")
 BASE_DIR = Path(__file__).parent.resolve()
 load_dotenv()
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change_this_secret_key")
-
-
-
-
 # --- Database config (SQLite) ---
-
 # Thư mục lưu kết quả và DB trên Render
 RESULTS_DIR = Path("/var/data/results")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)  # tạo folder nếu chưa có
@@ -46,7 +52,6 @@ RESULTS_DIR.mkdir(parents=True, exist_ok=True)  # tạo folder nếu chưa có
 DB_PATH = RESULTS_DIR / "app.db"
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH.as_posix()}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
 
 # Đường dẫn thư mục khác
@@ -81,6 +86,194 @@ if not api_key:
 # Cấu hình Gemini
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("models/gemini-2.5-flash")
+
+# -----------------------------
+# 1️⃣ Lấy API key từ .env
+# -----------------------------
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    raise ValueError("❌ GEMINI_API_KEY chưa được thiết lập trong .env")
+
+# -----------------------------
+# 2️⃣ Cấu hình Gemini
+# -----------------------------
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel("models/gemini-2.5-flash")
+
+# -----------------------------
+# 3️⃣ Endpoint chấm tự luận
+# -----------------------------
+
+@app.route("/api/grade_essay", methods=["POST"])
+@csrf.exempt
+def grade_essay():
+    try:
+        data = request.json
+        answer = data.get("answer", "").strip()
+        suggested_answer = data.get("suggested_answer", "").strip()
+
+        if not answer or not suggested_answer:
+            return jsonify({"score": 0, "similarity": 0, "feedback": "Thiếu dữ liệu để chấm."})
+
+        # Prompt so sánh mức độ tương đồng
+        prompt = f"""
+Bạn là trợ lý chấm thi thông minh. So sánh mức độ tương đồng ý nghĩa giữa hai đoạn văn sau.
+Trả về DUY NHẤT một số thực từ 0 đến 1 (0 = không giống, 1 = giống hoàn toàn), KHÔNG giải thích.
+Bài làm học sinh: {answer}
+Đáp án mẫu: {suggested_answer}
+"""
+
+        # Gọi model Gemini 2.5
+        resp = model.generate_content(prompt)
+        similarity_text = getattr(resp, "text", "").strip()
+
+        # Trích số thực
+        m = re.search(r"(\d*\.?\d+)", similarity_text)
+        similarity = float(m.group(1)) if m else 0.0
+        if similarity > 1:
+            similarity = similarity / 100  # Nếu AI trả 85 thay vì 0.85
+
+        # Chấm điểm theo mức độ
+        if similarity >= 0.8:
+            score = 1
+        elif similarity >= 0.75:
+            score = 0.75
+        elif similarity >= 0.5:
+            score = 0.5
+        elif similarity >= 0.25:
+            score = 0.25
+        else:
+            score = 0
+
+        feedback = f"Độ tương đồng: {similarity:.2f} → Điểm: {score}"
+
+        return jsonify({
+            "score": score,
+            "similarity": similarity,
+            "feedback": feedback
+        })
+
+    except Exception as e:
+        print("AI grading error:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
+# --- Khởi tạo Vertex AI global khi app start ---
+try:
+    vertexai.init(project="theta-era-474201-n0", location="us-central1")
+    ai_vertex = GenerativeModel("models/gemini-2.5-flash")
+    print("✅ Vertex AI khởi tạo thành công (global)")
+except Exception as e:
+    print(f"⚠️ Không thể khởi tạo Vertex AI: {e}")
+    ai_vertex = None
+
+
+
+
+@app.route('/api/grade_essay_advanced', methods=['POST'])
+@csrf.exempt
+def grade_essay_advanced():
+    def compute_question_score(similarities):
+        """Tính điểm câu từ similarity từng ý, làm tròn theo ngưỡng 0,0.25,0.5,0.75,1"""
+        thresholds = [0, 0.25, 0.5, 0.75, 1.0]
+        item_scores = []
+        for sim in similarities:
+            if sim >= 0.8:
+                item_scores.append(1.0)
+            elif sim >= 0.75:
+                item_scores.append(0.75)
+            elif sim >= 0.5:
+                item_scores.append(0.5)
+            elif sim >= 0.25:
+                item_scores.append(0.25)
+            else:
+                item_scores.append(0.0)
+
+        if not item_scores:
+            return 0.0
+
+        avg = sum(item_scores) / len(item_scores)
+        for t in reversed(thresholds):
+            if avg >= t:
+                return t
+        return 0.0
+
+    try:
+        data = request.get_json(force=True)
+        answers = data.get("answers", [])
+
+        graded = []
+        total = 0.0
+
+        for ans in answers:
+            question = ans.get("question", "").strip()
+            student_answer = ans.get("answer", "").strip()
+            correct_answer = ans.get("correct_answer", "").strip()
+
+            if not student_answer or not correct_answer:
+                graded.append({
+                    "question": question,
+                    "student_answer": student_answer,
+                    "correct_answer": correct_answer,
+                    "score": 0.0
+                })
+                continue
+
+            # Tách từng ý
+            correct_items = [c.strip() for c in re.split(r'[;,•\n]', correct_answer) if c.strip()]
+            student_items = [s.strip() for s in re.split(r'[;,•\n]', student_answer) if s.strip()]
+
+            # 🔹 Gộp prompt 1 lần cho cả câu
+            if ai_vertex:
+                try:
+                    prompt = f"""
+So sánh mức độ tương đồng về Ý NGHĨA giữa các ý của bài làm và đáp án mẫu.
+Bài làm học sinh: {student_items}
+Đáp án mẫu: {correct_items}
+Trả về DUY NHẤT một danh sách các số thực từ 0 đến 1, mỗi số tương ứng similarity của từng ý trong đáp án mẫu, KHÔNG giải thích.
+"""
+                    response = ai_vertex.generate_content(prompt)
+                    raw_text = response.text.strip()
+                    similarities = [float(s) if float(s) <= 1 else float(s)/100 for s in re.findall(r"(\d*\.?\d+)", raw_text)]
+                except Exception:
+                    # fallback SequenceMatcher nếu AI lỗi
+                    similarities = [
+                        max(SequenceMatcher(None, s.lower(), c.lower()).ratio() for s in student_items)
+                        for c in correct_items
+                    ]
+            else:
+                # fallback SequenceMatcher
+                similarities = [
+                    max(SequenceMatcher(None, s.lower(), c.lower()).ratio() for s in student_items)
+                    for c in correct_items
+                ]
+
+            # Tính điểm câu theo similarity từng ý, làm tròn theo ngưỡng
+            score = compute_question_score(similarities)
+            total += score
+
+            graded.append({
+                "question": question,
+                "student_answer": student_answer,
+                "correct_answer": correct_answer,
+                "score": score
+            })
+
+        return jsonify({
+            "status": "success",
+            "graded": graded,
+            "total_score": round(total, 2)
+        })
+
+    except Exception as e:
+        print(f"❌ Lỗi chấm tự luận nâng cao: {e}")
+        return jsonify({
+            "status": "error",
+            "msg": str(e)
+        }), 500
 
 @app.route("/download/all")
 def download_all():
