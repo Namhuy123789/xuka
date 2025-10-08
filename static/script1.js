@@ -856,6 +856,33 @@ async function gradeEssayEnhanced(selected, q) {
 qs('#btn-submit')?.addEventListener('click', () => submitExam(false));
 
 async function submitExam(autoByTime) {
+  async function gradeEssayWithAPI(studentAnswer, question) {
+  try {
+    const res = await fetch("/api/grade_essay_advanced", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        answers: [{
+          question: question.noi_dung || "",
+          answer: studentAnswer || "",
+          correct_answer: question.goi_y_dap_an || ""
+        }]
+      })
+    });
+    const data = await res.json();
+    // ✅ Trả về điểm số và dữ liệu chấm chi tiết
+    if (data.status === "success" && data.graded?.length) {
+      return data.graded[0];  // { question, student_answer, correct_answer, score }
+    } else {
+      console.warn("Không nhận được kết quả chấm tự luận hợp lệ:", data);
+      return { score: 0 };
+    }
+  } catch (err) {
+    console.error("Lỗi gọi API chấm tự luận:", err);
+    return { score: 0 };
+  }
+}
+
   clearInterval(timer);
   const name = qs('#hoten').value.trim();
   const made = qs('#made').value;
@@ -880,7 +907,7 @@ async function submitExam(autoByTime) {
   let scoreDungSai = 0;
   let scoreTuLuan = 0;
 
-  await ensureSynonymsLoaded(); // 🔹 đảm bảo synonyms đã load trước khi chấm
+  
 
   for (let i = 0; i < questionData.length; i++) {
     const q = questionData[i];
@@ -920,34 +947,15 @@ async function submitExam(autoByTime) {
       isCorrect = partialScore === 0.25;
 
     } else if (kieu === 'tu_luan') {
-      const daChonText = selected ? selected.trim() : '';
-      const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
+		const result = await gradeEssayWithAPI(selected, q);
+		matchScore = result.score || 0; // ✅ lấy điểm số
+		scoreTuLuan += matchScore;
+		selectedContent = selected || '(chưa trả lời)';
+		correctContent = q.goi_y_dap_an || '';
+		isCorrect = matchScore > 0;
+	}
 
-      if (daChonText && goiY) {
-        const normChosen = normalizeTextWithSynonyms(daChonText);
-        const normAnswer = normalizeTextWithSynonyms(goiY);
 
-        if (normChosen === normAnswer) {
-          matchScore = 1;
-        } else {
-          const wordsChosen = normChosen.split(/\s+/);
-          const wordsAnswer = normAnswer.split(/\s+/);
-          const overlap = wordsChosen.filter(w => wordsAnswer.includes(w));
-          const overlapRatio = overlap.length / wordsAnswer.length;
-
-          if (overlapRatio >= 0.9) matchScore = 1;
-          else if (overlapRatio >= 0.7) matchScore = 0.75;
-          else if (overlapRatio >= 0.5) matchScore = 0.5;
-          else if (overlapRatio > 0) matchScore = 0.25;
-          else matchScore = 0;
-        }
-      }
-
-      scoreTuLuan += matchScore;
-      selectedContent = daChonText || '(chưa trả lời)';
-      correctContent = goiY || '';
-      isCorrect = matchScore > 0;
-    }
 
     // 🟢 Lưu kết quả mỗi câu (kèm điểm riêng)
     answers.push({
@@ -1025,6 +1033,7 @@ async function submitExam(autoByTime) {
     console.error('Lỗi lưu backend:', err);
   }
 }
+
 
 
 
