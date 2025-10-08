@@ -1,102 +1,62 @@
 [
   {
-    "noi_dung": "What is the value of 7 × 8?",
-    "lua_chon": {"A": "54", "B": "56", "C": "58", "D": "64"},
-    "dap_an_dung": "B"
+    "noi_dung": "Tính giá trị biểu thức: 5x + 7 khi x = 3.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Thay x = 3 vào biểu thức ta được: 5*3 + 7 = 15 + 7 = 22. Đáp án: 22. (1 điểm)"
   },
   {
-    "noi_dung": "What is the square root of 144?",
-    "lua_chon": {"A": "10", "B": "12", "C": "14", "D": "16"},
-    "dap_an_dung": "B"
+    "noi_dung": "Giải phương trình: 2x - 5 = 9.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "2x - 5 = 9 ⟹ 2x = 14 ⟹ x = 7. Đáp án: x = 7. (1 điểm)"
   },
   {
-    "noi_dung": "Solve: 3x - 5 = 10. What is x?",
-    "lua_chon": {"A": "3", "B": "5", "C": "7", "D": "10"},
-    "dap_an_dung": "C"
+    "noi_dung": "Một hình chữ nhật có chiều dài 8cm và chiều rộng 5cm. Tính chu vi của hình chữ nhật đó.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Chu vi = (dài + rộng) × 2 = (8 + 5) × 2 = 13 × 2 = 26 (cm). (1 điểm)"
   },
   {
-    "noi_dung": "What is the perimeter of a square with side length 6 cm?",
-    "lua_chon": {"A": "24 cm", "B": "36 cm", "C": "12 cm", "D": "18 cm"},
-    "dap_an_dung": "A"
+    "noi_dung": "Một ô tô đi từ A đến B với vận tốc 60 km/h trong 2,5 giờ. Tính quãng đường AB.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Quãng đường = vận tốc × thời gian = 60 × 2,5 = 150 (km). (1 điểm)"
   },
   {
-    "noi_dung": "What is 15% of 200?",
-    "lua_chon": {"A": "25", "B": "30", "C": "35", "D": "40"},
-    "dap_an_dung": "B"
+    "noi_dung": "Rút gọn biểu thức: (3x + 5x) - 2x.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "(3x + 5x) - 2x = 8x - 2x = 6x. Đáp án: 6x. (1 điểm)"
   },
   {
-    "noi_dung": "Which number is a prime number?",
-    "lua_chon": {"A": "9", "B": "15", "C": "17", "D": "21"},
-    "dap_an_dung": "C"
+    "noi_dung": "Tính diện tích hình tròn có bán kính r = 7 cm (lấy π = 3,14).",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "S = πr² = 3,14 × 7² = 3,14 × 49 = 153,86 (cm²). (1 điểm)"
   },
   {
-    "noi_dung": "What is 3/4 of 80?",
-    "lua_chon": {"A": "50", "B": "55", "C": "60", "D": "65"},
-    "dap_an_dung": "C"
+    "noi_dung": "Giải hệ phương trình: { x + y = 10,  x - y = 2 }.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Cộng hai phương trình: (x + y) + (x - y) = 10 + 2 ⟹ 2x = 12 ⟹ x = 6. Thay x = 6 vào x + y = 10 ⟹ y = 4. Đáp án: x = 6, y = 4. (1 điểm)"
   },
   {
-    "noi_dung": "If a triangle has angles 60° and 90°, what is the third angle?",
-    "lua_chon": {"A": "20°", "B": "30°", "C": "60°", "D": "90°"},
-    "dap_an_dung": "B"
+    "noi_dung": "Một hình vuông có cạnh 9 cm. Tính diện tích của hình vuông đó.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Diện tích = cạnh² = 9² = 81 (cm²). (1 điểm)"
   },
   {
-    "noi_dung": "What is the result of 2^5?",
-    "lua_chon": {"A": "32", "B": "16", "C": "64", "D": "48"},
-    "dap_an_dung": "A"
+    "noi_dung": "Tính giá trị biểu thức: (4a - 3b) khi a = 5 và b = 2.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Thay a = 5, b = 2: (4*5 - 3*2) = 20 - 6 = 14. Đáp án: 14. (1 điểm)"
   },
   {
-    "noi_dung": "How many degrees are there in a straight angle?",
-    "lua_chon": {"A": "90°", "B": "120°", "C": "180°", "D": "360°"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Which of the following is a multiple of both 3 and 5?",
-    "lua_chon": {"A": "10", "B": "15", "C": "20", "D": "25"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "If the radius of a circle is 7 cm, what is the diameter?",
-    "lua_chon": {"A": "7 cm", "B": "14 cm", "C": "21 cm", "D": "28 cm"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "What is the mean of the numbers: 4, 8, 12, 16?",
-    "lua_chon": {"A": "8", "B": "10", "C": "12", "D": "14"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Solve: (5 + 3) × 2.",
-    "lua_chon": {"A": "11", "B": "13", "C": "15", "D": "16"},
-    "dap_an_dung": "D"
-  },
-  {
-    "noi_dung": "Which number is not divisible by 2?",
-    "lua_chon": {"A": "18", "B": "22", "C": "25", "D": "30"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "What is the next number in the sequence: 2, 4, 8, 16, ...?",
-    "lua_chon": {"A": "18", "B": "24", "C": "32", "D": "48"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "If x = 3 and y = 4, what is the value of x² + y²?",
-    "lua_chon": {"A": "12", "B": "25", "C": "30", "D": "35"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "What is 0.25 as a fraction?",
-    "lua_chon": {"A": "1/2", "B": "1/3", "C": "1/4", "D": "3/4"},
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "What is the area of a rectangle with length 10 cm and width 4 cm?",
-    "lua_chon": {"A": "40 cm²", "B": "30 cm²", "C": "20 cm²", "D": "50 cm²"},
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Which of the following is equal to one million?",
-    "lua_chon": {"A": "10^3", "B": "10^4", "C": "10^5", "D": "10^6"},
-    "dap_an_dung": "D"
+    "noi_dung": "Một người đi xe đạp với vận tốc 12 km/h trong 1,5 giờ. Tính quãng đường người đó đi được.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Quãng đường = vận tốc × thời gian = 12 × 1,5 = 18 (km). (1 điểm)"
   }
 ]
