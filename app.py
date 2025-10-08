@@ -37,7 +37,7 @@ from vertexai.preview.generative_models import GenerativeModel
 
 # ✅ Đặt đường dẫn tới file JSON
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"C:\Users\Administrator\Desktop\xuka4_ready\theta-era-474201-n0-vertex-ai-service.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/var/www/xuka/theta-era-474201-n0-vertex-ai-service.json"
 print("✅ Vertex AI credentials loaded.")
 BASE_DIR = Path(__file__).parent.resolve()
 load_dotenv()
