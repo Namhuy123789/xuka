@@ -117,7 +117,7 @@ def grade_essay():
 
         # Prompt so sánh mức độ tương đồng
         prompt = f"""
-Bạn là trợ lý chấm thi thông minh. So sánh mức độ tương đồng ý nghĩa giữa hai đoạn văn sau.
+Bạn là trợ lý chấm thi thông minh. So sánh mức độ tương đồng về Ý NGHĨA giữa các ý của bài làm và đáp án mẫu đối với môn xã hội, đối với môn tự nhiên cần chấm theo từng bước làm, nếu đúng bước nào chấm điểm bước đó, sai thì không chấm, quan trọng nhất là đáp án đúng được nguyên điểm nếu các bước đúng hết.
 Trả về DUY NHẤT một số thực từ 0 đến 1 (0 = không giống, 1 = giống hoàn toàn), KHÔNG giải thích.
 Bài làm học sinh: {answer}
 Đáp án mẫu: {suggested_answer}
@@ -230,7 +230,7 @@ def grade_essay_advanced():
             if ai_vertex:
                 try:
                     prompt = f"""
-So sánh mức độ tương đồng về Ý NGHĨA giữa các ý của bài làm và đáp án mẫu.
+So sánh mức độ tương đồng về Ý NGHĨA giữa các ý của bài làm và đáp án mẫu đối với môn xã hội, đối với môn tự nhiên cần chấm theo từng bước làm, nếu đúng bước nào chấm điểm bước đó, sai thì không chấm, quan trọng nhất là đáp án đúng được nguyên điểm nếu các bước đúng hết.
 Bài làm học sinh: {student_items}
 Đáp án mẫu: {correct_items}
 Trả về DUY NHẤT một danh sách các số thực từ 0 đến 1, mỗi số tương ứng similarity của từng ý trong đáp án mẫu, KHÔNG giải thích.
