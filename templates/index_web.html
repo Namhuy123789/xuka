@@ -841,6 +841,51 @@ async function sendMessage(){
         chatBox.innerHTML += `<div class="text-red-600">Lỗi: ${err}</div>`;
       }
     }
+	<script>
+async function submitExam() {
+  // Lấy dữ liệu câu trả lời từ form
+  const answers = [];
+  document.querySelectorAll(".question").forEach(q => {
+    answers.push({
+      qid: q.dataset.qid,
+      answer: q.querySelector("textarea, input:checked")?.value || ""
+    });
+  });
+
+  try {
+    // Gửi dữ liệu tới /save_result, backend sẽ chấm tự luận + trắc nghiệm
+    const res = await fetch("/save_result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+      alert("Bài thi đã nộp thành công!\nTổng điểm: " + data.total_score);
+      // Nếu muốn, hiển thị luôn điểm từng câu:
+      data.results.forEach(r => {
+        const qElem = document.querySelector(`.question[data-qid="${r.qid}"]`);
+        if (qElem) {
+          const feedback = document.createElement("div");
+          feedback.innerHTML = `<strong>Điểm:</strong> ${r.score} / ${r.max_score}<br>
+                                <strong>Đáp án đúng:</strong> ${r.correct_answer}`;
+          qElem.appendChild(feedback);
+        }
+      });
+    } else {
+      alert("Lỗi nộp bài: " + data.msg);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Có lỗi xảy ra khi nộp bài.");
+  }
+}
+
+// Gắn sự kiện submit
+document.getElementById("submitBtn").addEventListener("click", submitExam);
+</script>
 </script>
 </body>
 </html>
