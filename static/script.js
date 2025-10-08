@@ -718,113 +718,66 @@ function clearTempStorage() {
 
 
 
-let synonyms = {};
-let synonymsLoaded = false;
-
-// Load từ đồng nghĩa
-async function loadSynonyms() {
-  try {
-    const res = await fetch("/static/synonyms.json");
-    synonyms = await res.json();
-    synonymsLoaded = true;
-    console.log("Đã load synonyms:", synonyms);
-  } catch (e) {
-    console.error("Không load được synonyms:", e);
-    synonymsLoaded = true; // dù lỗi vẫn tiếp tục, tránh chặn app
-  }
-}
-
-// Gọi khi trang vừa load
-window.addEventListener("DOMContentLoaded", loadSynonyms);
-
-// Hàm chờ synonyms load xong
-async function ensureSynonymsLoaded() {
-  if (!synonymsLoaded) {
-    await loadSynonyms(); // gọi luôn hàm loadSynonyms()
-  }
-}
-function areSynonyms(word1, word2) {
-  word1 = word1.toLowerCase().trim();
-  word2 = word2.toLowerCase().trim();
-
-  // nếu trùng nhau thì đúng
-  if (word1 === word2) return true;
-
-  // nếu trong synonyms có cả 2 từ và cùng chuẩn hoá về 1 từ gốc
-  if (synonyms[word1] && synonyms[word2]) {
-    return synonyms[word1].trim().toLowerCase() === synonyms[word2].trim().toLowerCase();
-  }
-
-  return false;
-}
 
 
-// Hàm chuẩn hóa text với từ đồng nghĩa
-// Hàm chuẩn hóa text với từ đồng nghĩa
-function normalizeTextWithSynonyms(text) {
-  if (!text) return "";
 
-  // Bỏ dấu câu + xuống dòng, chuẩn hóa khoảng trắng
-  let result = text
-    .toLowerCase()
-    .replace(/[.,!?;:()\[\]{}"'\n\r]/g, " ") // thay bằng space
-    .replace(/\s+/g, " ")                     // gom space liên tiếp
-    .trim();
-
-  // Sắp xếp key dài trước (cụm từ thay thế trước từ đơn)
-  const entries = Object.entries(synonyms).sort((a, b) => b[0].length - a[0].length);
-
-  for (const [key, value] of entries) {
-    const cleanKey = key.toLowerCase().trim();
-    const cleanVal = value.toLowerCase().trim();
-    const regex = new RegExp("\\b" + cleanKey + "\\b", "gi");
-    result = result.replace(regex, cleanVal);
-  }
-
-  // Chuẩn hóa lại lần nữa sau khi thay thế
-  result = result.replace(/\s+/g, " ").trim();
-
-  return result;
-}
-
-
-async function gradeEssayEnhanced(selected, q) {
-  await ensureSynonymsLoaded();
-
-  const daChonText = selected ? selected.trim() : '';
-  const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
+async function gradeEssayWithAPI(selected, q) {
+  const daChonText = selected?.trim() || '';
+  const goiY = q.goi_y_dap_an?.trim() || '';
   if (!daChonText || !goiY) return 0;
 
-  const normChosen = normalizeTextWithSynonyms(daChonText);
-  const normAnswer = normalizeTextWithSynonyms(goiY);
+  // 🔹 Lấy CSRF token từ <meta> trong <head>
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-  // ✅ Nếu giống hệt sau khi normalize thì cho 1 điểm ngay
-  if (normChosen === normAnswer) {
-    return 1;
+  try {
+    const res = await fetch(`${API_BASE}/api/grade_essay`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken  // gửi token CSRF
+      },
+      body: JSON.stringify({ answer: daChonText, reference: goiY })
+    });
+    const data = await res.json();
+    return data.score ?? 0;
+  } catch (e) {
+    console.error('Lỗi gọi API chấm tự luận:', e);
+    return 0;
   }
-
-  // Nếu không giống hệt thì so theo từ
-  const answerWords = normAnswer.split(/\s+/).filter(w => w);
-  let matchedCount = 0;
-  for (const w of answerWords) {
-    const regex = new RegExp("\\b" + w + "\\b", "i");
-    if (regex.test(normChosen)) matchedCount++;
-  }
-
-  const overlapRatio = matchedCount / answerWords.length;
-
-  let matchScore = 0;
-  if (overlapRatio >= 0.9) matchScore = 1;
-  else if (overlapRatio >= 0.7) matchScore = 0.75;
-  else if (overlapRatio >= 0.5) matchScore = 0.5;
-  else if (overlapRatio > 0) matchScore = 0.25;
-
-  return matchScore;
 }
+
+
 
 qs('#btn-submit')?.addEventListener('click', () => submitExam(false));
 
 async function submitExam(autoByTime) {
+  async function gradeEssayWithAPI(studentAnswer, question) {
+  try {
+    const res = await fetch("/api/grade_essay_advanced", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        answers: [{
+          question: question.noi_dung || "",
+          answer: studentAnswer || "",
+          correct_answer: question.goi_y_dap_an || ""
+        }]
+      })
+    });
+    const data = await res.json();
+    // ✅ Trả về điểm số và dữ liệu chấm chi tiết
+    if (data.status === "success" && data.graded?.length) {
+      return data.graded[0];  // { question, student_answer, correct_answer, score }
+    } else {
+      console.warn("Không nhận được kết quả chấm tự luận hợp lệ:", data);
+      return { score: 0 };
+    }
+  } catch (err) {
+    console.error("Lỗi gọi API chấm tự luận:", err);
+    return { score: 0 };
+  }
+}
+
   clearInterval(timer);
   const name = qs('#hoten').value.trim();
   const made = qs('#made').value;
@@ -849,7 +802,7 @@ async function submitExam(autoByTime) {
   let scoreDungSai = 0;
   let scoreTuLuan = 0;
 
-  await ensureSynonymsLoaded(); // 🔹 đảm bảo synonyms đã load trước khi chấm
+  
 
   for (let i = 0; i < questionData.length; i++) {
     const q = questionData[i];
@@ -889,34 +842,15 @@ async function submitExam(autoByTime) {
       isCorrect = partialScore === 0.25;
 
     } else if (kieu === 'tu_luan') {
-      const daChonText = selected ? selected.trim() : '';
-      const goiY = q.goi_y_dap_an ? q.goi_y_dap_an.trim() : '';
+		const result = await gradeEssayWithAPI(selected, q);
+		matchScore = result.score || 0; // ✅ lấy điểm số
+		scoreTuLuan += matchScore;
+		selectedContent = selected || '(chưa trả lời)';
+		correctContent = q.goi_y_dap_an || '';
+		isCorrect = matchScore > 0;
+	}
 
-      if (daChonText && goiY) {
-        const normChosen = normalizeTextWithSynonyms(daChonText);
-        const normAnswer = normalizeTextWithSynonyms(goiY);
 
-        if (normChosen === normAnswer) {
-          matchScore = 1;
-        } else {
-          const wordsChosen = normChosen.split(/\s+/);
-          const wordsAnswer = normAnswer.split(/\s+/);
-          const overlap = wordsChosen.filter(w => wordsAnswer.includes(w));
-          const overlapRatio = overlap.length / wordsAnswer.length;
-
-          if (overlapRatio >= 0.9) matchScore = 1;
-          else if (overlapRatio >= 0.7) matchScore = 0.75;
-          else if (overlapRatio >= 0.5) matchScore = 0.5;
-          else if (overlapRatio > 0) matchScore = 0.25;
-          else matchScore = 0;
-        }
-      }
-
-      scoreTuLuan += matchScore;
-      selectedContent = daChonText || '(chưa trả lời)';
-      correctContent = goiY || '';
-      isCorrect = matchScore > 0;
-    }
 
     // 🟢 Lưu kết quả mỗi câu (kèm điểm riêng)
     answers.push({
