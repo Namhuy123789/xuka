@@ -6,57 +6,57 @@
     "goi_y_dap_an": "Thay x = 3 vào biểu thức ta được: 5*3 + 7 = 15 + 7 = 22. Đáp án: 22. (1 điểm)"
   },
   {
-    "noi_dung": "Giải phương trình: 2x - 5 = 9.",
+    "noi_dung": "Một hình chữ nhật có chiều dài 8 cm và chiều rộng 5 cm. Tính chu vi của hình chữ nhật đó.",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "2x - 5 = 9 ⟹ 2x = 14 ⟹ x = 7. Đáp án: x = 7. (1 điểm)"
-  },
-  {
-    "noi_dung": "Một hình chữ nhật có chiều dài 8cm và chiều rộng 5cm. Tính chu vi của hình chữ nhật đó.",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Chu vi = (dài + rộng) × 2 = (8 + 5) × 2 = 13 × 2 = 26 (cm). (1 điểm)"
+    "goi_y_dap_an": "Chu vi = (dài + rộng) * 2 = (8 + 5) * 2 = 13 * 2 = 26 (cm). (1 điểm)"
   },
   {
     "noi_dung": "Một ô tô đi từ A đến B với vận tốc 60 km/h trong 2,5 giờ. Tính quãng đường AB.",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Quãng đường = vận tốc × thời gian = 60 × 2,5 = 150 (km). (1 điểm)"
-  },
-  {
-    "noi_dung": "Rút gọn biểu thức: (3x + 5x) - 2x.",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "(3x + 5x) - 2x = 8x - 2x = 6x. Đáp án: 6x. (1 điểm)"
-  },
-  {
-    "noi_dung": "Tính diện tích hình tròn có bán kính r = 7 cm (lấy π = 3,14).",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "S = πr² = 3,14 × 7² = 3,14 × 49 = 153,86 (cm²). (1 điểm)"
-  },
-  {
-    "noi_dung": "Giải hệ phương trình: { x + y = 10,  x - y = 2 }.",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Cộng hai phương trình: (x + y) + (x - y) = 10 + 2 ⟹ 2x = 12 ⟹ x = 6. Thay x = 6 vào x + y = 10 ⟹ y = 4. Đáp án: x = 6, y = 4. (1 điểm)"
-  },
-  {
-    "noi_dung": "Một hình vuông có cạnh 9 cm. Tính diện tích của hình vuông đó.",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Diện tích = cạnh² = 9² = 81 (cm²). (1 điểm)"
-  },
-  {
-    "noi_dung": "Tính giá trị biểu thức: (4a - 3b) khi a = 5 và b = 2.",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Thay a = 5, b = 2: (4*5 - 3*2) = 20 - 6 = 14. Đáp án: 14. (1 điểm)"
+    "goi_y_dap_an": "Quãng đường = vận tốc * thời gian = 60 * 2.5 = 150 (km). (1 điểm)"
   },
   {
     "noi_dung": "Một người đi xe đạp với vận tốc 12 km/h trong 1,5 giờ. Tính quãng đường người đó đi được.",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Quãng đường = vận tốc × thời gian = 12 × 1,5 = 18 (km). (1 điểm)"
+    "goi_y_dap_an": "Quãng đường = vận tốc * thời gian = 12 * 1.5 = 18 (km). (1 điểm)"
+  },
+  {
+    "noi_dung": "Tính diện tích hình chữ nhật có chiều dài 10 cm và chiều rộng 7 cm.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Diện tích = dài * rộng = 10 * 7 = 70 (cm²). (1 điểm)"
+  },
+  {
+    "noi_dung": "Một ô tô đi từ A đến B với vận tốc 80 km/h trong 3 giờ. Tính quãng đường AB.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Quãng đường = vận tốc * thời gian = 80 * 3 = 240 (km). (1 điểm)"
+  },
+  {
+    "noi_dung": "Một hình vuông có cạnh 12 cm. Tính chu vi và diện tích của hình vuông đó.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Chu vi = 4 * cạnh = 4 * 12 = 48 (cm). Diện tích = cạnh^2 = 12^2 = 144 (cm²). (1 điểm)"
+  },
+  {
+    "noi_dung": "Một ô tô đi từ A đến B với vận tốc 90 km/h, sau 2 giờ đi được bao nhiêu km?",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Quãng đường = vận tốc * thời gian = 90 * 2 = 180 (km). (1 điểm)"
+  },
+  {
+    "noi_dung": "Tính diện tích hình tam giác có đáy 10 cm và chiều cao 6 cm.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Diện tích = (đáy * chiều cao) / 2 = (10 * 6) / 2 = 30 (cm²). (1 điểm)"
+  },
+  {
+    "noi_dung": "Tính giá trị biểu thức: 8x + 7 khi x = 3.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Thay x = 3 vào biểu thức ta được: 8*3 + 7 = 24 + 7 = 31. Đáp án: 22. (1 điểm)"
   }
 ]
