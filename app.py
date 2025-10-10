@@ -87,13 +87,13 @@ api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     raise ValueError("❌ GEMINI_API_KEY chưa được thiết lập trong .env")
 
-# -----------------------------
-# 1️⃣ Lấy API key từ .env
-# -----------------------------
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     raise ValueError("❌ GEMINI_API_KEY chưa được thiết lập trong .env")
-
+    
+# Cấu hình Gemini
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel("models/gemini-2.5-flash")
 
 # 3️⃣ Endpoint chấm tự luận
 
@@ -151,11 +151,7 @@ Bài làm học sinh: {answer}
         return jsonify({"error": str(e)}), 500
 
 
-
-
-
 # --- Khởi tạo Vertex AI (SDK mới) ---
-
 
 try:
     # 🔹 Khởi tạo Vertex AI với SDK mới
