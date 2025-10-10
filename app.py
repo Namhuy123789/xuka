@@ -25,14 +25,18 @@ from flask import Flask, send_file, Response
 import zipfile
 import io
 from pathlib import Path
-from vertexai.preview.language_models import TextGenerationModel
 import os
-from google.cloud import aiplatform
 from flask import Flask, request, jsonify
 from flask_wtf.csrf import CSRFProtect
 from difflib import SequenceMatcher
 import vertexai
+from vertexai import init
 from vertexai.preview.generative_models import GenerativeModel
+
+
+
+
+
 
 
 # ✅ Đặt đường dẫn tới file JSON
@@ -83,10 +87,6 @@ api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     raise ValueError("❌ GEMINI_API_KEY chưa được thiết lập trong .env")
 
-# Cấu hình Gemini
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel("models/gemini-2.5-flash")
-
 # -----------------------------
 # 1️⃣ Lấy API key từ .env
 # -----------------------------
@@ -94,15 +94,8 @@ api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     raise ValueError("❌ GEMINI_API_KEY chưa được thiết lập trong .env")
 
-# -----------------------------
-# 2️⃣ Cấu hình Gemini
-# -----------------------------
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel("models/gemini-2.5-flash")
 
-# -----------------------------
 # 3️⃣ Endpoint chấm tự luận
-# -----------------------------
 
 @app.route("/api/grade_essay", methods=["POST"])
 @csrf.exempt
@@ -161,16 +154,25 @@ Bài làm học sinh: {answer}
 
 
 
-# --- Khởi tạo Vertex AI global khi app start ---
+# --- Khởi tạo Vertex AI (SDK mới) ---
+
+
 try:
-    vertexai.init(project="theta-era-474201-n0", location="us-central1")
-    ai_vertex = GenerativeModel("models/gemini-2.5-flash")
-    print("✅ Vertex AI khởi tạo thành công (global)")
+    # 🔹 Khởi tạo Vertex AI với SDK mới
+    init(project="theta-era-474201-n0", location="us-central1")
+    ai_vertex = GenerativeModel("gemini-1.5-flash")  # hoặc "gemini-1.5-pro" nếu cần độ chính xác cao
+    print("✅ Vertex AI (SDK mới) khởi tạo thành công (global)")
 except Exception as e:
-    print(f"⚠️ Không thể khởi tạo Vertex AI: {e}")
+    print(f"⚠️ Không thể khởi tạo Vertex AI (mới): {e}")
     ai_vertex = None
 
 
+def normalize_text(text):
+    text = text.replace("−", "-")
+    text = text.replace("∗", "*").replace("•", "*")
+    text = text.replace("⟹", "->").replace("⇒", "->").replace("- >", "->")
+    text = re.sub(r"\s+", " ", text)
+    return text.strip().lower()
 
 
 @app.route('/api/grade_essay_advanced', methods=['POST'])
@@ -226,18 +228,38 @@ def grade_essay_advanced():
             correct_items = [c.strip() for c in re.split(r'[;,•\n]', correct_answer) if c.strip()]
             student_items = [s.strip() for s in re.split(r'[;,•\n]', student_answer) if s.strip()]
 
-            # 🔹 Gộp prompt 1 lần cho cả câu
             if ai_vertex:
                 try:
                     prompt = f"""
-So sánh mức độ tương đồng về Ý NGHĨA giữa các ý của bài làm và đáp án mẫu đối với môn xã hội, đối với môn tự nhiên cần chấm theo từng bước làm, nếu đúng bước nào chấm điểm bước đó, sai thì không chấm, quan trọng nhất là đáp án đúng được nguyên điểm nếu các bước đúng hết.
-Bài làm học sinh: {student_items}
-Đáp án mẫu: {correct_items}
-Trả về DUY NHẤT một danh sách các số thực từ 0 đến 1, mỗi số tương ứng similarity của từng ý trong đáp án mẫu, KHÔNG giải thích.
+So sánh mức độ tương đồng về Ý NGHĨA giữa các ý của bài làm và đáp án mẫu.
+
+- Với môn Xã hội: so sánh ý nghĩa từng ý, đánh giá mức độ giống nhau.
+- Với môn Tự nhiên: chấm theo từng bước làm; nếu đúng bước nào thì tính điểm bước đó, sai bước không tính, đáp án đúng được nguyên điểm nếu tất cả các bước đúng.
+- Bỏ qua các lỗi như khoảng trắng, định dạng chữ, chuẩn hóa đầu vào trước khi so sánh, dấu *, ∗, -, −...
+
+tra_loi_hoc_sinh: {student_items}
+goi_y_dap_an: {correct_items}
+
+Trả về DUY NHẤT một danh sách số thực trong khoảng 0.0 đến 1.0,
+theo định dạng JSON: [0.0, 0.5, 0.75, 1.0, ...],
+mỗi số tương ứng với từng ý trong đáp án mẫu.
+KHÔNG giải thích, KHÔNG ký tự thừa, KHÔNG văn bản bổ sung.
 """
-                    response = ai_vertex.generate_content(prompt)
+
+                    # 🔹 SDK mới: vẫn dùng generate_content
+                    response = ai_vertex.generate_content(
+                        prompt,
+                        generation_config={
+                            "temperature": 0.3,
+                            "max_output_tokens": 256,
+                        },
+                    )
                     raw_text = response.text.strip()
-                    similarities = [float(s) if float(s) <= 1 else float(s)/100 for s in re.findall(r"(\d*\.?\d+)", raw_text)]
+                    similarities = [
+                        float(s) if float(s) <= 1 else float(s) / 100
+                        for s in re.findall(r"(\d*\.?\d+)", raw_text)
+                    ]
+
                 except Exception:
                     # fallback SequenceMatcher nếu AI lỗi
                     similarities = [
@@ -245,13 +267,11 @@ Trả về DUY NHẤT một danh sách các số thực từ 0 đến 1, mỗi s
                         for c in correct_items
                     ]
             else:
-                # fallback SequenceMatcher
                 similarities = [
                     max(SequenceMatcher(None, s.lower(), c.lower()).ratio() for s in student_items)
                     for c in correct_items
                 ]
 
-            # Tính điểm câu theo similarity từng ý, làm tròn theo ngưỡng
             score = compute_question_score(similarities)
             total += score
 
@@ -274,6 +294,7 @@ Trả về DUY NHẤT một danh sách các số thực từ 0 đến 1, mỗi s
             "status": "error",
             "msg": str(e)
         }), 500
+
 
 @app.route("/download/all")
 def download_all():
