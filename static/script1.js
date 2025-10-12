@@ -382,26 +382,36 @@ async function startExam() {
       const data = await res.json();
       if (!Array.isArray(data)) throw new Error('Dữ liệu câu hỏi không phải mảng');
 
-      if (!examContainer) throw new Error('#exam-container không tồn tại');
-
-      // Xử lý câu hỏi, khởi tạo dap_an_dung nếu rỗng
+      // Xử lý câu hỏi: hiển thị công thức và giữ dap_an_dung gốc
       questionData = data.map((q, i) => {
-        let fixed = { ...q, cau: i + 1 };
-        if (q.dap_an_dung === null || q.dap_an_dung === undefined) {
-          fixed.dap_an_dung = []; // nếu rỗng, đặt mảng rỗng
+        // giữ dap_an_dung gốc
+        let original = { ...q };
+        if (q.dap_an_dung && typeof q.dap_an_dung === "object" && !Array.isArray(q.dap_an_dung)) {
+          original.dap_an_dung = { ...q.dap_an_dung };
         } else if (Array.isArray(q.dap_an_dung)) {
-          fixed.dap_an_dung = [...q.dap_an_dung];
-        } else if (typeof q.dap_an_dung === "object") {
-          fixed.dap_an_dung = { ...q.dap_an_dung };
+          original.dap_an_dung = [...q.dap_an_dung];
+        } else if (typeof q.dap_an_dung === "string") {
+          original.dap_an_dung = q.dap_an_dung.trim();
         } else {
-          fixed.dap_an_dung = q.dap_an_dung.toString().trim();
+          original.dap_an_dung = q.dap_an_dung || "";
         }
+
+        // Xử lý hiển thị công thức
+        let fixed = processAllQuestions([q])[0];
+        fixed.dap_an_dung = original.dap_an_dung; // gắn lại đáp án gốc
+        fixed.cau = i + 1;
+
         return fixed;
       });
 
       renderQuestions(questionData);
       restoreAnswers();
-      console.log(`[INFO] Load câu hỏi thành công từ: ${url}`);
+      renderAnswerSheet(); // hiển thị đáp án đúng/sai
+      updateProgress();
+
+      // Render LaTeX nếu có
+      if (window.MathJax) MathJax.typeset();
+
       return true;
     } catch (err) {
       console.error('[ERROR] Lỗi tải câu hỏi từ', url, err);
