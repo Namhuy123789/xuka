@@ -293,11 +293,13 @@ async function startExam(name, sbd, dob, made) {
   qs('#exam-container').scrollIntoView({ behavior: 'smooth' });
 
   try {
-    const res = await fetch(`${API_BASE}/exam_session?made=${encodeURIComponent(made)}`, { headers: { 'Accept': 'application/json', 'X-CSRFToken': csrf() } });
+    const res = await fetch(`${API_BASE}/exam_session?made=${encodeURIComponent(made)}`, {
+      headers: { 'Accept': 'application/json', 'X-CSRFToken': csrf() }
+    });
     const data = await res.json();
-    if (data?.deadline) { examDeadline = Number(data.deadline); }
+    if (data?.deadline) examDeadline = Number(data.deadline);
     const duration = Number(data?.duration_sec || 3600);
-    if (!examDeadline) { examDeadline = Date.now() + duration * 1000; }
+    if (!examDeadline) examDeadline = Date.now() + duration * 1000;
   } catch (_) {
     examDeadline = Date.now() + 3600 * 1000;
   }
@@ -306,33 +308,76 @@ async function startExam(name, sbd, dob, made) {
   timer = setInterval(updateCountdown, 1000);
 
   try {
-    const res = await fetch(`${API_BASE}/get_questions?made=${encodeURIComponent(made)}`, { headers: { 'Accept': 'application/json', 'X-CSRFToken': csrf() } });
+    const res = await fetch(`${API_BASE}/get_questions?made=${encodeURIComponent(made)}`, {
+      headers: { 'Accept': 'application/json', 'X-CSRFToken': csrf() }
+    });
+
     const data = await res.json();
     if (!Array.isArray(data)) throw new Error('Dữ liệu câu hỏi không phải mảng');
-    questionData = processAllQuestions(data);
+
+    console.log("📦 Dữ liệu gốc từ server:", data);
+
+    // ✅ Xử lý và giữ nguyên cấu trúc đáp án đúng
+    questionData = data.map((q, i) => {
+      let fixed = { ...q, cau: i + 1 };
+
+      // Giữ nguyên kiểu dữ liệu của dap_an_dung
+      if (q.dap_an_dung && typeof q.dap_an_dung === "object" && !Array.isArray(q.dap_an_dung)) {
+        fixed.dap_an_dung = { ...q.dap_an_dung };
+      } else if (Array.isArray(q.dap_an_dung)) {
+        fixed.dap_an_dung = [...q.dap_an_dung];
+      } else if (typeof q.dap_an_dung === "string") {
+        fixed.dap_an_dung = q.dap_an_dung.trim();
+      } else {
+        fixed.dap_an_dung = q.dap_an_dung || "";
+      }
+
+      console.log(`👉 dap_an_dung (sau xử lý) - Câu ${i + 1}:`, fixed.dap_an_dung);
+      return fixed;
+    });
+
     renderQuestions(questionData);
     renderAnswerSheet();
     restoreAnswers();
     updateProgress();
+
   } catch (err) {
+    console.warn("⚠️ Lỗi tải câu hỏi từ API, chuyển sang local file:", err);
     const jsonFile = `/questions/questions${made}.json`;
+
     try {
       const res = await fetch(jsonFile, { headers: { 'Accept': 'application/json' } });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
       const data = await res.json();
       if (!Array.isArray(data)) throw new Error('Dữ liệu câu hỏi không phải mảng');
-      questionData = processAllQuestions(data);
+
+      questionData = data.map((q, i) => {
+        let fixed = { ...q, cau: i + 1 };
+        if (q.dap_an_dung && typeof q.dap_an_dung === "object" && !Array.isArray(q.dap_an_dung)) {
+          fixed.dap_an_dung = { ...q.dap_an_dung };
+        } else if (Array.isArray(q.dap_an_dung)) {
+          fixed.dap_an_dung = [...q.dap_an_dung];
+        } else if (typeof q.dap_an_dung === "string") {
+          fixed.dap_an_dung = q.dap_an_dung.trim();
+        } else {
+          fixed.dap_an_dung = q.dap_an_dung || "";
+        }
+        return fixed;
+      });
+
       renderQuestions(questionData);
       renderAnswerSheet();
       restoreAnswers();
       updateProgress();
+
     } catch (e) {
-      console.error('Lỗi tải câu hỏi:', e);
+      console.error('❌ Lỗi tải câu hỏi local:', e);
       qs('#form-error').textContent = `Không thể tải câu hỏi: ${e.message}`;
       qs('#form-error').classList.remove('hidden');
     }
   }
 }
+
 
 function updateCountdown() {
   const now = Date.now();
@@ -571,84 +616,250 @@ function getAnswerValue(index) {
 function renderQuestions(questions) {
   const container = qs('#questions');
   container.innerHTML = '';
+
   const unansweredLabel = document.createElement('p');
   unansweredLabel.id = 'unanswered-count';
   unansweredLabel.className = 'text-red-600 font-bold mb-4';
   container.appendChild(unansweredLabel);
+
   questions.forEach((q, i) => {
     const div = document.createElement('div');
-    div.className = 'mb-6 p-4 bg-gray-50 rounded-lg';
+    div.className = 'mb-6 p-4 bg-gray-50 rounded-lg shadow-sm';
+    div.id = `q-container-${i}`;
+
     const label = document.createElement('label');
     label.className = 'block font-semibold mb-2 text-lg';
     label.innerHTML = `Câu ${i + 1}: ${safeHTML(q.noi_dung)}`;
     div.appendChild(label);
-    if ((q.kieu_cau_hoi || '').toLowerCase() === 'tu_luan') {
+
+    const type = (q.kieu_cau_hoi || '').toLowerCase();
+
+    // Tự luận
+    if (type === 'tu_luan') {
       const ta = document.createElement('textarea');
       ta.id = `q${i}`;
       ta.rows = 4;
       ta.placeholder = 'Nhập câu trả lời...';
       ta.className = 'border p-2 w-full rounded-md';
       div.appendChild(ta);
-    } else if (q.lua_chon) {
+    }
+
+    // Trắc nghiệm 1 lựa chọn
+    else if (q.lua_chon && type !== 'dung_sai_nhieu_lua_chon') {
       const wrap = document.createElement('div');
       wrap.className = 'border rounded-md p-2 max-h-40 overflow-y-auto space-y-2';
       Object.entries(q.lua_chon).forEach(([k, v]) => {
-        const row = document.createElement('div');
-        row.className = 'flex items-start gap-2 min-w-max';
         const id = `q${i}_${k}`;
+        const row = document.createElement('div');
+        row.className = 'flex items-start gap-2';
         row.innerHTML = `
           <input type="radio" name="q${i}" id="${id}" value="${k}" class="mt-1">
-          <label for="${id}" class="overflow-x-auto block" style="max-width: calc(100% - 30px);">${safeHTML(`${k}. ${v}`)}</label>
+          <label for="${id}" class="overflow-x-auto block" style="max-width: calc(100% - 30px);">
+            ${safeHTML(`${k}. ${v}`)}
+          </label>
         `;
         wrap.appendChild(row);
       });
       div.appendChild(wrap);
     }
-    const flagBtn = document.createElement('button');
-    flagBtn.className = 'mt-2 text-blue-600 hover:underline text-sm';
-    flagBtn.innerText = 'Đánh dấu';
-    flagBtn.onclick = () => toggleReview(i);
-    div.appendChild(flagBtn);
-    container.appendChild(div);
-  });
-  function updateUnansweredCount() {
-    let unanswered = 0;
-    questions.forEach((_, i) => {
-      const sel = getAnswerValue(i);
-      if (!sel) unanswered++;
-    });
-    unansweredLabel.textContent = `Câu chưa trả lời: ${unanswered}`;
-    updateProgress();
-  }
-  questions.forEach((q, i) => {
-    if ((q.kieu_cau_hoi || '').toLowerCase() === 'tu_luan') {
-      const ta = qs(`#q${i}`);
-      if (ta) {
-        ta.addEventListener('input', () => {
-          const cur = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
-          cur[`q${i}`] = ta.value;
-          localStorage.setItem(nsKey('savedAnswers'), JSON.stringify(cur));
-          updateUnansweredCount();
-          renderAnswerSheet();
-        });
-      }
-    } else {
-      const radios = qsa(`input[name="q${i}"]`);
-      Array.from(radios).forEach(r => {
-        r.addEventListener('change', () => {
-          const cur = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
-          cur[`q${i}`] = r.value;
-          localStorage.setItem(nsKey('savedAnswers'), JSON.stringify(cur));
-          updateUnansweredCount();
-          renderAnswerSheet();
-        });
+
+    // Đúng/Sai nhiều lựa chọn
+    else if (type === 'dung_sai_nhieu_lua_chon' && q.lua_chon) {
+      Object.entries(q.lua_chon).forEach(([k, v]) => {
+        const subDiv = document.createElement('div');
+        subDiv.className = 'mb-2 pl-4';
+        const subLabel = document.createElement('p');
+        subLabel.className = 'mb-1 font-medium';
+        subLabel.innerHTML = `${k}. ${safeHTML(v)}`;
+        subDiv.appendChild(subLabel);
+
+        const btnWrap = document.createElement('div');
+        btnWrap.className = 'flex items-center gap-4 pl-6';
+        btnWrap.innerHTML = `
+          <label class="flex items-center gap-1">
+            <input type="radio" name="q${i}_${k}" value="Đúng"> Đúng
+          </label>
+          <label class="flex items-center gap-1">
+            <input type="radio" name="q${i}_${k}" value="Sai"> Sai
+          </label>
+        `;
+        subDiv.appendChild(btnWrap);
+        div.appendChild(subDiv);
       });
     }
+
+    container.appendChild(div);
   });
-  updateUnansweredCount();
-  typeset(container);
+
+
+function showResults(questions) {
+  const container = qs('#results');
+  container.innerHTML = '';
+
+  const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
+  let total = 0;
+  let score = 0;
+
+  questions.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'mb-4 p-3 bg-gray-50 rounded-lg shadow-sm';
+
+    const type = (q.kieu_cau_hoi || '').toLowerCase();
+    let userAns, correctAns, mark;
+
+    const title = document.createElement('p');
+    title.className = 'font-semibold';
+    title.innerHTML = `Câu ${i + 1}: ${safeHTML(q.noi_dung)}`;
+    div.appendChild(title);
+
+    // -----------------------------
+    // 1. Câu hỏi tự luận
+    // -----------------------------
+    if (type === 'tu_luan') {
+      userAns = saved[`q${i}`] || '';
+      correctAns = q.goi_y_dap_an || '';
+      mark = userAns.trim() ? '✅' : '❌'; // đánh dấu nếu có trả lời
+      div.innerHTML += `<p>Trả lời của bạn: ${safeHTML(userAns)} ${mark}</p>`;
+      div.innerHTML += `<p>Gợi ý đáp án: ${safeHTML(correctAns)}</p>`;
+    }
+
+    // -----------------------------
+    // 2. Trắc nghiệm (1 lựa chọn)
+    // -----------------------------
+    else if (type !== 'dung_sai_nhieu_lua_chon') {
+      userAns = saved[`q${i}`] || '';
+      correctAns = q.dap_an_dung; // ví dụ "a"
+      mark = userAns === correctAns ? '✅' : '❌';
+      div.innerHTML += `<p>Bạn chọn: ${userAns || '...'} ${mark}</p>`;
+      div.innerHTML += `<p>Đáp án đúng: ${correctAns}</p>`;
+      if (mark === '✅') score += 1;
+      total += 1;
+    }
+
+    // -----------------------------
+    // 3. Đúng/Sai nhiều lựa chọn
+    // -----------------------------
+    else if (type === 'dung_sai_nhieu_lua_chon') {
+      const resList = [];
+      Object.keys(q.lua_chon).forEach(k => {
+        userAns = saved[`q${i}_${k}`] || '';
+        correctAns = q.dap_an_dung[k]; // "Đúng" hoặc "Sai"
+        mark = userAns === correctAns ? '✅' : '❌';
+        resList.push(`${k}: Bạn chọn ${userAns || '...'} ${mark}, Đáp án đúng: ${correctAns}`);
+        if (userAns === correctAns) score += 1;
+        total += 1;
+      });
+      div.innerHTML += `<p>${resList.join('<br>')}</p>`;
+    }
+
+    container.appendChild(div);
+  });
+
+  // Tổng điểm
+  const scoreDiv = document.createElement('div');
+  scoreDiv.className = 'mt-4 p-3 bg-green-50 rounded-lg font-bold';
+  scoreDiv.innerHTML = `Điểm: ${score.toFixed(2)} / ${total}`;
+  container.appendChild(scoreDiv);
 }
 
+
+
+
+  // Cập nhật số câu chưa trả lời
+  function updateUnansweredCount() {
+    let unanswered = 0;
+    questions.forEach((q, i) => {
+      const type = (q.kieu_cau_hoi || '').toLowerCase();
+      if (type === 'tu_luan') {
+        if (!qs(`#q${i}`)?.value.trim()) unanswered++;
+      } else if (type === 'dung_sai_nhieu_lua_chon') {
+        Object.keys(q.lua_chon).forEach(k => {
+          if (!qsa(`input[name="q${i}_${k}"]:checked`).length) unanswered++;
+        });
+      } else {
+        if (!qsa(`input[name="q${i}"]:checked`).length) unanswered++;
+      }
+    });
+    unansweredLabel.textContent = `Câu chưa trả lời: ${unanswered}`;
+  }
+
+  function saveAnswers() {
+    const cur = {};
+    questions.forEach((q, i) => {
+      const type = (q.kieu_cau_hoi || '').toLowerCase();
+      if (type === 'tu_luan') cur[`q${i}`] = qs(`#q${i}`)?.value || '';
+      else if (type === 'dung_sai_nhieu_lua_chon') {
+        Object.keys(q.lua_chon).forEach(k => {
+          const sel = qs(`input[name="q${i}_${k}"]:checked`);
+          cur[`q${i}_${k}`] = sel ? sel.value : '';
+        });
+      } else {
+        const sel = qs(`input[name="q${i}"]:checked`);
+        cur[`q${i}`] = sel ? sel.value : '';
+      }
+    });
+    localStorage.setItem(nsKey('savedAnswers'), JSON.stringify(cur));
+    updateUnansweredCount();
+  }
+
+  // Thêm sự kiện input/change
+  questions.forEach((q, i) => {
+    const type = (q.kieu_cau_hoi || '').toLowerCase();
+    if (type === 'tu_luan') qs(`#q${i}`)?.addEventListener('input', saveAnswers);
+    else if (type === 'dung_sai_nhieu_lua_chon') {
+      Object.keys(q.lua_chon).forEach(k => {
+        qsa(`input[name="q${i}_${k}"]`).forEach(r => r.addEventListener('change', saveAnswers));
+      });
+    } else qsa(`input[name="q${i}"]`).forEach(r => r.addEventListener('change', saveAnswers));
+  });
+
+  updateUnansweredCount();
+  typeset?.(container);
+
+  // Nộp bài và tính điểm
+  window.showResults = function() {
+    const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
+    let totalScore = 0;
+
+    questions.forEach((q, i) => {
+      const qDiv = qs(`#q-container-${i}`);
+      const type = (q.kieu_cau_hoi || '').toLowerCase();
+      const resultDiv = document.createElement('div');
+      resultDiv.className = 'mt-2 p-2 bg-gray-100 rounded-md text-sm';
+
+      if (type === 'tu_luan') {
+        const userAns = saved[`q${i}`] || '';
+        resultDiv.innerHTML = `<strong>Gợi ý đáp án:</strong> ${safeHTML(q.goi_y_dap_an || '')}<br>
+                               <strong>Đáp án của bạn:</strong> ${safeHTML(userAns)}`;
+      } else if (type === 'dung_sai_nhieu_lua_chon') {
+        let correctCount = 0, total = Object.keys(q.lua_chon).length;
+        let display = '';
+        Object.keys(q.lua_chon).forEach(k => {
+          const userAns = saved[`q${i}_${k}`] || '';
+          const correct = q.dap_an_dung.includes(k) ? 'Đúng' : 'Sai';
+          const mark = userAns === correct ? '✅' : '❌';
+          if(userAns === correct) correctCount++;
+          display += `${k}: Bạn chọn ${userAns || '...'} ${mark}, Đáp án đúng: ${correct}<br>`;
+        });
+        totalScore += correctCount / total;
+        resultDiv.innerHTML = display;
+      } else {
+        const userAns = saved[`q${i}`] || '';
+        const correctAns = Array.isArray(q.dap_an_dung) ? q.dap_an_dung[0] : q.dap_an_dung;
+        const mark = userAns === correctAns ? '✅' : '❌';
+        if(userAns === correctAns) totalScore += 1;
+        resultDiv.innerHTML = `Bạn chọn: ${userAns || '...'} ${mark}<br>Đáp án đúng: ${correctAns}`;
+      }
+
+      qDiv.appendChild(resultDiv);
+    });
+
+    const scoreDiv = document.createElement('div');
+    scoreDiv.className = 'mt-4 text-lg font-bold text-green-700';
+    scoreDiv.innerHTML = `Điểm: ${totalScore.toFixed(2)}`;
+    container.appendChild(scoreDiv);
+  }
+}
 
 
 
@@ -752,42 +963,80 @@ qs('#btn-submit')?.addEventListener('click', () => submitExam(false));
 
 async function submitExam(autoByTime) {
   async function gradeEssayWithAPI(studentAnswer, question) {
-  try {
-    const res = await fetch("/api/grade_essay_advanced", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        answers: [{
-          question: question.noi_dung || "",
-          answer: studentAnswer || "",
-          correct_answer: question.goi_y_dap_an || ""
-        }]
-      })
-    });
-    const data = await res.json();
-    // ✅ Trả về điểm số và dữ liệu chấm chi tiết
-    if (data.status === "success" && data.graded?.length) {
-      return data.graded[0];  // { question, student_answer, correct_answer, score }
-    } else {
-      console.warn("Không nhận được kết quả chấm tự luận hợp lệ:", data);
+    try {
+      const res = await fetch(`${API_BASE}/api/grade_essay_advanced`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrf()
+        },
+        body: JSON.stringify({
+          answers: [{
+            question: question.noi_dung || "",
+            answer: studentAnswer || "",
+            correct_answer: question.goi_y_dap_an || ""
+          }]
+        })
+      });
+      const data = await res.json();
+      if (data && data.status === "success" && Array.isArray(data.graded) && data.graded.length) {
+        return data.graded[0];
+      }
+      if (data && typeof data.score === "number") return { score: data.score };
+      return { score: 0 };
+    } catch (err) {
+      console.error("Lỗi gọi API chấm tự luận:", err);
       return { score: 0 };
     }
-  } catch (err) {
-    console.error("Lỗi gọi API chấm tự luận:", err);
-    return { score: 0 };
   }
-}
 
   clearInterval(timer);
+
   const name = qs('#hoten').value.trim();
   const made = qs('#made').value;
   currentMade = made;
   const sbd = qs('#sbd').value.trim();
   const dob = qs('#ngaysinh').value;
 
+  function readStudentAnswer(q, i) {
+    const kieu = (q.kieu_cau_hoi || 'trac_nghiem').toLowerCase();
+
+    if (kieu === 'tu_luan') {
+      const ta = qs(`#q${i}`);
+      return ta ? ta.value.trim() : '';
+    }
+
+    if (kieu === 'dung_sai_nhieu_lua_chon') {
+      const res = {};
+      for (const key of Object.keys(q.lua_chon || {})) {
+        const el = qs(`input[name="q${i}_${key}"]:checked`);
+        res[key] = el ? el.value : '';
+      }
+      return res;
+    }
+
+    if (kieu === 'trac_nghiem_nhieu' || kieu === 'nhieu_lua_chon' || kieu === 'trac_nghiem_nhieu_lua_chon') {
+      return qsa(`input[name="q${i}"]:checked`).map(n => n.value);
+    }
+
+    const sel = qs(`input[name="q${i}"]:checked`);
+    return sel ? sel.value : '';
+  }
+
   let unanswered = 0;
   questionData.forEach((q, i) => {
-    if (!getAnswerValue(i)) unanswered++;
+    const ans = readStudentAnswer(q, i);
+    const kieu = (q.kieu_cau_hoi || 'trac_nghiem').toLowerCase();
+    let empty = false;
+    if (kieu === 'tu_luan') empty = !String(ans).trim();
+    else if (kieu === 'dung_sai_nhieu_lua_chon') {
+      empty = Object.keys(q.lua_chon || {}).some(k => !(ans && ans[k]));
+    } else if (Array.isArray(ans)) {
+      empty = ans.length === 0;
+    } else {
+      empty = !ans;
+    }
+    if (empty) unanswered++;
   });
 
   if (!autoByTime && unanswered > 0) {
@@ -802,64 +1051,133 @@ async function submitExam(autoByTime) {
   let scoreDungSai = 0;
   let scoreTuLuan = 0;
 
-  
-
   for (let i = 0; i < questionData.length; i++) {
     const q = questionData[i];
-    const selected = getAnswerValue(i);
-    const correctKey = q.dap_an_dung ? q.dap_an_dung.trim() : '';
     const kieu = (q.kieu_cau_hoi || 'trac_nghiem').toLowerCase();
-
+    const student = readStudentAnswer(q, i);
+    const correctKeyRaw = q.dap_an_dung ?? '';
     let selectedContent = '';
     let correctContent = '';
     let isCorrect = false;
     let matchScore = 0;
 
+    // --- Trắc nghiệm 1 lựa chọn ---
     if (kieu === 'trac_nghiem') {
-      selectedContent = selected && q.lua_chon ? q.lua_chon[selected] : '(chưa chọn)';
-      correctContent = correctKey && q.lua_chon ? q.lua_chon[correctKey] : '';
-      isCorrect = selected && correctKey && selected.toUpperCase() === correctKey.toUpperCase();
-      if (isCorrect) scoreTracNghiem1 += 0.25;
+      const sel = student || '';
+      const selLetter = String(sel).trim().toUpperCase();
+      const corr = String(correctKeyRaw || '').trim().toUpperCase();
+      selectedContent = sel ? `${selLetter}${q.lua_chon && q.lua_chon[sel] ? `. ${q.lua_chon[sel]}` : ''}` : '(chưa chọn)';
+      correctContent = corr ? `${corr}${q.lua_chon && q.lua_chon[corr.toLowerCase()] ? `. ${q.lua_chon[corr.toLowerCase()]}` : ''}` : '';
+      if (sel && corr && selLetter === corr) {
+        isCorrect = true;
+        matchScore = 0.25;
+        scoreTracNghiem1 += 0.25;
+      }
+    } 
+    // --- Trắc nghiệm nhiều lựa chọn ---
+    else if (kieu === 'trac_nghiem_nhieu' || kieu === 'nhieu_lua_chon' || kieu === 'trac_nghiem_nhieu_lua_chon') {
+      const selArr = Array.isArray(student) ? student.map(s => String(s).trim().toUpperCase()).filter(Boolean) : [];
+      const corrArr = String(correctKeyRaw || '').split(/[,; ]+/).map(s => s.trim().toUpperCase()).filter(Boolean);
+      const perChoiceScore = corrArr.length ? 0.25 / corrArr.length : 0;
+      let scoreThisQuestion = 0;
+      selArr.forEach(a => { if (corrArr.includes(a)) scoreThisQuestion += perChoiceScore; });
+      matchScore = scoreThisQuestion;
+      scoreTracNghiem1 += scoreThisQuestion;
+      selectedContent = selArr.length ? selArr.map(a => `${a}${q.lua_chon && q.lua_chon[a.toLowerCase()] ? `. ${q.lua_chon[a.toLowerCase()]}` : ''}`).join(', ') : '(chưa chọn)';
+      correctContent = corrArr.length ? corrArr.map(a => `${a}${q.lua_chon && q.lua_chon[a.toLowerCase()] ? `. ${q.lua_chon[a.toLowerCase()]}` : ''}`).join(', ') : '';
+      isCorrect = scoreThisQuestion === 0.25 && corrArr.length === selArr.length && selArr.every(x => corrArr.includes(x));
+    } 
+    // --- Đúng/Sai ---
+    else if (kieu === 'dung_sai') {
+      const sel = student || '';
+      let daChonNorm = (!sel ? '' : ['A','ĐÚNG','DUNG'].includes(sel.toUpperCase()) ? 'Đúng' : 'Sai');
+      let dapAnDungNorm = (!correctKeyRaw ? '' : ['A','ĐÚNG','DUNG'].includes(correctKeyRaw.toUpperCase()) ? 'Đúng' : 'Sai');
+      selectedContent = daChonNorm || '(chưa chọn)';
+      correctContent = dapAnDungNorm || '';
+      if (daChonNorm && dapAnDungNorm && daChonNorm === dapAnDungNorm) {
+        isCorrect = true;
+        matchScore = 0.25;
+        scoreDungSai += 0.25;
+      }
+    } 
+    // --- Đúng/Sai nhiều lựa chọn ---
+    else if (kieu === 'dung_sai_nhieu_lua_chon') {
+  const studentObj = student || {};
+  let correctObj = {};
 
-    } else if (kieu === 'dung_sai') {
-      const daChonNorm = selected
-        ? (selected.toUpperCase() === 'A' || selected.toUpperCase() === 'ĐÚNG' ? 'Đúng' : 'Sai')
-        : '';
-      const dapAnDungNorm = correctKey.toUpperCase() === 'A' ? 'Đúng' : 'Sai';
-      isCorrect = selected && daChonNorm === dapAnDungNorm;
-      selectedContent = selected ? daChonNorm : '(chưa chọn)';
-      correctContent = dapAnDungNorm;
-      if (isCorrect) scoreDungSai += 0.25;
+  // ✅ Xử lý mọi kiểu dữ liệu
+  try {
+    if (typeof q.dap_an_dung === "string" && q.dap_an_dung.trim().startsWith("{")) {
+      correctObj = JSON.parse(q.dap_an_dung);
+    } else if (typeof q.dap_an_dung === "object" && q.dap_an_dung !== null) {
+      correctObj = q.dap_an_dung;
+    }
+  } catch (e) {
+    console.warn("Lỗi parse dap_an_dung:", e, q.dap_an_dung);
+    correctObj = {};
+  }
 
-    } else if (kieu === 'trac_nghiem_nhieu') {
-      const correctArr = correctKey.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
-      const selectedArr = selected ? selected.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : [];
-      const matched = selectedArr.filter(ans => correctArr.includes(ans)).length;
-      const partialScore = correctArr.length ? (matched / correctArr.length) * 0.25 : 0;
-      scoreTracNghiem1 += partialScore;
-      selectedContent = selectedArr.join(', ') || '(chưa chọn)';
-      correctContent = correctArr.join(', ');
-      isCorrect = partialScore === 0.25;
-
-    } else if (kieu === 'tu_luan') {
-		const result = await gradeEssayWithAPI(selected, q);
-		matchScore = result.score || 0; // ✅ lấy điểm số
-		scoreTuLuan += matchScore;
-		selectedContent = selected || '(chưa trả lời)';
-		correctContent = q.goi_y_dap_an || '';
-		isCorrect = matchScore > 0;
-	}
+  console.log("👉 dap_an_dung (sau xử lý):", JSON.stringify(correctObj, null, 2));
 
 
+  const keys = Object.keys(q.lua_chon || {});
+  const perItemScore = 0.25;
+  let scoreThisQuestion = 0;
+  const displayStudent = [];
+  const displayCorrectArr = [];
 
-    // 🟢 Lưu kết quả mỗi câu (kèm điểm riêng)
+  for (const key of keys) {
+    const st = (studentObj[key] || '').trim();
+    let corrRaw = (correctObj[key] || '').trim();
+
+    let corr = '';
+    if (['A','ĐÚNG','DUNG'].includes(corrRaw.toUpperCase())) corr = 'Đúng';
+    else if (['B','SAI'].includes(corrRaw.toUpperCase())) corr = 'Sai';
+    else corr = corrRaw;
+
+    let stNorm = '';
+    if (['A','ĐÚNG','DUNG'].includes(st.toUpperCase())) stNorm = 'Đúng';
+    else if (['B','SAI'].includes(st.toUpperCase())) stNorm = 'Sai';
+    else stNorm = st;
+
+    const ok = stNorm === corr;
+    if (st) {
+      displayStudent.push(`${key}: ${stNorm} ${ok ? '✅' : '❌'}`);
+      if (ok) scoreThisQuestion += perItemScore;
+    } else {
+      displayStudent.push(`${key}: (chưa chọn) ❌`);
+    }
+
+    displayCorrectArr.push(`${key}: ${corr || '(không có)'}`);
+  }
+
+  matchScore = scoreThisQuestion;
+  scoreDungSai += scoreThisQuestion;
+  selectedContent = displayStudent.join(', ');
+  correctContent = displayCorrectArr.join(', ');
+  isCorrect = scoreThisQuestion === keys.length * perItemScore;
+}
+
+
+    // --- Tự luận ---
+    else if (kieu === 'tu_luan') {
+      const studentText = student || '';
+      const result = await gradeEssayWithAPI(studentText, q);
+      const rscore = (result && typeof result === 'object') ? (result.score || 0) : (Number(result) || 0);
+      matchScore = Number(rscore) || 0;
+      scoreTuLuan += matchScore;
+      selectedContent = studentText || '(chưa trả lời)';
+      correctContent = q.goi_y_dap_an || '';
+      isCorrect = matchScore > 0;
+    }
+
     answers.push({
       cau: i + 1,
-      noi_dung: q.noi_dung,
+      noi_dung: q.noi_dung || '',
       da_chon: selectedContent,
       dap_an_dung: correctContent,
       dung: isCorrect,
-      diem: matchScore, // 🔸 thêm điểm từng câu
+      diem: Number(matchScore) || 0,
       kieu,
       goi_y_dap_an: q.goi_y_dap_an || ''
     });
@@ -867,12 +1185,12 @@ async function submitExam(autoByTime) {
 
   const totalScore = scoreTracNghiem1 + scoreDungSai + scoreTuLuan;
   const finalScore = Math.min(totalScore, 10).toFixed(2);
+
   clearTempStorage();
 
   const now = new Date();
   const formattedDate = now.toLocaleString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
 
-  // --- HIỂN THỊ KẾT QUẢ ---
   let fileContent = `
     <div><strong>KẾT QUẢ BÀI THI</strong></div>
     <div><strong>Họ tên:</strong> ${safeHTML(name)}</div>
@@ -889,15 +1207,25 @@ async function submitExam(autoByTime) {
   answers.forEach(ans => {
     const color = ans.dung ? 'green' : 'red';
     const symbol = ans.dung ? '✅' : '❌';
-    const diemText = ans.kieu === 'tu_luan' ? ` (${ans.diem.toFixed(2)} điểm)` : '';
-    fileContent += `
-      <div style="margin-bottom: .75rem;">
-        <div><strong>Câu ${ans.cau}:</strong> ${safeHTML(ans.noi_dung)}</div>
-        <div>Bạn chọn: <span style="color:${color}; font-weight:bold;">${safeHTML(ans.da_chon)} ${symbol}${diemText}</span></div>
-        ${ans.dap_an_dung ? `<div>Đáp án đúng: ${safeHTML(ans.dap_an_dung)}</div>` : ""}
-        <br>
-      </div>
-    `;
+    const diemText = (typeof ans.diem === 'number') ? ` (${ans.diem.toFixed(2)} điểm)` : '';
+    fileContent += `<div style="margin-bottom: .75rem; border-bottom: 1px solid #eee; padding-bottom: .5rem;">`;
+    fileContent += `<div><strong>Câu ${ans.cau}:</strong> ${safeHTML(ans.noi_dung)}</div>`;
+
+    if (ans.kieu === 'trac_nghiem' || ans.kieu === 'trac_nghiem_nhieu' || ans.kieu === 'trac_nghiem_nhieu_lua_chon' || ans.kieu === 'nhieu_lua_chon') {
+      fileContent += `<div>Bạn chọn: <span style="color:${color}; font-weight:bold;">${safeHTML(ans.da_chon || '-')}</span></div>`;
+      if (ans.dap_an_dung) fileContent += `<div>Đáp án đúng: ${safeHTML(ans.dap_an_dung)}</div>`;
+      fileContent += `<div><strong style="color:${color};">${symbol}${diemText}</strong></div>`;
+    } else if (ans.kieu === 'dung_sai' || ans.kieu === 'dung_sai_nhieu_lua_chon') {
+      fileContent += `<div><strong>Bạn chọn:</strong> ${safeHTML(ans.da_chon || '-')}</div>`;
+      if (ans.dap_an_dung) fileContent += `<div><strong>Đáp án đúng:</strong> ${safeHTML(ans.dap_an_dung)}</div>`;
+      fileContent += `<div><strong style="color:${color};">${symbol}${diemText}</strong></div>`;
+    } else if (ans.kieu === 'tu_luan') {
+      fileContent += `<div><strong>Bạn trả lời:</strong><div style="margin-left:1rem;">${safeHTML(ans.da_chon)}</div></div>`;
+      if (ans.goi_y_dap_an) fileContent += `<div><strong>Gợi ý đáp án:</strong><div style="margin-left:1rem;">${safeHTML(ans.goi_y_dap_an)}</div></div>`;
+      fileContent += `<div><strong>Điểm:</strong> ${ans.diem.toFixed(2)} ${symbol}</div>`;
+    }
+
+    fileContent += `</div>`;
   });
 
   const resultDiv = qs('#result-container');
@@ -928,7 +1256,6 @@ async function submitExam(autoByTime) {
     console.error('Lỗi lưu backend:', err);
   }
 }
-
 
 
 function downloadDOC(name, made) {
