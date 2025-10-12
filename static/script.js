@@ -283,6 +283,7 @@ qs('#btn-start-exam')?.addEventListener('click', async () => {
   await startExam(name, sbd, dob, made);
 });
 
+
 async function startExam(name, sbd, dob, made) {
   currentMade = made;
   qs('#info-hoten').textContent = name;
@@ -292,6 +293,7 @@ async function startExam(name, sbd, dob, made) {
   qs('#exam-container').classList.remove('hidden');
   qs('#exam-container').scrollIntoView({ behavior: 'smooth' });
 
+  // Lấy deadline
   try {
     const res = await fetch(`${API_BASE}/exam_session?made=${encodeURIComponent(made)}`, {
       headers: { 'Accept': 'application/json', 'X-CSRFToken': csrf() }
@@ -307,32 +309,35 @@ async function startExam(name, sbd, dob, made) {
   updateCountdown();
   timer = setInterval(updateCountdown, 1000);
 
+  // Lấy câu hỏi
   try {
     const res = await fetch(`${API_BASE}/get_questions?made=${encodeURIComponent(made)}`, {
       headers: { 'Accept': 'application/json', 'X-CSRFToken': csrf() }
     });
-
     const data = await res.json();
     if (!Array.isArray(data)) throw new Error('Dữ liệu câu hỏi không phải mảng');
 
-    console.log("📦 Dữ liệu gốc từ server:", data);
-
-    // ✅ Xử lý và giữ nguyên cấu trúc đáp án đúng
+    // Xử lý dữ liệu kết hợp công thức + giữ dap_an_dung gốc
     questionData = data.map((q, i) => {
-      let fixed = { ...q, cau: i + 1 };
-
-      // Giữ nguyên kiểu dữ liệu của dap_an_dung
+      // Giữ nguyên dap_an_dung gốc
+      let original = { ...q };
       if (q.dap_an_dung && typeof q.dap_an_dung === "object" && !Array.isArray(q.dap_an_dung)) {
-        fixed.dap_an_dung = { ...q.dap_an_dung };
+        original.dap_an_dung = { ...q.dap_an_dung };
       } else if (Array.isArray(q.dap_an_dung)) {
-        fixed.dap_an_dung = [...q.dap_an_dung];
+        original.dap_an_dung = [...q.dap_an_dung];
       } else if (typeof q.dap_an_dung === "string") {
-        fixed.dap_an_dung = q.dap_an_dung.trim();
+        original.dap_an_dung = q.dap_an_dung.trim();
       } else {
-        fixed.dap_an_dung = q.dap_an_dung || "";
+        original.dap_an_dung = q.dap_an_dung || "";
       }
 
-      console.log(`👉 dap_an_dung (sau xử lý) - Câu ${i + 1}:`, fixed.dap_an_dung);
+      // Tạo bản hiển thị công thức đúng
+      let fixed = processAllQuestions([q])[0];
+
+      // Gắn lại dap_an_dung gốc để chấm điểm
+      fixed.dap_an_dung = original.dap_an_dung;
+      fixed.cau = i + 1;
+
       return fixed;
     });
 
@@ -352,16 +357,21 @@ async function startExam(name, sbd, dob, made) {
       if (!Array.isArray(data)) throw new Error('Dữ liệu câu hỏi không phải mảng');
 
       questionData = data.map((q, i) => {
-        let fixed = { ...q, cau: i + 1 };
+        let original = { ...q };
         if (q.dap_an_dung && typeof q.dap_an_dung === "object" && !Array.isArray(q.dap_an_dung)) {
-          fixed.dap_an_dung = { ...q.dap_an_dung };
+          original.dap_an_dung = { ...q.dap_an_dung };
         } else if (Array.isArray(q.dap_an_dung)) {
-          fixed.dap_an_dung = [...q.dap_an_dung];
+          original.dap_an_dung = [...q.dap_an_dung];
         } else if (typeof q.dap_an_dung === "string") {
-          fixed.dap_an_dung = q.dap_an_dung.trim();
+          original.dap_an_dung = q.dap_an_dung.trim();
         } else {
-          fixed.dap_an_dung = q.dap_an_dung || "";
+          original.dap_an_dung = q.dap_an_dung || "";
         }
+
+        let fixed = processAllQuestions([q])[0];
+        fixed.dap_an_dung = original.dap_an_dung;
+        fixed.cau = i + 1;
+
         return fixed;
       });
 
