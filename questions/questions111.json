@@ -41,7 +41,7 @@
       "C": "Giáo dục",
       "D": "Thể thao"
     },
-    "dap_an_dung":"B"
+    "dap_an_dung": "B"
   },
   {
     "noi_dung": "Trí tuệ nhân tạo hẹp (AI yếu) được thiết kế để làm gì?",
@@ -52,7 +52,7 @@
       "C": "Giải quyết mọi vấn đề trong cuộc sống",
       "D": "Tự học hỏi và tự cải thiện"
     },
-    "dap_an_dung":"B"
+    "dap_an_dung": "B"
   },
   {
     "noi_dung": "Các năng lực trí tuệ thường được liên kết với AI không bao gồm khả năng nào sau đây?",
@@ -132,69 +132,85 @@
     "dap_an_dung": "B"
   },
   {
-    "noi_dung": "Đâu là một ví dụ về ứng xử tích cực trong không gian mạng?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Tôn trọng quan điểm của người khác khi tham gia thảo luận",
-      "B": "Phát tán thông tin cá nhân của người khác",
-      "C": "Sử dụng ngôn từ thô tục trong các diễn đàn trực tuyến",
-      "D": "Gửi tin nhắn spam tới các địa chỉ email mà không được sự cho phép"
-    },
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Trong không gian mạng, hành động nào sau đây được coi là không phù hợp?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Chia sẻ các nguồn thông tin hữu ích",
-      "B": "Xây dựng một blog cá nhân để chia sẻ kinh nghiệm",
-      "C": "Sử dụng ảnh cá nhân của người khác mà không xin phép",
-      "D": "Thảo luận và đưa ra ý kiến cá nhân trong các forum"
-    },
-    "dap_an_dung": "C"
-  },
-  {
     "noi_dung": "Lĩnh vực dịch vụ nào được AI hỗ trợ mạnh mẽ?",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "AI hỗ trợ mạnh mẽ trong nhiều lĩnh vực dịch vụ, bao gồm trợ lý ảo và chatbot, dịch vụ khách hàng, tài chính ngân hàng, y tế, và giáo dục đào tạo.(1 điểm)"
+    "goi_y_dap_an": "AI hỗ trợ mạnh mẽ trong nhiều lĩnh vực dịch vụ, bao gồm trợ lý ảo và chatbot, dịch vụ khách hàng, tài chính ngân hàng, y tế, và giáo dục đào tạo."
   },
   {
     "noi_dung": "AI được ứng dụng như thế nào trong việc điều khiển tự động?",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "AI giúp máy móc và thiết bị hoạt động tự động mà không cần sự can thiệp của con người, ví dụ như giám sát nguyên vật liệu, quét sản phẩm lỗi, và điều khiển thiết bị bay không người lái.(1 điểm)"
+    "goi_y_dap_an": "AI giúp máy móc và thiết bị hoạt động tự động mà không cần sự can thiệp của con người, ví dụ như giám sát nguyên vật liệu, quét sản phẩm lỗi, và điều khiển thiết bị bay không người lái."
   },
   {
     "noi_dung": "Switch trong mạng LAN có chức năng gì?",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Switch kết nối và chuyển tiếp dữ liệu giữa các thiết bị trong mạng LAN.(1 điểm)"
+    "goi_y_dap_an": "Switch kết nối và chuyển tiếp dữ liệu giữa các thiết bị trong mạng LAN."
   },
   {
-    "noi_dung": "Cáp mạng RJ45 không kết nối qua cổng USB, mà cắm vào cổng LAN trên máy tính và Switch.",
-    "kieu_cau_hoi": "dung_sai",
-    "lua_chon": {"A": "đúng", "B": "sai"},
-    "dap_an_dung": "B"
+    "noi_dung": "Trong quá trình kết nối máy tính với Switch, các bước sau đây có chính xác không? Chọn đúng hoặc sai.",
+    "kieu_cau_hoi": "dung_sai_nhieu_lua_chon",
+    "lua_chon": {
+      "a": "Sử dụng cáp mạng RJ45 là bước đúng để kết nối máy tính với Switch.",
+      "b": "Cáp mạng RJ45 không kết nối qua cổng USB, mà cắm vào cổng LAN trên máy tính và Switch.",
+      "c": "Kiểm tra đèn báo hiệu trên cổng là cách để xác nhận kết nối vật lý thành công.",
+      "d": "Mở trình duyệt web là một cách để kiểm tra kết nối mạng."
+    },
+    "dap_an_dung": {
+      "a": "Đúng",
+      "b": "Đúng",
+      "c": "Đúng",
+      "d": "Sai"
+    }
   },
   {
-    "noi_dung": "Không cần đặt tên chia sẻ cho ổ cứng; tên chia sẻ thường được đặt cho các thư mục hoặc máy in, không phải cho toàn bộ ổ cứng.",
-    "kieu_cau_hoi": "dung_sai",
-    "lua_chon": {"A": "đúng", "B": "sai"},
-    "dap_an_dung": "A"
+    "noi_dung": "Trong quá trình chia sẻ dữ liệu từ máy tính PC-A trên cùng mạng LAN, các bước sau đây có đúng không? Chọn đúng hoặc sai.",
+    "kieu_cau_hoi": "dung_sai_nhieu_lua_chon",
+    "lua_chon": {
+      "a": "Để bắt đầu chia sẻ dữ liệu từ máy tính PC-A, cần chọn ổ cứng chứa dữ liệu và chọn Properties.",
+      "b": "Sau đó vào tab Sharing và chọn Advanced Sharing.",
+      "c": "Tích vào ô 'Share this folder' và chọn Permissions để cài đặt quyền truy cập.",
+      "d": "Không cần đặt tên chia sẻ cho ổ cứng; tên chia sẻ thường được đặt cho các thư mục hoặc máy in, không phải cho toàn bộ ổ cứng."
+    },
+    "dap_an_dung": {
+      "a": "Đúng",
+      "b": "Đúng",
+      "c": "Đúng",
+      "d": "Sai"
+    }
   },
   {
-    "noi_dung": "AI trong lĩnh vực robotics đã phát triển những robot thông minh có khả năng giao tiếp đa ngôn ngữ, như robot Grace ở Hồng Kông.",
-    "kieu_cau_hoi": "dung_sai",
-    "lua_chon": {"A": "đúng", "B": "sai"},
-    "dap_an_dung": "B"
+    "noi_dung": "Phát biểu sau đây đúng hay sai về một số lĩnh vực phát triển nhờ ứng dụng AI?",
+    "kieu_cau_hoi": "dung_sai_nhieu_lua_chon",
+    "lua_chon": {
+      "a": "AI trong lĩnh vực robotics đã phát triển những robot thông minh có khả năng giao tiếp đa ngôn ngữ, như robot Grace ở Hồng Kông.",
+      "b": "AI có thể áp dụng trong điều khiển tự động, giúp máy móc và thiết bị hoạt động mà không cần sự can thiệp của con người.",
+      "c": "Dạng vân tay và khuôn mặt trên điện thoại di động là một ví dụ về các tiện ích thông minh phát triển nhờ AI.",
+      "d": "Trợ lý ảo và chatbot do AI phát triển có thể hỗ trợ trong nhiều lĩnh vực khác nhau, không chỉ giới hạn ở tài chính ngân hàng."
+    },
+    "dap_an_dung": {
+      "a": "Đúng",
+      "b": "Sai",
+      "c": "Đúng",
+      "d": "Sai"
+    }
   },
   {
-    "noi_dung": "AI có khả năng tự động hóa nhiều công việc, điều này có thể dẫn đến áp lực thất nghiệp cho một số ngành nghề.",
-    "kieu_cau_hoi": "dung_sai",
-    "lua_chon": {"A": "đúng", "B": "sai"},
-    "dap_an_dung": "A"
+    "noi_dung": "Cảnh báo về ứng dụng AI sau đây đúng hay sai?",
+    "kieu_cau_hoi": "dung_sai_nhieu_lua_chon",
+    "lua_chon": {
+      "a": "AI có khả năng tự động hóa nhiều công việc, điều này có thể dẫn đến áp lực thất nghiệp cho một số ngành nghề.",
+      "b": "AI có thể vi phạm quyền riêng tư nếu dữ liệu cá nhân bị lạm dụng, đặc biệt khi thu thập và xử lý dữ liệu không đúng cách.",
+      "c": "AI có thể đe dọa an ninh hệ thống nếu bị tấn công xâm nhập hoặc thay đổi dữ liệu.",
+      "d": "AI có khả năng kiểm soát hoặc ảnh hưởng đến ý thức và hành vi của con người, điều này có thể xảy ra khi các hệ thống AI được thiết kế để điều chỉnh hoặc thay đổi các hành vi dựa trên dữ liệu."
+    },
+    "dap_an_dung": {
+      "a": "Đúng",
+      "b": "Sai",
+      "c": "Đúng",
+      "d": "Sai"
+    }
   }
 ]
-  
-
