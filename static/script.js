@@ -972,6 +972,28 @@ async function gradeEssayWithAPI(selected, q) {
 qs('#btn-submit')?.addEventListener('click', () => submitExam(false));
 
 async function submitExam(autoByTime) {
+  // --- Bảng điểm theo loại câu hỏi ---
+  const scoreTable = {
+    trac_nghiem: 0.25,                 // trắc nghiệm 1 lựa chọn
+    trac_nghiem_nhieu: 0.25,           // trắc nghiệm nhiều lựa chọn
+    dung_sai: 0.25,                  // đúng/sai
+    dung_sai_nhieu_lua_chon: 1,     // đúng/sai nhiều lựa chọn
+    tu_luan: 1                       // tự luận
+  };
+// --- Nếu server có trọng số riêng cho mã đề, tải trước khi chấm ---
+try {
+  const res = await fetch(`/api/get_score_weights?made=${qs('#made').value}`);
+  const data = await res.json();
+  if (data.status === "success" && data.weights) {
+    Object.assign(scoreTable, data.weights); // cập nhật trọng số
+    console.log("📊 Đã tải trọng số từ server:", scoreTable);
+  } else {
+    console.log("⚠️ Không tìm thấy trọng số trên server, dùng mặc định");
+  }
+} catch (err) {
+  console.warn("⚠️ Lỗi khi tải trọng số, dùng mặc định", err);
+}
+
   async function gradeEssayWithAPI(studentAnswer, question) {
     try {
       const res = await fetch(`${API_BASE}/api/grade_essay_advanced`, {
@@ -1071,6 +1093,8 @@ async function submitExam(autoByTime) {
     let isCorrect = false;
     let matchScore = 0;
 
+    const weight = scoreTable[kieu] || 0; // Trọng số câu hỏi
+
     // --- Trắc nghiệm 1 lựa chọn ---
     if (kieu === 'trac_nghiem') {
       const sel = student || '';
@@ -1080,22 +1104,22 @@ async function submitExam(autoByTime) {
       correctContent = corr ? `${corr}${q.lua_chon && q.lua_chon[corr.toLowerCase()] ? `. ${q.lua_chon[corr.toLowerCase()]}` : ''}` : '';
       if (sel && corr && selLetter === corr) {
         isCorrect = true;
-        matchScore = 0.25;
-        scoreTracNghiem1 += 0.25;
+        matchScore = weight;
+        scoreTracNghiem1 += weight;
       }
     } 
     // --- Trắc nghiệm nhiều lựa chọn ---
     else if (kieu === 'trac_nghiem_nhieu' || kieu === 'nhieu_lua_chon' || kieu === 'trac_nghiem_nhieu_lua_chon') {
       const selArr = Array.isArray(student) ? student.map(s => String(s).trim().toUpperCase()).filter(Boolean) : [];
       const corrArr = String(correctKeyRaw || '').split(/[,; ]+/).map(s => s.trim().toUpperCase()).filter(Boolean);
-      const perChoiceScore = corrArr.length ? 0.25 / corrArr.length : 0;
+      const perChoiceScore = corrArr.length ? weight / corrArr.length : 0;
       let scoreThisQuestion = 0;
       selArr.forEach(a => { if (corrArr.includes(a)) scoreThisQuestion += perChoiceScore; });
       matchScore = scoreThisQuestion;
       scoreTracNghiem1 += scoreThisQuestion;
       selectedContent = selArr.length ? selArr.map(a => `${a}${q.lua_chon && q.lua_chon[a.toLowerCase()] ? `. ${q.lua_chon[a.toLowerCase()]}` : ''}`).join(', ') : '(chưa chọn)';
       correctContent = corrArr.length ? corrArr.map(a => `${a}${q.lua_chon && q.lua_chon[a.toLowerCase()] ? `. ${q.lua_chon[a.toLowerCase()]}` : ''}`).join(', ') : '';
-      isCorrect = scoreThisQuestion === 0.25 && corrArr.length === selArr.length && selArr.every(x => corrArr.includes(x));
+      isCorrect = scoreThisQuestion === weight && corrArr.length === selArr.length && selArr.every(x => corrArr.includes(x));
     } 
     // --- Đúng/Sai ---
     else if (kieu === 'dung_sai') {
@@ -1106,75 +1130,48 @@ async function submitExam(autoByTime) {
       correctContent = dapAnDungNorm || '';
       if (daChonNorm && dapAnDungNorm && daChonNorm === dapAnDungNorm) {
         isCorrect = true;
-        matchScore = 0.25;
-        scoreDungSai += 0.25;
+        matchScore = weight;
+        scoreDungSai += weight;
       }
     } 
     // --- Đúng/Sai nhiều lựa chọn ---
     else if (kieu === 'dung_sai_nhieu_lua_chon') {
-  const studentObj = student || {};
-  let correctObj = {};
+      const studentObj = student || {};
+      let correctObj = {};
+      try {
+        if (typeof q.dap_an_dung === "string" && q.dap_an_dung.trim().startsWith("{")) correctObj = JSON.parse(q.dap_an_dung);
+        else if (typeof q.dap_an_dung === "object" && q.dap_an_dung !== null) correctObj = q.dap_an_dung;
+      } catch (e) { correctObj = {}; }
 
-  // ✅ Xử lý mọi kiểu dữ liệu
-  try {
-    if (typeof q.dap_an_dung === "string" && q.dap_an_dung.trim().startsWith("{")) {
-      correctObj = JSON.parse(q.dap_an_dung);
-    } else if (typeof q.dap_an_dung === "object" && q.dap_an_dung !== null) {
-      correctObj = q.dap_an_dung;
+      const keys = Object.keys(q.lua_chon || {});
+      const perItemScore = keys.length ? weight / keys.length : 0;
+      let scoreThisQuestion = 0;
+      const displayStudent = [];
+      const displayCorrectArr = [];
+
+      for (const key of keys) {
+        const st = (studentObj[key] || '').trim();
+        let corrRaw = (correctObj[key] || '').trim();
+        let corr = ['A','ĐÚNG','DUNG'].includes(corrRaw.toUpperCase()) ? 'Đúng' : (['B','SAI'].includes(corrRaw.toUpperCase()) ? 'Sai' : corrRaw);
+        let stNorm = ['A','ĐÚNG','DUNG'].includes(st.toUpperCase()) ? 'Đúng' : (['B','SAI'].includes(st.toUpperCase()) ? 'Sai' : st);
+        const ok = stNorm === corr;
+        displayStudent.push(st ? `${key}: ${stNorm} ${ok ? '✅' : '❌'}` : `${key}: (chưa chọn) ❌`);
+        if (ok) scoreThisQuestion += perItemScore;
+        displayCorrectArr.push(`${key}: ${corr || '(không có)'}`);
+      }
+
+      matchScore = scoreThisQuestion;
+      scoreDungSai += scoreThisQuestion;
+      selectedContent = displayStudent.join(', ');
+      correctContent = displayCorrectArr.join(', ');
+      isCorrect = scoreThisQuestion === weight;
     }
-  } catch (e) {
-    console.warn("Lỗi parse dap_an_dung:", e, q.dap_an_dung);
-    correctObj = {};
-  }
-
-  console.log("👉 dap_an_dung (sau xử lý):", JSON.stringify(correctObj, null, 2));
-
-
-  const keys = Object.keys(q.lua_chon || {});
-  const perItemScore = 0.25;
-  let scoreThisQuestion = 0;
-  const displayStudent = [];
-  const displayCorrectArr = [];
-
-  for (const key of keys) {
-    const st = (studentObj[key] || '').trim();
-    let corrRaw = (correctObj[key] || '').trim();
-
-    let corr = '';
-    if (['A','ĐÚNG','DUNG'].includes(corrRaw.toUpperCase())) corr = 'Đúng';
-    else if (['B','SAI'].includes(corrRaw.toUpperCase())) corr = 'Sai';
-    else corr = corrRaw;
-
-    let stNorm = '';
-    if (['A','ĐÚNG','DUNG'].includes(st.toUpperCase())) stNorm = 'Đúng';
-    else if (['B','SAI'].includes(st.toUpperCase())) stNorm = 'Sai';
-    else stNorm = st;
-
-    const ok = stNorm === corr;
-    if (st) {
-      displayStudent.push(`${key}: ${stNorm} ${ok ? '✅' : '❌'}`);
-      if (ok) scoreThisQuestion += perItemScore;
-    } else {
-      displayStudent.push(`${key}: (chưa chọn) ❌`);
-    }
-
-    displayCorrectArr.push(`${key}: ${corr || '(không có)'}`);
-  }
-
-  matchScore = scoreThisQuestion;
-  scoreDungSai += scoreThisQuestion;
-  selectedContent = displayStudent.join(', ');
-  correctContent = displayCorrectArr.join(', ');
-  isCorrect = scoreThisQuestion === keys.length * perItemScore;
-}
-
-
     // --- Tự luận ---
     else if (kieu === 'tu_luan') {
       const studentText = student || '';
       const result = await gradeEssayWithAPI(studentText, q);
       const rscore = (result && typeof result === 'object') ? (result.score || 0) : (Number(result) || 0);
-      matchScore = Number(rscore) || 0;
+      matchScore = rscore * weight; // Nhân trọng số
       scoreTuLuan += matchScore;
       selectedContent = studentText || '(chưa trả lời)';
       correctContent = q.goi_y_dap_an || '';
@@ -1192,15 +1189,14 @@ async function submitExam(autoByTime) {
       goi_y_dap_an: q.goi_y_dap_an || ''
     });
   }
-
-  const totalScore = scoreTracNghiem1 + scoreDungSai + scoreTuLuan;
+const totalScore = scoreTracNghiem1 + scoreDungSai + scoreTuLuan;
   const finalScore = Math.min(totalScore, 10).toFixed(2);
-
   clearTempStorage();
 
   const now = new Date();
   const formattedDate = now.toLocaleString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
 
+  // --- HIỂN THỊ KẾT QUẢ ---
   let fileContent = `
     <div><strong>KẾT QUẢ BÀI THI</strong></div>
     <div><strong>Họ tên:</strong> ${safeHTML(name)}</div>
@@ -1221,11 +1217,11 @@ async function submitExam(autoByTime) {
     fileContent += `<div style="margin-bottom: .75rem; border-bottom: 1px solid #eee; padding-bottom: .5rem;">`;
     fileContent += `<div><strong>Câu ${ans.cau}:</strong> ${safeHTML(ans.noi_dung)}</div>`;
 
-    if (ans.kieu === 'trac_nghiem' || ans.kieu === 'trac_nghiem_nhieu' || ans.kieu === 'trac_nghiem_nhieu_lua_chon' || ans.kieu === 'nhieu_lua_chon') {
+    if (['trac_nghiem','trac_nghiem_nhieu','trac_nghiem_nhieu_lua_chon','nhieu_lua_chon'].includes(ans.kieu)) {
       fileContent += `<div>Bạn chọn: <span style="color:${color}; font-weight:bold;">${safeHTML(ans.da_chon || '-')}</span></div>`;
       if (ans.dap_an_dung) fileContent += `<div>Đáp án đúng: ${safeHTML(ans.dap_an_dung)}</div>`;
       fileContent += `<div><strong style="color:${color};">${symbol}${diemText}</strong></div>`;
-    } else if (ans.kieu === 'dung_sai' || ans.kieu === 'dung_sai_nhieu_lua_chon') {
+    } else if (['dung_sai','dung_sai_nhieu_lua_chon'].includes(ans.kieu)) {
       fileContent += `<div><strong>Bạn chọn:</strong> ${safeHTML(ans.da_chon || '-')}</div>`;
       if (ans.dap_an_dung) fileContent += `<div><strong>Đáp án đúng:</strong> ${safeHTML(ans.dap_an_dung)}</div>`;
       fileContent += `<div><strong style="color:${color};">${symbol}${diemText}</strong></div>`;
@@ -1341,6 +1337,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
