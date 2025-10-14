@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory, send_file, render_template, abort, redirect, url_for
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import NotFound
-from pathlib import Path
 from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
@@ -18,7 +17,6 @@ import subprocess
 import sys
 import google.generativeai as genai
 from dotenv import load_dotenv
-from pathlib import Path
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, send_file, Response
@@ -32,6 +30,7 @@ from difflib import SequenceMatcher
 import vertexai
 from vertexai import init
 from vertexai.preview.generative_models import GenerativeModel
+from flask_wtf.csrf import generate_csrf
 
 
 
@@ -310,6 +309,85 @@ def download_all():
         mimetype="application/zip"
     )
 
+
+
+
+
+
+
+
+SCORE_FILE = os.path.join("data", "scores.json")  # hoặc đường dẫn đúng
+
+# --- API: Lấy CSRF token ---
+@app.route("/api/get_csrf_token")
+def get_csrf_token():
+    token = generate_csrf()
+    return jsonify({"csrf_token": token})
+
+
+@app.route("/api/get_score_weights")
+def get_score_weights():
+    made = request.args.get("made")
+    if not made:
+        return jsonify({"status": "error", "message": "Thiếu mã đề"}), 400
+
+    if not os.path.exists(SCORE_FILE):
+        return jsonify({"status": "error", "message": "Chưa có file trọng số"}), 404
+
+    with open(SCORE_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if made in data:
+        return jsonify({"status": "success", "weights": data[made]})
+    else:
+        return jsonify({"status": "error", "message": "Không tìm thấy mã đề"}), 404
+
+
+
+# --- API: Lưu trọng số ---
+@app.route("/api/set_score_weights", methods=["POST"])
+@csrf.exempt   # ⛔ Nếu bạn muốn bỏ CSRF cho API này
+def set_score_weights():
+    try:
+        body = request.get_json(force=True)
+    except Exception:
+        return jsonify({"status": "error", "message": "Dữ liệu không hợp lệ"}), 400
+
+    made = body.get("made")
+    weights = body.get("weights", {})
+
+    if not made or not weights:
+        return jsonify({"status": "error", "message": "Thiếu dữ liệu"}), 400
+
+    # --- Tạo thư mục nếu chưa có ---
+    folder = os.path.dirname(SCORE_FILE)
+    if folder:
+        os.makedirs(folder, exist_ok=True)
+
+    # --- Đọc dữ liệu cũ ---
+    data = {}
+    if os.path.exists(SCORE_FILE):
+        with open(SCORE_FILE, "r", encoding="utf-8") as f:
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                data = {}
+
+    # --- Cập nhật dữ liệu ---
+    data[made] = weights
+
+    # --- Ghi lại ---
+    with open(SCORE_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+    return jsonify({"status": "success", "message": f"Đã lưu trọng số cho mã đề {made}"})
+
+
+
+
+
+
+
 @app.route("/ask", methods=["POST"])
 @csrf.exempt
 def ask():
@@ -319,9 +397,21 @@ def ask():
         return jsonify({"error": "No message provided"}), 400
 
     try:
-        resp = model.generate_content(
-            f"Bạn là trợ lý AI thông minh, trả lời mọi câu hỏi một cách chi tiết, chính xác và lịch sự.\n\nNgười dùng: {user_msg}"
-        )
+        # Lấy dữ liệu trực tiếp từ xuka.com.vn
+        site_content = fetch_xuka_content("https://xuka.com.vn/web")
+
+        # Prompt AI có dữ liệu thực tế từ website
+        prompt = f"""
+        Bạn là trợ lý AI chuyên sâu về website xuka.com.vn/web.
+        Dựa trên dữ liệu sau từ trang xuka.com.vn, trả lời chi tiết, chính xác, lịch sự các câu hỏi liên quan.
+        Nếu câu hỏi ngoài phạm vi xuka.com.vn, trả lời: "Xin lỗi, tôi chỉ có thể trả lời về xuka.com.vn."
+
+        Dữ liệu website: {site_content}
+
+        Người dùng: {user_msg}
+        """
+
+        resp = model.generate_content(prompt)
 
         # Kiểm tra cấu trúc response an toàn
         reply = ""
@@ -337,6 +427,7 @@ def ask():
     except Exception as e:
         app.logger.exception(f"Lỗi /ask: {e}")
         return jsonify({"error": str(e), "reply": "Lỗi server nội bộ"}), 500
+
 
 @app.after_request
 def add_security_headers(response):
