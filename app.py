@@ -397,21 +397,9 @@ def ask():
         return jsonify({"error": "No message provided"}), 400
 
     try:
-        # Lấy dữ liệu trực tiếp từ xuka.com.vn
-        site_content = fetch_xuka_content("https://xuka.com.vn/web")
-
-        # Prompt AI có dữ liệu thực tế từ website
-        prompt = f"""
-        Bạn là trợ lý AI chuyên sâu về website xuka.com.vn/web.
-        Dựa trên dữ liệu sau từ trang xuka.com.vn, trả lời chi tiết, chính xác, lịch sự các câu hỏi liên quan.
-        Nếu câu hỏi ngoài phạm vi xuka.com.vn, trả lời: "Xin lỗi, tôi chỉ có thể trả lời về xuka.com.vn."
-
-        Dữ liệu website: {site_content}
-
-        Người dùng: {user_msg}
-        """
-
-        resp = model.generate_content(prompt)
+        resp = model.generate_content(
+            f"Bạn là trợ lý AI thông minh, trả lời mọi câu hỏi một cách chi tiết, chính xác và lịch sự.\n\nNgười dùng: {user_msg}"
+        )
 
         # Kiểm tra cấu trúc response an toàn
         reply = ""
@@ -427,7 +415,6 @@ def ask():
     except Exception as e:
         app.logger.exception(f"Lỗi /ask: {e}")
         return jsonify({"error": str(e), "reply": "Lỗi server nội bộ"}), 500
-
 
 @app.after_request
 def add_security_headers(response):
