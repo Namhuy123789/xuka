@@ -1044,7 +1044,7 @@ def grading(answers, question_data):
 @csrf.exempt
 def save_result():
     try:
-        data = request.get_json(force=True) or {}
+        data = request.get_json(silent=True) or {}
         hoten = str(data.get("hoten", "unknown")).strip()
         sbd = str(data.get("sbd", "N/A")).strip()
         ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
@@ -1068,7 +1068,6 @@ def save_result():
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
 
-        # Khởi tạo score
         trac_nghiem_score = 0.0
         dung_sai_score = 0.0
         tu_luan_score = 0.0
@@ -1109,23 +1108,21 @@ def save_result():
             # --- Đúng/Sai nhiều lựa chọn ---
             elif kieu == "dung_sai_nhieu_lua_chon":
                 da_chon = a.get("da_chon", {})
-                dap_an_dung = cau_goc.get("dap_an_dung", {})
                 if isinstance(da_chon, str):
                     da_chon = json.loads(da_chon) if da_chon.startswith("{") else {}
-                if not isinstance(da_chon, dict):
-                    da_chon = {}
-                if not isinstance(dap_an_dung, dict):
-                    dap_an_dung = {}
+                dap_an_dung = cau_goc.get("dap_an_dung", {})
+                if isinstance(dap_an_dung, str):
+                    dap_an_dung = json.loads(dap_an_dung) if dap_an_dung.startswith("{") else {}
 
                 result_line = []
                 correct_sub = 0
                 for key in ["a","b","c","d"]:
-                    hs_ans = str(da_chon.get(key, "")).strip() or "(chưa chọn)"
-                    true_ans = str(dap_an_dung.get(key, "")).strip()
-                    mark = "✅" if hs_ans == true_ans else "❌"
-                    if hs_ans == true_ans:
+                    hs_ans = (da_chon.get(key, "") or "").strip()
+                    true_ans = (dap_an_dung.get(key, "") or "").strip()
+                    mark = "✅" if hs_ans == true_ans and true_ans else "❌"
+                    if mark == "✅":
                         correct_sub += 1
-                    result_line.append(f"{key}: {hs_ans} {mark}")
+                    result_line.append(f"{key}: {hs_ans or '(chưa chọn)'} {mark}")
 
                 sub_score = correct_sub * 0.25
                 dung_sai_score += sub_score
@@ -1138,24 +1135,21 @@ def save_result():
 
             # --- Trắc nghiệm 1 lựa chọn ---
             else:
-                da_chon = a.get("da_chon", "(chưa chọn)")
-                if isinstance(da_chon, list):
-                    da_chon = ", ".join(map(str, da_chon))
-                elif isinstance(da_chon, dict):
-                    da_chon = ", ".join(f"{k}:{v}" for k,v in da_chon.items())
-                da_chon = str(da_chon).strip() or "(chưa chọn)"
+                da_chon_full = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
+                dap_an_full = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
+                # So sánh ký tự đầu tiên
+                da_chon_key = da_chon_full[0].upper() if da_chon_full[0].isalpha() else ""
+                dap_an_key = dap_an_full[0].upper() if dap_an_full[0].isalpha() else ""
+                mark = "✅" if da_chon_key == dap_an_key else "❌"
+                score_cau = 0.25 if mark == "✅" else 0.0
+                trac_nghiem_score += score_cau
 
-                dap_an_dung = str(cau_goc.get("dap_an_dung", "")).strip()
-                mark = "✅" if da_chon == dap_an_dung else "❌"
-                trac_nghiem_score += 1.0 if mark=="✅" else 0.0
-
-                lines.append(f"  Bạn chọn: {da_chon}")
-                lines.append(f"  Đáp án đúng: {dap_an_dung}")
-                lines.append(f"  {mark} ({1.0 if mark=='✅' else 0.0:.2f} điểm)")
+                lines.append(f"  Bạn chọn: {da_chon_full} {mark}")
+                lines.append(f"  Đáp án đúng: {dap_an_full}")
+                lines.append(f"  {mark} ({score_cau:.2f} điểm)")
 
             lines.append("")
 
-        # Tổng điểm
         total_score = trac_nghiem_score + dung_sai_score + tu_luan_score
         lines.insert(5, f"Điểm Trắc nghiệm 1 lựa chọn: {trac_nghiem_score:.2f}")
         lines.insert(6, f"Điểm Đúng/Sai: {dung_sai_score:.2f}")
@@ -1167,11 +1161,7 @@ def save_result():
         filepath.write_text("\n".join(lines), encoding="utf-8")
         app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
 
-        return jsonify({
-            "status": "saved",
-            "text": "\n".join(lines),
-            "download": f"/download/{filename}"
-        })
+        return jsonify({"status":"saved","text":"\n".join(lines),"download":f"/download/{filename}"})
 
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
