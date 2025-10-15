@@ -1109,20 +1109,30 @@ def save_result():
             elif kieu == "dung_sai_nhieu_lua_chon":
                 da_chon = a.get("da_chon", {})
                 if isinstance(da_chon, str):
-                    da_chon = json.loads(da_chon) if da_chon.startswith("{") else {}
+                    try:
+                        da_chon = json.loads(da_chon)
+                    except:
+                        da_chon = {}
+
                 dap_an_dung = cau_goc.get("dap_an_dung", {})
                 if isinstance(dap_an_dung, str):
-                    dap_an_dung = json.loads(dap_an_dung) if dap_an_dung.startswith("{") else {}
+                    try:
+                        dap_an_dung = json.loads(dap_an_dung)
+                    except:
+                        dap_an_dung = {}
 
                 result_lines = []
                 correct_sub = 0
                 total_sub = len(dap_an_dung) or 1
-                for key, true_ans in dap_an_dung.items():
+                for key in ["a","b","c","d"]:
+                    true_ans = (dap_an_dung.get(key, "") or "").strip()
                     hs_ans = (da_chon.get(key, "") or "").strip()
-                    mark = "✅" if hs_ans.lower() == true_ans.lower() else "❌"
+                    if not hs_ans:
+                        hs_ans = "(chưa chọn)"
+                    mark = "✅" if hs_ans.lower() == true_ans.lower() and true_ans else "❌"
                     if mark == "✅":
                         correct_sub += 1
-                    result_lines.append(f"{key}: {hs_ans or '(chưa chọn)'} {mark}")
+                    result_lines.append(f"{key}: {hs_ans} {mark}")
 
                 sub_score = round(correct_sub / total_sub, 2)
                 dung_sai_score += sub_score
@@ -1137,8 +1147,8 @@ def save_result():
             else:
                 da_chon_full = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
                 dap_an_full = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
-                da_chon_key = da_chon_full[0].upper() if da_chon_full and da_chon_full[0].isalpha() else ""
-                dap_an_key = dap_an_full[0].upper() if dap_an_full and dap_an_full[0].isalpha() else ""
+                da_chon_key = da_chon_full[0].upper() if da_chon_full[0].isalpha() else ""
+                dap_an_key = dap_an_full[0].upper() if dap_an_full[0].isalpha() else ""
                 mark = "✅" if da_chon_key == dap_an_key else "❌"
                 score_cau = 0.25 if mark == "✅" else 0.0
                 trac_nghiem_score += score_cau
@@ -1165,6 +1175,7 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status":"error","msg":"Lỗi server nội bộ"}), 500
+
 
 @app.route('/static/sw.js')
 def serve_service_worker():
