@@ -1068,7 +1068,6 @@ def save_result():
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
 
-        # Khởi tạo score
         trac_nghiem_score = 0.0
         dung_sai_score = 0.0
         tu_luan_score = 0.0
@@ -1095,27 +1094,16 @@ def save_result():
 
             lines.append(f"Câu {cau}: {noi_dung}")
 
-            # --- Trắc nghiệm 1 lựa chọn ---
-            if kieu == "trac_nghiem":
-                da_chon = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
-                dap_an_dung = str(cau_goc.get("dap_an_dung", "")).strip()
-                mark = "✅" if da_chon == dap_an_dung else "❌"
-                point = 0.25 if mark=="✅" else 0.0
-                trac_nghiem_score += point
-                lines.append(f"  Bạn chọn: {da_chon} {mark}")
-                lines.append(f"  Đáp án đúng: {dap_an_dung}")
-                lines.append(f"  {mark} ({point:.2f} điểm)")
-
-            # --- Đúng/Sai ---
-            elif kieu == "dung_sai":
-                da_chon = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
-                dap_an_dung = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
-                mark = "✅" if da_chon.lower() == dap_an_dung.lower() else "❌"
-                point = 1.0 if mark=="✅" else 0.0
-                dung_sai_score += point
-                lines.append(f"  Bạn chọn: {da_chon} {mark}")
-                lines.append(f"  Đáp án đúng: {dap_an_dung}")
-                lines.append(f"  {mark} ({point:.2f} điểm)")
+            # --- Tự luận ---
+            if kieu == "tu_luan":
+                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "(chưa trả lời)"
+                goi_y = a.get("goi_y_dap_an", "").strip() or ""
+                diem_cau = float(a.get("diem", 0.0))
+                tu_luan_score += diem_cau
+                lines.append(f"  Bạn trả lời: {tra_loi}")
+                if goi_y:
+                    lines.append(f"  Gợi ý đáp án: {goi_y}")
+                lines.append(f"  Điểm: {diem_cau:.2f} {'✅' if diem_cau>0 else '❌'}")
 
             # --- Đúng/Sai nhiều lựa chọn ---
             elif kieu == "dung_sai_nhieu_lua_chon":
@@ -1126,37 +1114,41 @@ def save_result():
                 if isinstance(dap_an_dung, str):
                     dap_an_dung = json.loads(dap_an_dung) if dap_an_dung.startswith("{") else {}
 
-                correct_sub = 0
                 result_lines = []
+                correct_sub = 0
+                total_sub = len(dap_an_dung) or 1
                 for key, true_ans in dap_an_dung.items():
                     hs_ans = (da_chon.get(key, "") or "").strip()
                     mark = "✅" if hs_ans.lower() == true_ans.lower() else "❌"
-                    if mark=="✅":
+                    if mark == "✅":
                         correct_sub += 1
                     result_lines.append(f"{key}: {hs_ans or '(chưa chọn)'} {mark}")
 
-                sub_score = correct_sub * 0.25
+                sub_score = round(correct_sub / total_sub, 2)
                 dung_sai_score += sub_score
+
                 lines.append("  Bạn chọn: " + ", ".join(result_lines))
                 lines.append("  Đáp án đúng:")
                 for key, val in dap_an_dung.items():
                     lines.append(f"    {key}: {val}")
                 lines.append(f"  {'✅' if sub_score>0 else '❌'} ({sub_score:.2f} điểm)")
 
-            # --- Tự luận ---
-            elif kieu == "tu_luan":
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "(chưa trả lời)"
-                goi_y = a.get("goi_y_dap_an", "").strip() or ""
-                diem_cau = float(a.get("diem", 0.0))
-                tu_luan_score += diem_cau
-                lines.append(f"  Bạn trả lời: {tra_loi}")
-                if goi_y:
-                    lines.append(f"  Gợi ý đáp án: {goi_y}")
-                lines.append(f"  Điểm: {diem_cau:.2f} {'✅' if diem_cau>0 else '❌'}")
+            # --- Trắc nghiệm 1 lựa chọn ---
+            else:
+                da_chon_full = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
+                dap_an_full = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
+                da_chon_key = da_chon_full[0].upper() if da_chon_full and da_chon_full[0].isalpha() else ""
+                dap_an_key = dap_an_full[0].upper() if dap_an_full and dap_an_full[0].isalpha() else ""
+                mark = "✅" if da_chon_key == dap_an_key else "❌"
+                score_cau = 0.25 if mark == "✅" else 0.0
+                trac_nghiem_score += score_cau
+
+                lines.append(f"  Bạn chọn: {da_chon_full} {mark}")
+                lines.append(f"  Đáp án đúng: {dap_an_full}")
+                lines.append(f"  {mark} ({score_cau:.2f} điểm)")
 
             lines.append("")
 
-        # Tổng điểm
         total_score = trac_nghiem_score + dung_sai_score + tu_luan_score
         lines.insert(5, f"Điểm Trắc nghiệm 1 lựa chọn: {trac_nghiem_score:.2f}")
         lines.insert(6, f"Điểm Đúng/Sai: {dung_sai_score:.2f}")
