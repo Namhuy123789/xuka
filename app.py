@@ -1108,7 +1108,12 @@ def save_result():
             # --- Đúng/Sai nhiều lựa chọn ---
             elif kieu == "dung_sai_nhieu_lua_chon":
                 da_chon = a.get("da_chon", {})
-                if isinstance(da_chon, str):
+                if isinstance(da_chon, list):
+                    da_chon_dict = {}
+                    for key in ["a","b","c","d"]:
+                        da_chon_dict[key] = "Đúng" if key in da_chon else "Sai"
+                    da_chon = da_chon_dict
+                elif isinstance(da_chon, str):
                     try:
                         da_chon = json.loads(da_chon)
                     except:
@@ -1124,9 +1129,10 @@ def save_result():
                 result_lines = []
                 correct_sub = 0
                 total_sub = len(dap_an_dung) or 1
+
                 for key in ["a","b","c","d"]:
-                    true_ans = (dap_an_dung.get(key, "") or "").strip()
                     hs_ans = (da_chon.get(key, "") or "").strip()
+                    true_ans = (dap_an_dung.get(key, "") or "").strip()
                     if not hs_ans:
                         hs_ans = "(chưa chọn)"
                     mark = "✅" if hs_ans.lower() == true_ans.lower() and true_ans else "❌"
