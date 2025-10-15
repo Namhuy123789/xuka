@@ -1040,17 +1040,13 @@ def grading(answers, question_data):
 
 
 # Route lưu kết quả
-
-
-
-
 @app.route("/save_result", methods=["POST"])
 def save_result():
     data = request.json
 
     hoc_sinh = data.get("hoc_sinh", {})
     bai_thi = data.get("bai_thi", [])
-    
+
     ho_ten = hoc_sinh.get("ho_ten", "Unknown")
     sbd = hoc_sinh.get("sbd", "0000")
     ngay_sinh = hoc_sinh.get("ngay_sinh", "")
@@ -1074,7 +1070,7 @@ def save_result():
         if kieu == "1_lua_chon":
             lua_chon = da_chon.get("chon")
             dap = dap_an_dung.get("dap")
-            diem = diem_cau if lua_chon == dap else 0.0
+            diem = diem_cau if str(lua_chon).strip().lower() == str(dap).strip().lower() else 0.0
             ket_qua_chi_tiet.append({
                 "noi_dung": noi_dung,
                 "ban_chon": lua_chon or "(chưa chọn)",
@@ -1092,7 +1088,7 @@ def save_result():
                 chon = da_chon.get(k)
                 dung = dap_an_dung[k]
                 if chon is not None:
-                    if chon.lower() == dung.lower():
+                    if str(chon).strip().lower() == str(dung).strip().lower():
                         diem_cau_hien_tai += diem_phan
                         chi_tiet_chon[k] = f"{chon} ✅"
                     else:
@@ -1137,8 +1133,8 @@ def save_result():
         if "ban_chon" in cau:
             if isinstance(cau["ban_chon"], dict):
                 # Đúng/Sai nhiều lựa chọn
-                ban_chon_str = ", ".join([f"{k}: {v}" for k,v in cau["ban_chon"].items()])
-                dap_an_str = ", ".join([f"{k}: {v}" for k,v in cau["dap_an_dung"].items()])
+                ban_chon_str = ", ".join([f"{k}: {v}" for k, v in cau["ban_chon"].items()])
+                dap_an_str = ", ".join([f"{k}: {v}" for k, v in cau["dap_an_dung"].items()])
                 lines.append(f"  Bạn chọn: {ban_chon_str}")
                 lines.append(f"  Đáp án đúng: {dap_an_str}")
             else:
