@@ -170,7 +170,6 @@ def normalize_text(text):
     return text.strip().lower()
 
 
-
 @app.route('/api/grade_essay_advanced', methods=['POST'])
 @csrf.exempt
 def grade_essay_advanced():
@@ -307,6 +306,7 @@ Trả về DUY NHẤT danh sách số thực 0.0–1.0
         }), 500
 
 
+
 @app.route("/download/all")
 def download_all():
     # Tạo file zip trong bộ nhớ (không ghi ra ổ đĩa)
@@ -400,10 +400,6 @@ def set_score_weights():
 
 
 
-
-
-
-
 @app.route("/ask", methods=["POST"])
 @csrf.exempt
 def ask():
@@ -431,6 +427,10 @@ def ask():
     except Exception as e:
         app.logger.exception(f"Lỗi /ask: {e}")
         return jsonify({"error": str(e), "reply": "Lỗi server nội bộ"}), 500
+
+
+
+
 
 @app.after_request
 def add_security_headers(response):
@@ -1040,6 +1040,7 @@ def grading(answers, question_data):
 
 
 # Route lưu kết quả
+
 @app.route("/save_result", methods=["POST"])
 def save_result():
     data = request.json
@@ -1152,6 +1153,18 @@ def save_result():
         f.write("\n".join(lines))
 
     return jsonify({"status": "ok", "tong_diem": tong_diem, "file": file_txt})
+
+
+# ✅ Route list toàn bộ file kết quả để kiểm tra
+@app.route("/list_results")
+def list_results():
+    try:
+        files = [f.name for f in RESULTS_DIR.glob("*.txt")]
+        return jsonify({"count": len(files), "files": files})
+    except Exception as e:
+        app.logger.error(f"Lỗi liệt kê results/: {e}")
+        return jsonify({"status": "error", "msg": "Không thể đọc thư mục results"}), 500
+
 
 @app.route('/static/sw.js')
 def serve_service_worker():
