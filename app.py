@@ -170,33 +170,42 @@ def normalize_text(text):
     return text.strip().lower()
 
 
+
 @app.route('/api/grade_essay_advanced', methods=['POST'])
 @csrf.exempt
 def grade_essay_advanced():
-    def compute_question_score(similarities):
-        """Tính điểm câu từ similarity từng ý, làm tròn theo ngưỡng 0,0.25,0.5,0.75,1"""
-        thresholds = [0, 0.25, 0.5, 0.75, 1.0]
-        item_scores = []
-        for sim in similarities:
-            if sim >= 0.8:
-                item_scores.append(1.0)
-            elif sim >= 0.75:
-                item_scores.append(0.75)
-            elif sim >= 0.5:
-                item_scores.append(0.5)
-            elif sim >= 0.25:
-                item_scores.append(0.25)
-            else:
-                item_scores.append(0.0)
+    def normalize_text(text):
+        """Chuẩn hóa văn bản: loại bỏ ký tự đặc biệt, khoảng trắng, viết thường"""
+        text = text.lower()
+        text = re.sub(r'[\*\•\-\−]', '', text)
+        text = text.strip()
+        return text
 
-        if not item_scores:
+    def compute_question_score(similarities, bonuses=None):
+        """Tính điểm từng ý, cộng bonus nếu có, làm tròn theo ngưỡng 0,0.25,0.5,0.75,1"""
+        thresholds = [0.0, 0.25, 0.5, 0.75, 1.0]
+        if not similarities:
             return 0.0
-
-        avg = sum(item_scores) / len(item_scores)
+        avg_score = sum(similarities) / len(similarities)
+        if bonuses:
+            avg_score = min(avg_score + sum(bonuses), 1.0)  # cộng bonus nhưng max 1.0
         for t in reversed(thresholds):
-            if avg >= t:
+            if avg_score >= t:
                 return t
         return 0.0
+
+    def detect_bonus(student_items, correct_items):
+        """Phát hiện ý sáng tạo/mở rộng hợp lý"""
+        bonus_flags = []
+        for s in student_items:
+            # Nếu ý không trùng với bất kỳ ý nào trong gợi ý nhưng có liên quan (ngữ nghĩa tương đồng >=0.4)
+            similarities = [SequenceMatcher(None, s, c).ratio() for c in correct_items]
+            if max(similarities) < 0.5:
+                # Bonus cho sáng tạo hợp lý
+                bonus_flags.append(0.05)
+            else:
+                bonus_flags.append(0.0)
+        return bonus_flags
 
     try:
         data = request.get_json(force=True)
@@ -219,34 +228,38 @@ def grade_essay_advanced():
                 })
                 continue
 
-            # Tách từng ý
-            correct_items = [c.strip() for c in re.split(r'[;,•\n]', correct_answer) if c.strip()]
-            student_items = [s.strip() for s in re.split(r'[;,•\n]', student_answer) if s.strip()]
+            correct_items = [normalize_text(c) for c in re.split(r'[;,•\n]', correct_answer) if c.strip()]
+            student_items = [normalize_text(s) for s in re.split(r'[;,•\n]', student_answer) if s.strip()]
+
+            long_text = len(student_answer.split()) > 100
+            similarities = []
 
             if ai_vertex:
                 try:
-                    prompt = f"""
-So sánh mức độ tương đồng về Ý NGHĨA giữa các ý của bài làm và đáp án mẫu.
+                    if long_text:
+                        # Semantic scoring toàn đoạn
+                        prompt = f"""
+Bạn là AI chuyên về chấm tự luận nâng cao. Đọc đoạn trả lời của học sinh và gợi ý đáp án.
+- Đánh giá mức độ trùng ý nghĩa, đánh giá tương đồng về mặt ngữ nghĩa và khoa học, cộng điểm cho sáng tạo đúng hoặc mở rộng hợp lý.
+- Trả về DUY NHẤT số thực 0.0-1.0.
 
-- Với môn Xã hội: so sánh ý nghĩa từng ý, đánh giá mức độ giống nhau.
-- Với môn Tự nhiên: chấm theo từng bước làm; nếu đúng bước nào thì tính điểm bước đó, sai bước không tính, đáp án đúng được nguyên điểm nếu tất cả các bước đúng.
-- Bỏ qua các lỗi như khoảng trắng, định dạng chữ, chuẩn hóa đầu vào trước khi so sánh, dấu *, ∗, -, −...
-
+Học sinh: {student_answer}
+Gợi ý: {correct_answer}
+"""
+                    else:
+                        prompt = f"""
+Bạn là AI chuyên về chấm tự luận.
+- So sánh ý nghĩa từng ý, đánh giá tương đồng về mặt ngữ nghĩa và khoa học, cộng điểm cho sáng tạo hợp lý.
+- Bỏ qua lỗi khoảng trắng, *, ∗, -, −...
 tra_loi_hoc_sinh: {student_items}
 goi_y_dap_an: {correct_items}
-
-Trả về DUY NHẤT một danh sách số thực trong khoảng 0.0 đến 1.0,
-theo định dạng JSON: [0.0, 0.5, 0.75, 1.0, ...],
-mỗi số tương ứng với từng ý trong đáp án mẫu.
-KHÔNG giải thích, KHÔNG ký tự thừa, KHÔNG văn bản bổ sung.
+Trả về DUY NHẤT danh sách số thực 0.0–1.0
 """
-
-                    # 🔹 SDK mới: vẫn dùng generate_content
                     response = ai_vertex.generate_content(
                         prompt,
                         generation_config={
                             "temperature": 0.3,
-                            "max_output_tokens": 256,
+                            "max_output_tokens": 512,
                         },
                     )
                     raw_text = response.text.strip()
@@ -254,20 +267,23 @@ KHÔNG giải thích, KHÔNG ký tự thừa, KHÔNG văn bản bổ sung.
                         float(s) if float(s) <= 1 else float(s) / 100
                         for s in re.findall(r"(\d*\.?\d+)", raw_text)
                     ]
-
+                    if long_text and len(similarities) == 1:
+                        similarities = [similarities[0]]
+                    if not similarities:
+                        raise Exception("AI trả về không có số")
                 except Exception:
-                    # fallback SequenceMatcher nếu AI lỗi
                     similarities = [
-                        max(SequenceMatcher(None, s.lower(), c.lower()).ratio() for s in student_items)
-                        for c in correct_items
+                        max(SequenceMatcher(None, s, c).ratio() for c in correct_items)
+                        for s in student_items
                     ]
             else:
                 similarities = [
-                    max(SequenceMatcher(None, s.lower(), c.lower()).ratio() for s in student_items)
-                    for c in correct_items
+                    max(SequenceMatcher(None, s, c).ratio() for c in correct_items)
+                    for s in student_items
                 ]
 
-            score = compute_question_score(similarities)
+            bonuses = detect_bonus(student_items, correct_items)
+            score = compute_question_score(similarities, bonuses)
             total += score
 
             graded.append({
