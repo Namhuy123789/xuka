@@ -1,98 +1,62 @@
-
 [
   {
-    "noi_dung": "Hàm số nào sau đây là hàm số bậc hai?",
-    "lua_chon": {"A": "y = 2x + 3", "B": "y = x^2 + 2x + 1", "C": "y = 1/x", "D": "y = √x"},
-    "dap_an_dung": "B"
+    "noi_dung": "Giải thích khái niệm 'overfitting' trong học máy và nêu 3 cách giảm overfitting.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Overfitting là hiện tượng mô hình học máy học quá sát dữ liệu huấn luyện, dẫn đến mất khả năng khái quát. Ba cách giảm overfitting: 1) Regularization (L1/L2), 2) Dropout, 3) Data augmentation hoặc thu thập thêm dữ liệu."
   },
   {
-    "noi_dung": "Giá trị của biểu thức |−5| là bao nhiêu?",
-    "lua_chon": {"A": "5", "B": "−5", "C": "0", "D": "10"},
-    "dap_an_dung": "A"
+    "noi_dung": "Phân tích tác động tích cực và tiêu cực của việc sử dụng AI trong giáo dục.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Tác động tích cực: rút ngắn thời gian chấm bài, thống nhất chuẩn chấm, phân tích dữ liệu học sinh. Tiêu cực: AI chấm sai, giảm vai trò giáo viên, vấn đề bảo mật dữ liệu. Giải pháp: kết hợp AI và giáo viên, minh bạch thuật toán, quản lý dữ liệu an toàn."
   },
   {
-    "noi_dung": "Phương trình nào sau đây có hai nghiệm phân biệt?",
-    "lua_chon": {"A": "x^2 - 4x + 4 = 0", "B": "x^2 + 1 = 0", "C": "x^2 - 5x + 6 = 0", "D": "x^2 = 0"},
-    "dap_an_dung": "C"
+    "noi_dung": "Bạn là chuyên gia giáo dục. Đề xuất một chương trình STEM cho học sinh lớp 10, giải thích phương pháp lựa chọn.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Chương trình STEM nên kết hợp dự án thực hành, thí nghiệm và học lý thuyết. Lý do: học sinh học qua trải nghiệm sẽ phát triển tư duy logic, kỹ năng giải quyết vấn đề, và khả năng làm việc nhóm."
   },
   {
-    "noi_dung": "Tập nghiệm của bất phương trình x^2 - 1 > 0 là?",
-    "lua_chon": {"A": "x < -1 hoặc x > 1", "B": "x > -1 và x < 1", "C": "x ≥ -1", "D": "x ≤ 1"},
-    "dap_an_dung": "A"
+    "noi_dung": "Phân tích đoạn văn: 'Máy móc sẽ thay thế toàn bộ công việc của con người trong 10 năm tới.' Chỉ ra 4 lỗi/thiếu sót.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "1) Quá khái quát, 2) Thiếu dữ liệu chứng minh, 3) Bỏ qua công việc mới, 4) Giả định sai về kỹ năng cần học."
   },
   {
-    "noi_dung": "Giá trị nhỏ nhất của hàm số y = x^2 + 4x + 5 là?",
-    "lua_chon": {"A": "5", "B": "1", "C": "4", "D": "−3"},
-    "dap_an_dung": "B"
+    "noi_dung": "Trình bày sự khác nhau giữa Machine Learning và Deep Learning với ví dụ minh họa.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Machine Learning là phương pháp học từ dữ liệu bằng thuật toán, ví dụ: Decision Tree, Logistic Regression. Deep Learning là nhánh của ML dùng mạng neuron nhiều lớp, ví dụ: CNN cho nhận diện hình ảnh."
   },
   {
-    "noi_dung": "Phương trình đường thẳng đi qua điểm (1,2) và có hệ số góc 3 là?",
-    "lua_chon": {"A": "y = 3x + 2", "B": "y = 3x − 1", "C": "y = 3x − 1", "D": "y = 3x − 1"},
-    "dap_an_dung": "B"
+    "noi_dung": "AI có thể hỗ trợ các doanh nghiệp trong lĩnh vực dịch vụ như thế nào? Nêu ít nhất 3 ví dụ.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "AI hỗ trợ mạnh mẽ trong nhiều lĩnh vực dịch vụ: 1) Trợ lý ảo và chatbot, 2) Dịch vụ khách hàng, 3) Tài chính ngân hàng, 4) Y tế, 5) Giáo dục đào tạo."
   },
   {
-    "noi_dung": "Đạo hàm của hàm số y = x^3 là?",
-    "lua_chon": {"A": "3x^2", "B": "x^2", "C": "3x", "D": "x^3"},
-    "dap_an_dung": "A"
+    "noi_dung": "Hãy nêu 3 rủi ro khi triển khai AI trong y tế và cách giảm thiểu.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Rủi ro: 1) Chẩn đoán sai, 2) Lộ thông tin bệnh nhân, 3) Phụ thuộc quá nhiều vào AI. Giảm thiểu: 1) Kết hợp bác sĩ và AI, 2) Mã hóa dữ liệu, 3) Giám sát và đánh giá kết quả thường xuyên."
   },
   {
-    "noi_dung": "Hàm số y = √x xác định khi?",
-    "lua_chon": {"A": "x > 0", "B": "x ≥ 0", "C": "x < 0", "D": "x ≠ 0"},
-    "dap_an_dung": "B"
+    "noi_dung": "Đưa ra 2 phương pháp giảm phát thải khí nhà kính tại một thành phố lớn.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "1) Tăng sử dụng năng lượng xanh (điện mặt trời, gió), 2) Giảm ô tô cá nhân, khuyến khích phương tiện công cộng, 3) Trồng cây và quản lý rác thải hiệu quả."
   },
   {
-    "noi_dung": "Tích phân ∫(2x)dx bằng?",
-    "lua_chon": {"A": "x^2 + C", "B": "2x + C", "C": "x + C", "D": "x^2/2 + C"},
-    "dap_an_dung": "A"
+    "noi_dung": "Viết đoạn văn 150–200 chữ về tác động của AI tới thị trường lao động, nêu cơ hội và thách thức.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "AI tạo ra cơ hội: tăng năng suất, phát triển ngành mới, hỗ trợ công việc lặp đi lặp lại. Thách thức: thay thế công việc truyền thống, yêu cầu kỹ năng mới, bất bình đẳng công nghệ. Giải pháp: đào tạo lại lao động, kết hợp AI và con người, chính sách xã hội phù hợp."
   },
   {
-    "noi_dung": "Giá trị của sin(30°) là?",
-    "lua_chon": {"A": "1", "B": "1/2", "C": "√3/2", "D": "0"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Hệ phương trình nào sau đây có vô số nghiệm?",
-    "lua_chon": {"A": "x + y = 2, x − y = 0", "B": "x + y = 2, 2x + 2y = 4", "C": "x − y = 1, x − y = 2", "D": "x = 1, y = 2"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Biểu thức log_10(100) bằng?",
-    "lua_chon": {"A": "1", "B": "2", "C": "10", "D": "0"},
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Hàm số y = 1/x nghịch biến khi?",
-    "lua_chon": {"A": "x > 0", "B": "x < 0", "C": "x ≠ 0", "D": "Cả A và B"},
-    "dap_an_dung": "D"
-  },
-  {
-    "noi_dung": "Tập xác định của hàm số y = 1/(x−2) là?",
-    "lua_chon": {"A": "x ≠ 2", "B": "x = 2", "C": "x ≥ 2", "D": "x ≤ 2"},
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Giải phương trình: 2x − 3 = 7",
-    "lua_chon": {"A": "x = 5", "B": "x = 2", "C": "x = −5", "D": "x = −2"},
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Giá trị lớn nhất của hàm số y = −x^2 + 4x + 1 là?",
-    "lua_chon": {"A": "1", "B": "4", "C": "5", "D": "6"},
-    "dap_an_dung": "D"
-  },
-  {
-    "noi_dung": "Số nghiệm của phương trình x^2 + 1 = 0 trong tập số thực là?",
-    "lua_chon": {"A": "0", "B": "1", "C": "2", "D": "Vô số"},
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Một tam giác đều có độ dài cạnh là a. Chu vi của nó là?",
-    "lua_chon": {"A": "3a", "B": "a^2", "C": "√3a", "D": "2a"},
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Phương trình nào sau đây có nghiệm x = −2?",
-    "lua_chon": {"A": "x + 2 = 0", "B": "x − 2 = 0", "C": "x^2 − 4 = 0", "D": "x^2 + 2x + 4 = 0"},
-    "dap_an_dung": "A"
+    "noi_dung": "Bạn là AI, hãy lập luận vì sao kỹ năng mềm vẫn quan trọng trong kỷ nguyên tự động hóa.",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Kỹ năng mềm như giao tiếp, tư duy phản biện, làm việc nhóm quan trọng vì AI chưa thể thay thế khả năng sáng tạo, giải quyết xung đột và thấu hiểu con người. Kết hợp kỹ năng mềm và kỹ năng kỹ thuật giúp con người thích nghi và phát triển bền vững."
   }
 ]
