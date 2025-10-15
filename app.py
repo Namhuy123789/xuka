@@ -1106,7 +1106,7 @@ def save_result():
                 lines.append(f"  Đáp án đúng: {dap_an_dung}")
                 lines.append(f"  {mark} ({point:.2f} điểm)")
 
-            # --- Đúng/Sai (True/False) ---
+            # --- Đúng/Sai ---
             elif kieu == "dung_sai":
                 da_chon = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
                 dap_an_dung = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
@@ -1173,7 +1173,6 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status":"error","msg":"Lỗi server nội bộ"}), 500
-
 
 @app.route('/static/sw.js')
 def serve_service_worker():
