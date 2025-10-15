@@ -1108,39 +1108,36 @@ def save_result():
             # --- Đúng/Sai nhiều lựa chọn ---
             elif kieu == "dung_sai_nhieu_lua_chon":
                 da_chon = a.get("da_chon", {})
-                if isinstance(da_chon, list):
-                    da_chon_dict = {}
-                    for key in ["a","b","c","d"]:
-                        da_chon_dict[key] = "Đúng" if key in da_chon else "Sai"
-                    da_chon = da_chon_dict
-                elif isinstance(da_chon, str):
+                if isinstance(da_chon, str):
                     try:
                         da_chon = json.loads(da_chon)
-                    except:
+                    except Exception:
                         da_chon = {}
-
                 dap_an_dung = cau_goc.get("dap_an_dung", {})
                 if isinstance(dap_an_dung, str):
                     try:
                         dap_an_dung = json.loads(dap_an_dung)
-                    except:
+                    except Exception:
                         dap_an_dung = {}
 
-                result_lines = []
-                correct_sub = 0
-                total_sub = len(dap_an_dung) or 1
-
+                # Đảm bảo tất cả key a,b,c,d đều có giá trị
                 for key in ["a","b","c","d"]:
-                    hs_ans = (da_chon.get(key, "") or "").strip()
-                    true_ans = (dap_an_dung.get(key, "") or "").strip()
-                    if not hs_ans:
-                        hs_ans = "(chưa chọn)"
-                    mark = "✅" if hs_ans.lower() == true_ans.lower() and true_ans else "❌"
+                    if key not in da_chon:
+                        da_chon[key] = "(chưa chọn)"
+                    if key not in dap_an_dung:
+                        dap_an_dung[key] = "(chưa có đáp án)"
+
+                correct_sub = 0
+                result_lines = []
+                for key in ["a","b","c","d"]:
+                    hs_ans = str(da_chon[key]).strip()
+                    true_ans = str(dap_an_dung[key]).strip()
+                    mark = "✅" if hs_ans == true_ans and true_ans not in ["", "(chưa có đáp án)"] else "❌"
                     if mark == "✅":
                         correct_sub += 1
                     result_lines.append(f"{key}: {hs_ans} {mark}")
 
-                sub_score = round(correct_sub / total_sub, 2)
+                sub_score = correct_sub * 0.25
                 dung_sai_score += sub_score
 
                 lines.append("  Bạn chọn: " + ", ".join(result_lines))
@@ -1153,6 +1150,7 @@ def save_result():
             else:
                 da_chon_full = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
                 dap_an_full = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
+                # So sánh ký tự đầu tiên
                 da_chon_key = da_chon_full[0].upper() if da_chon_full[0].isalpha() else ""
                 dap_an_key = dap_an_full[0].upper() if dap_an_full[0].isalpha() else ""
                 mark = "✅" if da_chon_key == dap_an_key else "❌"
