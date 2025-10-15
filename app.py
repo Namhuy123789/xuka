@@ -1057,7 +1057,6 @@ def save_result():
     tong_diem_1lua = 0.0
     tong_diem_ds = 0.0
     tong_diem_tuluan = 0.0
-
     ket_qua_chi_tiet = []
 
     for cau in bai_thi:
@@ -1071,7 +1070,7 @@ def save_result():
         if kieu == "1_lua_chon":
             lua_chon = da_chon.get("chon")
             dap = dap_an_dung.get("dap")
-            diem = diem_cau if str(lua_chon).strip().lower() == str(dap).strip().lower() else 0.0
+            diem = diem_cau if lua_chon == dap else 0.0
             ket_qua_chi_tiet.append({
                 "noi_dung": noi_dung,
                 "ban_chon": lua_chon or "(chưa chọn)",
@@ -1089,7 +1088,7 @@ def save_result():
                 chon = da_chon.get(k)
                 dung = dap_an_dung[k]
                 if chon is not None:
-                    if str(chon).strip().lower() == str(dung).strip().lower():
+                    if chon.lower() == dung.lower():
                         diem_cau_hien_tai += diem_phan
                         chi_tiet_chon[k] = f"{chon} ✅"
                     else:
@@ -1117,25 +1116,25 @@ def save_result():
     tong_diem = round(tong_diem_1lua + tong_diem_ds + tong_diem_tuluan, 2)
 
     # Tạo nội dung TXT kiểu "KẾT QUẢ BÀI THI"
-    lines = []
-    lines.append(f"KẾT QUẢ BÀI THI")
-    lines.append(f"Họ tên: {ho_ten}")
-    lines.append(f"SBD: {sbd}")
-    lines.append(f"Ngày sinh: {ngay_sinh}")
-    lines.append(f"Mã đề: {ma_de}")
-    lines.append(f"Điểm Trắc nghiệm 1 lựa chọn: {round(tong_diem_1lua,2)}")
-    lines.append(f"Điểm Đúng/Sai: {round(tong_diem_ds,2)}")
-    lines.append(f"Điểm Tự luận: {round(tong_diem_tuluan,2)}")
-    lines.append(f"Tổng điểm: {tong_diem}/10")
-    lines.append(f"Nộp lúc: {nop_luc}\n")
+    lines = [
+        "KẾT QUẢ BÀI THI",
+        f"Họ tên: {ho_ten}",
+        f"SBD: {sbd}",
+        f"Ngày sinh: {ngay_sinh}",
+        f"Mã đề: {ma_de}",
+        f"Điểm Trắc nghiệm 1 lựa chọn: {round(tong_diem_1lua,2)}",
+        f"Điểm Đúng/Sai: {round(tong_diem_ds,2)}",
+        f"Điểm Tự luận: {round(tong_diem_tuluan,2)}",
+        f"Tổng điểm: {tong_diem}/10",
+        f"Nộp lúc: {nop_luc}\n"
+    ]
 
     for idx, cau in enumerate(ket_qua_chi_tiet, 1):
         lines.append(f"Câu {idx}: {cau['noi_dung']}")
         if "ban_chon" in cau:
             if isinstance(cau["ban_chon"], dict):
-                # Đúng/Sai nhiều lựa chọn
-                ban_chon_str = ", ".join([f"{k}: {v}" for k, v in cau["ban_chon"].items()])
-                dap_an_str = ", ".join([f"{k}: {v}" for k, v in cau["dap_an_dung"].items()])
+                ban_chon_str = ", ".join([f"{k}: {v}" for k,v in cau["ban_chon"].items()])
+                dap_an_str = ", ".join([f"{k}: {v}" for k,v in cau["dap_an_dung"].items()])
                 lines.append(f"  Bạn chọn: {ban_chon_str}")
                 lines.append(f"  Đáp án đúng: {dap_an_str}")
             else:
@@ -1147,8 +1146,10 @@ def save_result():
             lines.append(f"  Điểm: {cau['diem']} {'✅' if cau['diem']>0 else '❌'}")
         lines.append("")
 
-    # Lưu TXT
-    file_txt = f"results_{sbd}.txt"
+    # Lưu TXT vào /var/data/results
+    folder = "/var/data/results"
+    os.makedirs(folder, exist_ok=True)
+    file_txt = os.path.join(folder, f"results_{sbd}.txt")
     with open(file_txt, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
 
