@@ -1041,10 +1041,8 @@ def grading(answers, question_data):
 
 # Route lưu kết quả
 
-from flask import Flask, request, jsonify
-import json, datetime
 
-app = Flask(__name__)
+
 
 @app.route("/save_result", methods=["POST"])
 def save_result():
@@ -1070,13 +1068,13 @@ def save_result():
         kieu = cau.get("kieu_cau_hoi")
         da_chon = cau.get("da_chon", {})
         dap_an_dung = cau.get("dap_an_dung", {})
+        diem_cau = cau.get("diem", 0.0)
         diem = 0.0
 
         if kieu == "1_lua_chon":
             lua_chon = da_chon.get("chon")
             dap = dap_an_dung.get("dap")
-            if lua_chon == dap:
-                diem = cau.get("diem", 0.0)
+            diem = diem_cau if lua_chon == dap else 0.0
             ket_qua_chi_tiet.append({
                 "noi_dung": noi_dung,
                 "ban_chon": lua_chon or "(chưa chọn)",
@@ -1086,7 +1084,6 @@ def save_result():
             tong_diem_1lua += diem
 
         elif kieu == "dung_sai_nhieu_lua_chon":
-            diem_cau = cau.get("diem", 0.0)
             so_luong = len(dap_an_dung)
             diem_phan = diem_cau / so_luong if so_luong else 0.0
             diem_cau_hien_tai = 0.0
@@ -1111,8 +1108,8 @@ def save_result():
             tong_diem_ds += diem_cau_hien_tai
 
         elif kieu == "tu_luan":
-            diem = cau.get("diem", 0.0)
             tra_loi = da_chon.get("tra_loi", "(chưa trả lời)")
+            diem = diem_cau
             ket_qua_chi_tiet.append({
                 "noi_dung": noi_dung,
                 "tra_loi": tra_loi,
@@ -1122,27 +1119,43 @@ def save_result():
 
     tong_diem = round(tong_diem_1lua + tong_diem_ds + tong_diem_tuluan, 2)
 
-    ket_qua = {
-        "hoc_sinh": {
-            "ho_ten": ho_ten,
-            "sbd": sbd,
-            "ngay_sinh": ngay_sinh,
-            "ma_de": ma_de
-        },
-        "tong_diem_1lua": round(tong_diem_1lua, 2),
-        "tong_diem_ds": round(tong_diem_ds, 2),
-        "tong_diem_tuluan": round(tong_diem_tuluan, 2),
-        "tong_diem": tong_diem,
-        "nop_luc": nop_luc,
-        "chi_tiet": ket_qua_chi_tiet
-    }
+    # Tạo nội dung TXT kiểu "KẾT QUẢ BÀI THI"
+    lines = []
+    lines.append(f"KẾT QUẢ BÀI THI")
+    lines.append(f"Họ tên: {ho_ten}")
+    lines.append(f"SBD: {sbd}")
+    lines.append(f"Ngày sinh: {ngay_sinh}")
+    lines.append(f"Mã đề: {ma_de}")
+    lines.append(f"Điểm Trắc nghiệm 1 lựa chọn: {round(tong_diem_1lua,2)}")
+    lines.append(f"Điểm Đúng/Sai: {round(tong_diem_ds,2)}")
+    lines.append(f"Điểm Tự luận: {round(tong_diem_tuluan,2)}")
+    lines.append(f"Tổng điểm: {tong_diem}/10")
+    lines.append(f"Nộp lúc: {nop_luc}\n")
 
-    # Lưu ra file JSON hoặc TXT
-    file_name = f"results_{sbd}.json"
-    with open(file_name, "w", encoding="utf-8") as f:
-        json.dump(ket_qua, f, ensure_ascii=False, indent=2)
+    for idx, cau in enumerate(ket_qua_chi_tiet, 1):
+        lines.append(f"Câu {idx}: {cau['noi_dung']}")
+        if "ban_chon" in cau:
+            if isinstance(cau["ban_chon"], dict):
+                # Đúng/Sai nhiều lựa chọn
+                ban_chon_str = ", ".join([f"{k}: {v}" for k,v in cau["ban_chon"].items()])
+                dap_an_str = ", ".join([f"{k}: {v}" for k,v in cau["dap_an_dung"].items()])
+                lines.append(f"  Bạn chọn: {ban_chon_str}")
+                lines.append(f"  Đáp án đúng: {dap_an_str}")
+            else:
+                lines.append(f"  Bạn chọn: {cau['ban_chon']}")
+                lines.append(f"  Đáp án đúng: {cau['dap_an_dung']}")
+            lines.append(f"  {'✅' if cau['diem']>0 else '❌'} ({cau['diem']} điểm)")
+        else:
+            lines.append(f"  Bạn trả lời: {cau.get('tra_loi', '(chưa trả lời)')}")
+            lines.append(f"  Điểm: {cau['diem']} {'✅' if cau['diem']>0 else '❌'}")
+        lines.append("")
 
-    return jsonify({"status": "ok", "tong_diem": tong_diem})
+    # Lưu TXT
+    file_txt = f"results_{sbd}.txt"
+    with open(file_txt, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+
+    return jsonify({"status": "ok", "tong_diem": tong_diem, "file": file_txt})
 
 @app.route('/static/sw.js')
 def serve_service_worker():
