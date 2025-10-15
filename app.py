@@ -1111,36 +1111,32 @@ def save_result():
                 if isinstance(da_chon, str):
                     try:
                         da_chon = json.loads(da_chon)
-                    except Exception:
+                    except:
                         da_chon = {}
+
                 dap_an_dung = cau_goc.get("dap_an_dung", {})
                 if isinstance(dap_an_dung, str):
                     try:
                         dap_an_dung = json.loads(dap_an_dung)
-                    except Exception:
+                    except:
                         dap_an_dung = {}
 
-                # Đảm bảo tất cả key a,b,c,d đều có giá trị
-                for key in ["a","b","c","d"]:
-                    if key not in da_chon:
-                        da_chon[key] = "(chưa chọn)"
-                    if key not in dap_an_dung:
-                        dap_an_dung[key] = "(chưa có đáp án)"
-
+                result_line = []
                 correct_sub = 0
-                result_lines = []
                 for key in ["a","b","c","d"]:
-                    hs_ans = str(da_chon[key]).strip()
-                    true_ans = str(dap_an_dung[key]).strip()
+                    hs_ans_raw = da_chon.get(key, "")
+                    hs_ans = str(hs_ans_raw).strip().lower()
+                    true_ans_raw = dap_an_dung.get(key, "")
+                    true_ans = str(true_ans_raw).strip().lower()
                     mark = "✅" if hs_ans == true_ans and true_ans not in ["", "(chưa có đáp án)"] else "❌"
                     if mark == "✅":
                         correct_sub += 1
-                    result_lines.append(f"{key}: {hs_ans} {mark}")
+                    result_line.append(f"{key}: {hs_ans_raw or '(chưa chọn)'} {mark}")
 
                 sub_score = correct_sub * 0.25
                 dung_sai_score += sub_score
 
-                lines.append("  Bạn chọn: " + ", ".join(result_lines))
+                lines.append("  Bạn chọn: " + ", ".join(result_line))
                 lines.append("  Đáp án đúng:")
                 for key, val in dap_an_dung.items():
                     lines.append(f"    {key}: {val}")
