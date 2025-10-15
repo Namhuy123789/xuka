@@ -1040,6 +1040,7 @@ def grading(answers, question_data):
 
 
 # Route lưu kết quả
+
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
@@ -1113,7 +1114,6 @@ def save_result():
                         da_chon = json.loads(da_chon)
                     except:
                         da_chon = {}
-
                 dap_an_dung = cau_goc.get("dap_an_dung", {})
                 if isinstance(dap_an_dung, str):
                     try:
@@ -1123,30 +1123,28 @@ def save_result():
 
                 result_line = []
                 correct_sub = 0
-                for key in ["a","b","c","d"]:
-                    hs_ans_raw = da_chon.get(key, "")
-                    hs_ans = str(hs_ans_raw).strip().lower()
-                    true_ans_raw = dap_an_dung.get(key, "")
-                    true_ans = str(true_ans_raw).strip().lower()
-                    mark = "✅" if hs_ans == true_ans and true_ans not in ["", "(chưa có đáp án)"] else "❌"
+                keys = sorted(dap_an_dung.keys())
+                for key in keys:
+                    hs_ans = (da_chon.get(key, "(chưa chọn)") or "(chưa chọn)").strip()
+                    true_ans = (dap_an_dung.get(key, "") or "").strip()
+                    mark = "✅" if hs_ans == true_ans and true_ans else "❌"
                     if mark == "✅":
                         correct_sub += 1
-                    result_line.append(f"{key}: {hs_ans_raw or '(chưa chọn)'} {mark}")
+                    result_line.append(f"{key}: {hs_ans} {mark}")
 
                 sub_score = correct_sub * 0.25
                 dung_sai_score += sub_score
 
                 lines.append("  Bạn chọn: " + ", ".join(result_line))
                 lines.append("  Đáp án đúng:")
-                for key, val in dap_an_dung.items():
-                    lines.append(f"    {key}: {val}")
+                for key in keys:
+                    lines.append(f"    {key}: {dap_an_dung[key]}")
                 lines.append(f"  {'✅' if sub_score>0 else '❌'} ({sub_score:.2f} điểm)")
 
             # --- Trắc nghiệm 1 lựa chọn ---
             else:
                 da_chon_full = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
                 dap_an_full = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
-                # So sánh ký tự đầu tiên
                 da_chon_key = da_chon_full[0].upper() if da_chon_full[0].isalpha() else ""
                 dap_an_key = dap_an_full[0].upper() if dap_an_full[0].isalpha() else ""
                 mark = "✅" if da_chon_key == dap_an_key else "❌"
