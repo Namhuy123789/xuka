@@ -1099,11 +1099,21 @@ def save_result():
             lines.append(f"Câu {cau}: {noi_dung}")
 
             if kieu == "tu_luan":
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
-                goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  Bạn chọn: {tra_loi}")
-                if goi_y:
-                    lines.append(f"  Gợi ý đáp án: {goi_y}")
+				# Lấy câu trả lời học sinh, đảm bảo luôn là string
+				tra_loi = a.get("tra_loi_hoc_sinh")  # có thể None
+				if tra_loi is None or str(tra_loi).strip() == "":
+					tra_loi = "[Chưa trả lời]"
+				else:
+					tra_loi = str(tra_loi).strip()
+
+				goi_y = a.get("goi_y_dap_an")
+				if goi_y is None:
+					goi_y = ""
+
+				lines.append(f"  Bạn trả lời: {tra_loi}")
+				if goi_y:
+					lines.append(f"  Gợi ý đáp án: {goi_y}")
+
             else:  # trac_nghiem hoặc khác
                 da_chon = a.get("da_chon", "(chưa chọn)")
                 dap_an_dung = cau_goc.get("dap_an_dung", "")
