@@ -1056,7 +1056,7 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Đọc đề gốc
+        # Đọc file đề gốc (để lấy đáp án đúng/gợi ý)
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
@@ -1099,36 +1099,49 @@ def save_result():
 
             lines.append(f"Câu {cau}: {noi_dung}")
 
-            # --- Câu tự luận ---
+            # --- CÂU TỰ LUẬN ---
             if "tu_luan" in kieu:
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
-                goi_y = a.get("goi_y_dap_an", "").strip()
+                tra_loi_raw = a.get("tra_loi_hoc_sinh")
+                # Đảm bảo hiển thị đúng định dạng
+                if tra_loi_raw is None or str(tra_loi_raw).strip() == "":
+                    tra_loi = "[Chưa trả lời]"
+                else:
+                    tra_loi = str(tra_loi_raw).strip()
+                goi_y = (a.get("goi_y_dap_an") or "").strip()
+
                 lines.append(f"  Bài làm: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
 
-            # --- Câu trắc nghiệm ---
+            # --- CÂU TRẮC NGHIỆM ---
             elif "trac_nghiem" in kieu:
-                da_chon = a.get("da_chon", "(chưa chọn)")
-                if isinstance(da_chon, list):
+                da_chon = a.get("da_chon")
+                if not da_chon:
+                    da_chon = "[Chưa trả lời]"
+                elif isinstance(da_chon, list):
                     da_chon = ", ".join(da_chon)
                 dap_an_dung = cau_goc.get("dap_an_dung", "")
                 lines.append(f"  Bạn chọn: {da_chon}")
                 if dap_an_dung:
                     lines.append(f"  Đáp án đúng: {dap_an_dung}")
 
-            # --- Câu đúng/sai nhiều lựa chọn ---
+            # --- CÂU ĐÚNG/SAI NHIỀU LỰA CHỌN ---
             elif "dung_sai" in kieu:
                 lua_chon = a.get("lua_chon", {})
                 dap_an_dung = a.get("dap_an_dung", {})
-                lines.append("  Câu dạng Đúng/Sai nhiều lựa chọn:")
-                for key, noi_dung_nho in lua_chon.items():
-                    dap_hs = dap_an_dung.get(key, "(chưa chọn)")
-                    lines.append(f"    - {key}. {noi_dung_nho}: {dap_hs}")
+                if isinstance(lua_chon, dict) and lua_chon:
+                    lines.append(f"  Bạn chọn:")
+                    for key, val in lua_chon.items():
+                        val_text = str(val).strip() or "[Chưa trả lời]"
+                        lines.append(f"    - {key}: {val_text}")
+                if isinstance(dap_an_dung, dict) and dap_an_dung:
+                    lines.append(f"  Đáp án đúng:")
+                    for key, val in dap_an_dung.items():
+                        lines.append(f"    - {key}: {val}")
 
-            # --- Dạng khác (phòng trường hợp dữ liệu không khớp) ---
+            # --- DẠNG KHÁC ---
             else:
-                tra_loi = a.get("tra_loi_hoc_sinh", a.get("da_chon", "(chưa trả lời)"))
+                tra_loi = a.get("tra_loi_hoc_sinh") or a.get("da_chon") or "[Chưa trả lời]"
                 lines.append(f"  Bạn trả lời: {tra_loi}")
 
             # --- Điểm từng câu nếu có ---
