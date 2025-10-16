@@ -1050,16 +1050,29 @@ def save_result():
         sbd = str(data.get("sbd", "N/A")).strip()
         ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
         made = str(data.get("made", "000")).strip()
-        diem_tong = str(data.get("diem", "0.00")).strip()
+        diem = str(data.get("diem", "0.00")).strip()
         answers = data.get("answers", [])
 
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
+        # Đọc file đề gốc (nếu có)
+        filename_de = f"questions{made}.json"
+        filepath_de = QUESTIONS_DIR / filename_de
+        question_data = []
+        if filepath_de.exists():
+            try:
+                with open(filepath_de, "r", encoding="utf-8") as f:
+                    question_data = json.load(f)
+            except Exception as e:
+                app.logger.error(f"Lỗi đọc file đề: {e}")
+
         timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
+
+        app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
 
         lines = [
             "KẾT QUẢ BÀI THI",
@@ -1067,81 +1080,70 @@ def save_result():
             f"SBD: {sbd}",
             f"Ngày sinh: {ngaysinh}",
             f"Mã đề: {made}",
-            f"Điểm tổng: {diem_tong}/10",
+            f"Điểm: {diem}/10",
             f"Nộp lúc: {timestamp}",
             ""
         ]
 
-        for i, a in enumerate(answers, start=1):
-            noi_dung = a.get("noi_dung") or a.get("question") or "Không có nội dung"
-            kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower().strip()
-            diem_cau = 0
+        for a in answers:
+            cau = a.get("cau", "N/A")
+            noi_dung = a.get("noi_dung", "Không có nội dung")
+            kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower()
+            diem_cau = a.get("diem_cau", "")
 
-            lines.append(f"Câu {i}: {noi_dung}")
+            try:
+                idx = int(cau) - 1
+                cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
+            except (ValueError, TypeError):
+                cau_goc = {}
 
-            # 🧠 1. Câu tự luận
+            lines.append(f"Câu {cau}: {noi_dung}")
+
+            # 🧠 Câu tự luận
             if kieu == "tu_luan":
                 tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
                 goi_y = a.get("goi_y_dap_an", "").strip()
-                diem_cau = float(a.get("diem_cau_hoi", 0))
                 lines.append(f"  Bài làm: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
-                lines.append(f"  📝 Điểm: {diem_cau:.2f}")
 
-            # 🧠 2. Câu đúng/sai nhiều lựa chọn
-            elif kieu == "dung_sai_nhieu_lua_chon":
-                lua_chon = a.get("lua_chon", {})
-                dap_an_dung = a.get("dap_an_dung", {})
-                tra_loi_hs = a.get("tra_loi_hoc_sinh", {})  # dạng {"a":"Đúng","b":"Sai",...}
-                diem_toi_da = float(a.get("diem_cau_hoi", 1))
-
-                dung_dem = 0
-                tong = len(dap_an_dung)
-                lines.append("  Dạng: Đúng/Sai nhiều lựa chọn:")
-
-                for key, text in lua_chon.items():
-                    dap_an = dap_an_dung.get(key, "")
-                    hs_chon = tra_loi_hs.get(key, "[Chưa chọn]")
-                    if dap_an == hs_chon:
-                        ket_qua = "✅"
-                        dung_dem += 1
-                    else:
-                        ket_qua = "❌"
-                    lines.append(f"   - {key}. {text}")
-                    lines.append(f"      → Bạn chọn: {hs_chon} | Đáp án: {dap_an} {ket_qua}")
-
-                diem_cau = round((dung_dem / max(tong, 1)) * diem_toi_da, 2)
-                lines.append(f"  💯 Điểm: {diem_cau:.2f}")
-
-            # 🧠 3. Câu trắc nghiệm
-            else:
-                da_chon = a.get("da_chon") or "[Chưa chọn]"
-                dap_an_dung = a.get("dap_an_dung") or ""
-                lua_chon = a.get("lua_chon", {})
-                diem_toi_da = float(a.get("diem_cau_hoi", 1))
-
-                if da_chon == dap_an_dung:
-                    diem_cau = diem_toi_da
-                    ket_qua = "✅"
-                else:
-                    diem_cau = 0
-                    ket_qua = "❌"
-
-                da_text = lua_chon.get(da_chon, "")
-                dung_text = lua_chon.get(dap_an_dung, "")
-                if da_text:
-                    da_chon = f"{da_chon}. {da_text}"
-                if dung_text:
-                    dap_an_dung = f"{dap_an_dung}. {dung_text}"
-
+            # 🧩 Câu trắc nghiệm (một hoặc nhiều lựa chọn)
+            elif kieu in ["trac_nghiem", "chon_nhieu", "multiple_choice"]:
+                da_chon = a.get("da_chon", "(chưa chọn)")
+                if isinstance(da_chon, list):
+                    da_chon = ", ".join(da_chon)
+                dap_an_dung = cau_goc.get("dap_an_dung", "")
                 lines.append(f"  Bạn chọn: {da_chon}")
-                lines.append(f"  Đáp án đúng: {dap_an_dung}")
-                lines.append(f"  {ket_qua} Điểm: {diem_cau:.2f}")
+                if dap_an_dung:
+                    lines.append(f"  Đáp án đúng: {dap_an_dung}")
+
+            # ⚖️ Câu đúng/sai (một hoặc nhiều mệnh đề)
+            elif "dung_sai" in kieu:
+                ds_hoc_sinh = a.get("dap_an_hoc_sinh", [])
+                ds_dap_an = a.get("dap_an_dung", [])
+                lines.append("  Câu dạng Đúng/Sai nhiều lựa chọn:")
+                for i, cau_con in enumerate(cau_goc.get("noi_dung_con", [])):
+                    hs = ds_hoc_sinh[i] if i < len(ds_hoc_sinh) else "(chưa chọn)"
+                    da = ds_dap_an[i] if i < len(ds_dap_an) else ""
+                    lines.append(f"    - {cau_con}: Bạn chọn {hs} | Đáp án đúng: {da}")
+
+            else:
+                # fallback nếu có kiểu khác
+                lines.append("  [Không xác định loại câu hỏi]")
+
+            # ➕ hiển thị điểm câu (nếu có)
+            if diem_cau not in [None, "", 0]:
+                lines.append(f"  ➤ Điểm câu: {diem_cau}")
 
             lines.append("")
 
-        filepath.write_text("\n".join(lines), encoding="utf-8")
+        # Ghi file kết quả
+        try:
+            filepath.write_text("\n".join(lines), encoding="utf-8")
+            app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
+        except Exception as e:
+            app.logger.error(f"Lỗi ghi file: {e}")
+            return jsonify({"status": "error", "msg": f"Lỗi ghi file: {str(e)}"}), 500
 
         return jsonify({
             "status": "saved",
