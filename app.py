@@ -1049,7 +1049,6 @@ def save_result():
         sbd = str(data.get("sbd", "N/A")).strip()
         ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
         made = str(data.get("made", "000")).strip()
-        diem = str(data.get("diem", "0.00")).strip()
         answers = data.get("answers", [])
 
         if not answers:
@@ -1066,12 +1065,17 @@ def save_result():
             except Exception as e:
                 app.logger.error(f"Lỗi đọc file đề: {e}")
 
+        # Tạo file kết quả
         timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
-
         app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
+
+        # Khởi tạo điểm
+        trac_nghiem_score = 0.0
+        dung_sai_score = 0.0
+        tu_luan_score = 0.0
 
         lines = [
             "KẾT QUẢ BÀI THI",
@@ -1079,15 +1083,14 @@ def save_result():
             f"SBD: {sbd}",
             f"Ngày sinh: {ngaysinh}",
             f"Mã đề: {made}",
-            f"Điểm: {diem}/10",
-            f"Nộp lúc: {timestamp}",
-            ""
+            "",
         ]
 
+        # Duyệt từng câu trả lời
         for a in answers:
             cau = a.get("cau", "N/A")
             noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower()
+            kieu = a.get("kieu", "trac_nghiem").lower()
 
             try:
                 idx = int(cau) - 1
@@ -1099,15 +1102,11 @@ def save_result():
 
             # --- Tự luận ---
             if kieu == "tu_luan":
-                # Lấy câu trả lời học sinh từ tra_loi_hoc_sinh hoặc da_chon
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip()
-                if not tra_loi:
-                    tra_loi = str(a.get("da_chon", "")).strip()
-                if not tra_loi:
-                    tra_loi = "[Chưa trả lời]"
-
+                tra_loi = str(a.get("da_chon", "")).strip() or "(chưa trả lời)"
                 goi_y = str(a.get("goi_y_dap_an", "")).strip()
                 diem_cau = float(a.get("diem", 0.0))
+                tu_luan_score += diem_cau
+
                 lines.append(f"  Bạn trả lời: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
@@ -1117,8 +1116,6 @@ def save_result():
             elif kieu == "dung_sai_nhieu_lua_chon":
                 da_chon = a.get("da_chon", {})
                 da_chon_obj = {}
-                dap_an_obj = {}
-
                 if isinstance(da_chon, str):
                     try:
                         da_chon_obj = json.loads(da_chon) if da_chon.startswith("{") else {}
@@ -1128,6 +1125,7 @@ def save_result():
                     da_chon_obj = da_chon
 
                 dap_an_goc = cau_goc.get("dap_an_dung", {})
+                dap_an_obj = {}
                 if isinstance(dap_an_goc, str):
                     try:
                         dap_an_obj = json.loads(dap_an_goc) if dap_an_goc.startswith("{") else {}
@@ -1148,7 +1146,9 @@ def save_result():
                         correct_sub += 1
                     result_line.append(f"{key}: {hs_ans or '(chưa chọn)'} {mark}")
 
-                sub_score = correct_sub * 0.25  # trọng số mặc định
+                sub_score = correct_sub * 0.25
+                dung_sai_score += sub_score
+
                 lines.append("  Bạn chọn: " + ", ".join(result_line))
                 lines.append("  Đáp án đúng:")
                 for key, val in dap_an_obj.items():
@@ -1163,13 +1163,23 @@ def save_result():
                 dap_an_key = dap_an_full[0].upper() if dap_an_full[0].isalpha() else ""
                 mark = "✅" if da_chon_key==dap_an_key else "❌"
                 score_cau = 0.25 if mark=="✅" else 0.0
+                trac_nghiem_score += score_cau
+
                 lines.append(f"  Bạn chọn: {da_chon_full} {mark}")
                 lines.append(f"  Đáp án đúng: {dap_an_full}")
                 lines.append(f"  {mark} ({score_cau:.2f} điểm)")
 
             lines.append("")
 
-        # Ghi file
+        # Tổng điểm
+        total_score = trac_nghiem_score + dung_sai_score + tu_luan_score
+        lines.insert(6, f"{'✅' if trac_nghiem_score>0 else '❌'} Điểm Trắc nghiệm 1 lựa chọn: {trac_nghiem_score:.2f}")
+        lines.insert(7, f"{'✅' if dung_sai_score>0 else '❌'} Điểm Đúng/Sai: {dung_sai_score:.2f}")
+        lines.insert(8, f"{'✅' if tu_luan_score>0 else '❌'} Điểm Tự luận: {tu_luan_score:.2f}")
+        lines.insert(9, f"{'✅' if total_score>0 else '❌'} Tổng điểm: {total_score:.2f}/10")
+        lines.insert(10, f"Nộp lúc: {timestamp}")
+
+        # Lưu file
         try:
             filepath.write_text("\n".join(lines), encoding="utf-8")
             app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
