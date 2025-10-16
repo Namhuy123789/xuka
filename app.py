@@ -1056,7 +1056,6 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Load đề gốc nếu có
         filepath_de = QUESTIONS_DIR / f"questions{made}.json"
         question_data = []
         if filepath_de.exists():
@@ -1082,37 +1081,39 @@ def save_result():
             ""
         ]
 
-        for a in answers:
-            cau = a.get("cau", "N/A")
+        for i, a in enumerate(answers, start=1):
             noi_dung = a.get("noi_dung") or a.get("question") or "Không có nội dung"
-            kieu = str(a.get("kieu", "trac_nghiem")).lower().strip()
+            kieu = str(a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower().strip()
 
-            try:
-                idx = int(cau) - 1
-                cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except Exception:
-                cau_goc = {}
+            lines.append(f"Câu {i}: {noi_dung}")
 
-            lines.append(f"Câu {cau}: {noi_dung}")
-
+            # ============= TỰ LUẬN =============
             if kieu == "tu_luan":
-                tra_loi = a.get("tra_loi_hoc_sinh") or a.get("tra_loi") or a.get("answer") or ""
-                tra_loi = tra_loi.strip() or "[Chưa trả lời]"
-                goi_y = a.get("goi_y_dap_an") or a.get("suggested_answer") or ""
+                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
+                goi_y = a.get("goi_y_dap_an", "").strip()
                 lines.append(f"  Bài làm: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
 
-            else:  # Trắc nghiệm
+            # ============= ĐÚNG/SAI NHIỀU LỰA CHỌN =============
+            elif kieu == "dung_sai_nhieu_lua_chon":
+                lua_chon = a.get("lua_chon", {})
+                dap_an_dung = a.get("dap_an_dung", {})
+                lines.append("  Câu dạng Đúng/Sai nhiều lựa chọn:")
+                for key, val in (lua_chon or {}).items():
+                    dung_sai = dap_an_dung.get(key, "")
+                    lines.append(f"   - {key}. {val} → {dung_sai}")
+
+            # ============= TRẮC NGHIỆM =============
+            else:
                 da_chon = a.get("da_chon", "(chưa chọn)")
-                dap_an_dung = cau_goc.get("dap_an_dung", "")
+                dap_an_dung = a.get("dap_an_dung") or ""
                 lines.append(f"  Bạn chọn: {da_chon}")
                 if dap_an_dung:
                     lines.append(f"  Đáp án đúng: {dap_an_dung}")
 
             lines.append("")
 
-        # Ghi file kết quả
         filepath.write_text("\n".join(lines), encoding="utf-8")
         app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
 
