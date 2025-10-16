@@ -1042,6 +1042,7 @@ def grading(answers, question_data):
 # Route lưu kết quả
 
 
+
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
@@ -1217,7 +1218,6 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status":"error","msg":"Lỗi server nội bộ"}),500
-
 
 
 
