@@ -1074,13 +1074,16 @@ def save_result():
 
         app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
 
+        trac_nghiem_score = 0.0
+        dung_sai_score = 0.0
+        tu_luan_score = 0.0
+
         lines = [
             "KẾT QUẢ BÀI THI",
             f"Họ tên: {hoten}",
             f"SBD: {sbd}",
             f"Ngày sinh: {ngaysinh}",
             f"Mã đề: {made}",
-            f"Điểm: {diem}/10",
             f"Nộp lúc: {timestamp}",
             ""
         ]
@@ -1098,27 +1101,80 @@ def save_result():
 
             lines.append(f"Câu {cau}: {noi_dung}")
 
+            # --- Tự luận ---
             if kieu == "tu_luan":
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
-                goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  Bạn chọn: {tra_loi}")
+                tra_loi = str(a.get("da_chon", "")).strip() or "(chưa trả lời)"
+                goi_y = str(a.get("goi_y_dap_an", "")).strip()
+                diem_cau = float(a.get("diem", 0.0))
+                tu_luan_score += diem_cau
+                lines.append(f"  Bạn trả lời: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
-            else:  # trac_nghiem hoặc khác
-                da_chon = a.get("da_chon", "(chưa chọn)")
-                dap_an_dung = cau_goc.get("dap_an_dung", "")
-                lines.append(f"  Bạn chọn: {da_chon}")
-                if dap_an_dung:
-                    lines.append(f"  Đáp án đúng: {dap_an_dung}")
+                lines.append(f"  Điểm: {diem_cau:.2f} {'✅' if diem_cau>0 else '❌'}")
+
+            # --- Đúng/Sai nhiều lựa chọn ---
+            elif kieu == "dung_sai_nhieu_lua_chon":
+                da_chon_obj = a.get("da_chon", {})
+                if isinstance(da_chon_obj, str):
+                    try:
+                        da_chon_obj = json.loads(da_chon_obj)
+                    except:
+                        da_chon_obj = {}
+                dap_an_obj = cau_goc.get("dap_an_dung", {})
+                if isinstance(dap_an_obj, str):
+                    try:
+                        dap_an_obj = json.loads(dap_an_obj)
+                    except:
+                        dap_an_obj = {}
+
+                result_line = []
+                correct_sub = 0
+                for key in ["a","b","c","d"]:
+                    hs_ans = (da_chon_obj.get(key,"") or "").strip()
+                    true_ans = (dap_an_obj.get(key,"") or "").strip()
+                    hs_norm = "Đúng" if hs_ans.upper() in ["A","ĐÚNG","DUNG"] else ("Sai" if hs_ans.upper() in ["B","SAI"] else hs_ans)
+                    true_norm = "Đúng" if true_ans.upper() in ["A","ĐÚNG","DUNG"] else ("Sai" if true_ans.upper() in ["B","SAI"] else true_ans)
+                    mark = "✅" if hs_norm==true_norm and true_ans else "❌"
+                    if mark=="✅":
+                        correct_sub += 1
+                    result_line.append(f"{key}: {hs_ans or '(chưa chọn)'} {mark}")
+
+                sub_score = correct_sub * 0.25
+                dung_sai_score += sub_score
+                lines.append("  Bạn chọn: " + ", ".join(result_line))
+                lines.append("  Đáp án đúng:")
+                for key, val in dap_an_obj.items():
+                    lines.append(f"    {key}: {val}")
+                lines.append(f"  Điểm: {sub_score:.2f} {'✅' if sub_score>0 else '❌'}")
+
+            # --- Trắc nghiệm 1 lựa chọn ---
+            else:
+                da_chon_full = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
+                dap_an_full = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
+                da_chon_key = da_chon_full[0].upper() if da_chon_full[0].isalpha() else ""
+                dap_an_key = dap_an_full[0].upper() if dap_an_full[0].isalpha() else ""
+                mark = "✅" if da_chon_key==dap_an_key else "❌"
+                score_cau = 0.25 if mark=="✅" else 0.0
+                trac_nghiem_score += score_cau
+
+                lines.append(f"  Bạn chọn: {da_chon_full} {mark}")
+                lines.append(f"  Đáp án đúng: {dap_an_full}")
+                lines.append(f"  Điểm: {score_cau:.2f} {mark}")
 
             lines.append("")
+
+        total_score = trac_nghiem_score + dung_sai_score + tu_luan_score
+        lines.insert(6, f"Điểm Trắc nghiệm: {trac_nghiem_score:.2f}")
+        lines.insert(7, f"Điểm Đúng/Sai: {dung_sai_score:.2f}")
+        lines.insert(8, f"Điểm Tự luận: {tu_luan_score:.2f}")
+        lines.insert(9, f"Tổng điểm: {total_score:.2f}/10")
 
         try:
             filepath.write_text("\n".join(lines), encoding="utf-8")
             app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
         except Exception as e:
             app.logger.error(f"Lỗi ghi file: {e}")
-            return jsonify({"status": "error", "msg": f"Lỗi ghi file: {str(e)}"}), 500
+            return jsonify({"status": "error","msg": f"Lỗi ghi file: {str(e)}"}), 500
 
         return jsonify({
             "status": "saved",
