@@ -1088,7 +1088,7 @@ def save_result():
             noi_dung = a.get("noi_dung", "Không có nội dung")
             kieu = a.get("kieu", "trac_nghiem").lower()
 
-            # Lấy câu gốc dựa trên id, tránh nhầm khi đề trộn
+            # Lấy câu gốc dựa trên ID, tránh nhầm khi đề trộn
             cau_goc = next((q for q in question_data if str(q.get("id")) == cau), {})
 
             lines.append(f"Câu {cau}: {noi_dung}")
