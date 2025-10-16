@@ -1056,7 +1056,7 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Load câu hỏi gốc (nếu có)
+        # Đọc đề gốc
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
@@ -1085,40 +1085,62 @@ def save_result():
             ""
         ]
 
+        # --- Ghi chi tiết từng câu ---
         for a in answers:
             cau = a.get("cau", "N/A")
             noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = a.get("kieu", "trac_nghiem").lower()
+            kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower()
 
             try:
                 idx = int(cau) - 1
                 cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except (ValueError, TypeError):
+            except Exception:
                 cau_goc = {}
 
             lines.append(f"Câu {cau}: {noi_dung}")
 
-            if kieu == "tu_luan":
+            # --- Câu tự luận ---
+            if "tu_luan" in kieu:
                 tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
                 goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  Bạn chọn: {tra_loi}")
+                lines.append(f"  Bài làm: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
-            else:  # trac_nghiem hoặc khác
+
+            # --- Câu trắc nghiệm ---
+            elif "trac_nghiem" in kieu:
                 da_chon = a.get("da_chon", "(chưa chọn)")
+                if isinstance(da_chon, list):
+                    da_chon = ", ".join(da_chon)
                 dap_an_dung = cau_goc.get("dap_an_dung", "")
                 lines.append(f"  Bạn chọn: {da_chon}")
                 if dap_an_dung:
                     lines.append(f"  Đáp án đúng: {dap_an_dung}")
 
+            # --- Câu đúng/sai nhiều lựa chọn ---
+            elif "dung_sai" in kieu:
+                lua_chon = a.get("lua_chon", {})
+                dap_an_dung = a.get("dap_an_dung", {})
+                lines.append("  Câu dạng Đúng/Sai nhiều lựa chọn:")
+                for key, noi_dung_nho in lua_chon.items():
+                    dap_hs = dap_an_dung.get(key, "(chưa chọn)")
+                    lines.append(f"    - {key}. {noi_dung_nho}: {dap_hs}")
+
+            # --- Dạng khác (phòng trường hợp dữ liệu không khớp) ---
+            else:
+                tra_loi = a.get("tra_loi_hoc_sinh", a.get("da_chon", "(chưa trả lời)"))
+                lines.append(f"  Bạn trả lời: {tra_loi}")
+
+            # --- Điểm từng câu nếu có ---
+            diem_cau = a.get("diem_cau")
+            if diem_cau not in [None, "", 0]:
+                lines.append(f"  ➤ Điểm câu: {diem_cau}")
+
             lines.append("")
 
-        try:
-            filepath.write_text("\n".join(lines), encoding="utf-8")
-            app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
-        except Exception as e:
-            app.logger.error(f"Lỗi ghi file: {e}")
-            return jsonify({"status": "error", "msg": f"Lỗi ghi file: {str(e)}"}), 500
+        # Ghi ra file
+        filepath.write_text("\n".join(lines), encoding="utf-8")
+        app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
 
         return jsonify({
             "status": "saved",
@@ -1129,6 +1151,7 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+
 
 
 
