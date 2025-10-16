@@ -1041,6 +1041,7 @@ def grading(answers, question_data):
 
 # Route lưu kết quả
 
+
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
@@ -1063,7 +1064,7 @@ def save_result():
             with open(filepath_de, "r", encoding="utf-8") as f:
                 question_data = json.load(f)
 
-        # Load trọng số câu hỏi mặc định
+        # Trọng số mặc định
         score_table = {
             "trac_nghiem": 0.25,
             "trac_nghiem_nhieu": 0.25,
@@ -1092,67 +1093,68 @@ def save_result():
             ""
         ]
 
-        async def grade_essay(student_answer, question):
-            # Nếu frontend đã chấm, có thể bỏ qua
-            if student_answer.strip() == "":
-                return 0.0
-            # Gọi API chấm tự luận
-            import requests
-            try:
-                res = requests.post(f"{API_BASE}/api/grade_essay_advanced",
-                                    json={"answers": [{"question": question.get("noi_dung",""), 
-                                                       "answer": student_answer, 
-                                                       "correct_answer": question.get("goi_y_dap_an","")}]})
-                res_json = res.json()
-                if res_json.get("status") == "success" and "graded" in res_json:
-                    return float(res_json["graded"][0].get("score", 0.0))
-                return float(res_json.get("score", 0.0))
-            except:
-                return 0.0
-
         import asyncio
+        import requests
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         essay_tasks = []
 
-        for a in answers:
-            cau = a.get("cau", "N/A")
-            noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower()
-            da_chon = a.get("da_chon", "")
+        # Hàm chấm tự luận async
+        async def grade_essay(student_answer, question):
+            if student_answer.strip() == "":
+                return 0.0
             try:
-                idx = int(cau) - 1
-                cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
+                res = requests.post(f"{API_BASE}/api/grade_essay_advanced",
+                                    json={"answers": [{"question": question.get("noi_dung",""),
+                                                       "answer": student_answer,
+                                                       "correct_answer": question.get("goi_y_dap_an","")}]} )
+                res_json = res.json()
+                if res_json.get("status") == "success" and "graded" in res_json:
+                    return float(res_json["graded"][0].get("score",0.0))
+                return float(res_json.get("score",0.0))
+            except:
+                return 0.0
+
+        for a in answers:
+            cau = a.get("cau","N/A")
+            noi_dung = a.get("noi_dung","Không có nội dung")
+            kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower()
+            da_chon = a.get("da_chon","")
+            try:
+                idx = int(cau)-1
+                cau_goc = question_data[idx] if 0<=idx<len(question_data) else {}
             except:
                 cau_goc = {}
 
             lines.append(f"Câu {cau}: {noi_dung}")
-            weight = score_table.get(kieu, 0)
+            weight = score_table.get(kieu,0)
 
             # --- Tự luận ---
             if kieu == "tu_luan":
                 student_text = str(da_chon).strip() or "(chưa trả lời)"
-                task = loop.create_task(grade_essay(student_text, cau_goc))
-                essay_tasks.append((task, a, student_text, cau_goc, weight))
+                task = loop.create_task(grade_essay(student_text,cau_goc))
+                essay_tasks.append((task,a,student_text,cau_goc,weight))
                 lines.append(f"  Bạn trả lời: {student_text}")
                 if cau_goc.get("goi_y_dap_an"):
                     lines.append(f"  Gợi ý đáp án: {cau_goc['goi_y_dap_an']}")
-                continue  # tính điểm sau cùng
+                continue
 
             # --- Đúng/Sai nhiều lựa chọn ---
             elif kieu == "dung_sai_nhieu_lua_chon":
                 da_chon_obj = {}
                 dap_an_obj = {}
-                if isinstance(da_chon, str):
+
+                if isinstance(da_chon,str):
                     try: da_chon_obj = json.loads(da_chon) if da_chon.startswith("{") else {}
                     except: da_chon_obj = {}
-                elif isinstance(da_chon, dict):
+                elif isinstance(da_chon,dict):
                     da_chon_obj = da_chon
-                dap_an_goc = cau_goc.get("dap_an_dung", {})
-                if isinstance(dap_an_goc, str):
+
+                dap_an_goc = cau_goc.get("dap_an_dung",{})
+                if isinstance(dap_an_goc,str):
                     try: dap_an_obj = json.loads(dap_an_goc) if dap_an_goc.startswith("{") else {}
                     except: dap_an_obj = {}
-                elif isinstance(dap_an_goc, dict):
+                elif isinstance(dap_an_goc,dict):
                     dap_an_obj = dap_an_goc
 
                 result_line = []
@@ -1169,9 +1171,10 @@ def save_result():
                 dung_sai_score += sub_score
                 lines.append("  Bạn chọn: " + ", ".join(result_line))
                 lines.append("  Đáp án đúng:")
-                for key, val in dap_an_obj.items():
+                for key,val in dap_an_obj.items():
                     lines.append(f"    {key}: {val}")
                 lines.append(f"  {'✅' if sub_score>0 else '❌'} ({sub_score:.2f} điểm)")
+                lines.append("")
 
             # --- Trắc nghiệm 1 lựa chọn ---
             else:
@@ -1185,8 +1188,7 @@ def save_result():
                 lines.append(f"  Bạn chọn: {da_chon_full} {mark}")
                 lines.append(f"  Đáp án đúng: {dap_an_full}")
                 lines.append(f"  {mark} ({score_cau:.2f} điểm)")
-
-            lines.append("")
+                lines.append("")
 
         # --- Tính điểm tự luận ---
         if essay_tasks:
@@ -1202,21 +1204,19 @@ def save_result():
                 lines.append("")
 
         total_score = trac_nghiem_score + dung_sai_score + tu_luan_score
-        lines.insert(5, f"Điểm Trắc nghiệm 1 lựa chọn: {trac_nghiem_score:.2f}")
-        lines.insert(6, f"Điểm Đúng/Sai: {dung_sai_score:.2f}")
-        lines.insert(7, f"Điểm Tự luận: {tu_luan_score:.2f}")
-        lines.insert(8, f"Tổng điểm: {total_score:.2f}/10")
-        lines.insert(9, f"Nộp lúc: {timestamp}")
+        lines.insert(5,f"Điểm Trắc nghiệm 1 lựa chọn: {trac_nghiem_score:.2f}")
+        lines.insert(6,f"Điểm Đúng/Sai: {dung_sai_score:.2f}")
+        lines.insert(7,f"Điểm Tự luận: {tu_luan_score:.2f}")
+        lines.insert(8,f"Tổng điểm: {total_score:.2f}/10")
+        lines.insert(9,f"Nộp lúc: {timestamp}")
 
-        filepath.write_text("\n".join(lines), encoding="utf-8")
+        filepath.write_text("\n".join(lines),encoding="utf-8")
         app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
-
         return jsonify({"status":"saved","text":"\n".join(lines),"download":f"/download/{filename}"})
 
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
-        return jsonify({"status":"error","msg":"Lỗi server nội bộ"}), 500
-
+        return jsonify({"status":"error","msg":"Lỗi server nội bộ"}),500
 
 
 
