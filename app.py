@@ -1042,6 +1042,7 @@ def grading(answers, question_data):
 # Route lưu kết quả
 
 
+
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
@@ -1084,6 +1085,14 @@ def save_result():
             ""
         ]
 
+        # --- Hàm chuẩn hóa Đúng/Sai ---
+        def norm_ds(ans):
+            if not ans: return ""
+            ans = str(ans).strip().upper()
+            if ans in ["A","ĐÚNG","DUNG","TRUE"]: return "Đúng"
+            if ans in ["B","SAI","FALSE"]: return "Sai"
+            return ans
+
         for a in answers:
             cau = a.get("cau", "N/A")
             noi_dung = a.get("noi_dung", "Không có nội dung")
@@ -1111,40 +1120,35 @@ def save_result():
 
             # --- Đúng/Sai nhiều lựa chọn ---
             elif kieu == "dung_sai_nhieu_lua_chon":
-                da_chon = a.get("da_chon", {})
-                da_chon_obj = {}
-                dap_an_obj = {}
-
-                if isinstance(da_chon, str):
+                da_chon_obj = a.get("da_chon") or {}
+                if isinstance(da_chon_obj, str):
                     try:
-                        da_chon_obj = json.loads(da_chon) if da_chon.startswith("{") else {}
+                        da_chon_obj = json.loads(da_chon_obj)
                     except:
                         da_chon_obj = {}
-                elif isinstance(da_chon, dict):
-                    da_chon_obj = da_chon
 
-                dap_an_goc = cau_goc.get("dap_an_dung", {})
-                if isinstance(dap_an_goc, str):
+                dap_an_obj = cau_goc.get("dap_an_dung") or {}
+                if isinstance(dap_an_obj, str):
                     try:
-                        dap_an_obj = json.loads(dap_an_goc) if dap_an_goc.startswith("{") else {}
+                        dap_an_obj = json.loads(dap_an_obj)
                     except:
                         dap_an_obj = {}
-                elif isinstance(dap_an_goc, dict):
-                    dap_an_obj = dap_an_goc
+
+                # Đảm bảo đủ key a,b,c,d
+                for key in ["a","b","c","d"]:
+                    da_chon_obj.setdefault(key,"")
+                    dap_an_obj.setdefault(key,"")
 
                 result_line = []
                 correct_sub = 0
                 for key in ["a","b","c","d"]:
-                    hs_ans = (da_chon_obj.get(key,"") or "").strip()
-                    true_ans = (dap_an_obj.get(key,"") or "").strip()
-                    hs_norm = "Đúng" if hs_ans.upper() in ["A","ĐÚNG","DUNG"] else ("Sai" if hs_ans.upper() in ["B","SAI"] else hs_ans)
-                    true_norm = "Đúng" if true_ans.upper() in ["A","ĐÚNG","DUNG"] else ("Sai" if true_ans.upper() in ["B","SAI"] else true_ans)
-                    mark = "✅" if hs_norm==true_norm and true_ans else "❌"
-                    if mark=="✅":
-                        correct_sub += 1
-                    result_line.append(f"{key}: {hs_ans or '(chưa chọn)'} {mark}")
+                    hs_norm = norm_ds(da_chon_obj.get(key, ""))
+                    true_norm = norm_ds(dap_an_obj.get(key, ""))
+                    mark = "✅" if hs_norm == true_norm and true_norm else "❌"
+                    if mark == "✅": correct_sub += 1
+                    result_line.append(f"{key}: {da_chon_obj.get(key,'(chưa chọn)')} {mark}")
 
-                sub_score = correct_sub * 0.25  # trọng số mặc định
+                sub_score = correct_sub * 0.25  # trọng số mỗi đáp án con
                 dung_sai_score += sub_score
 
                 lines.append("  Bạn chọn: " + ", ".join(result_line))
