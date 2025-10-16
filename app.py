@@ -1056,9 +1056,8 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Load câu hỏi gốc (nếu có)
-        filename_de = f"questions{made}.json"
-        filepath_de = QUESTIONS_DIR / filename_de
+        # Load đề gốc nếu có
+        filepath_de = QUESTIONS_DIR / f"questions{made}.json"
         question_data = []
         if filepath_de.exists():
             try:
@@ -1071,8 +1070,6 @@ def save_result():
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
-
-        app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
 
         lines = [
             "KẾT QUẢ BÀI THI",
@@ -1087,24 +1084,26 @@ def save_result():
 
         for a in answers:
             cau = a.get("cau", "N/A")
-            noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = a.get("kieu", "trac_nghiem").lower()
+            noi_dung = a.get("noi_dung") or a.get("question") or "Không có nội dung"
+            kieu = str(a.get("kieu", "trac_nghiem")).lower().strip()
 
             try:
                 idx = int(cau) - 1
                 cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except (ValueError, TypeError):
+            except Exception:
                 cau_goc = {}
 
             lines.append(f"Câu {cau}: {noi_dung}")
 
             if kieu == "tu_luan":
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
-                goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  Bạn chọn: {tra_loi}")
+                tra_loi = a.get("tra_loi_hoc_sinh") or a.get("tra_loi") or a.get("answer") or ""
+                tra_loi = tra_loi.strip() or "[Chưa trả lời]"
+                goi_y = a.get("goi_y_dap_an") or a.get("suggested_answer") or ""
+                lines.append(f"  Bài làm: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
-            else:  # trac_nghiem hoặc khác
+
+            else:  # Trắc nghiệm
                 da_chon = a.get("da_chon", "(chưa chọn)")
                 dap_an_dung = cau_goc.get("dap_an_dung", "")
                 lines.append(f"  Bạn chọn: {da_chon}")
@@ -1113,12 +1112,9 @@ def save_result():
 
             lines.append("")
 
-        try:
-            filepath.write_text("\n".join(lines), encoding="utf-8")
-            app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
-        except Exception as e:
-            app.logger.error(f"Lỗi ghi file: {e}")
-            return jsonify({"status": "error", "msg": f"Lỗi ghi file: {str(e)}"}), 500
+        # Ghi file kết quả
+        filepath.write_text("\n".join(lines), encoding="utf-8")
+        app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
 
         return jsonify({
             "status": "saved",
@@ -1129,6 +1125,7 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+
 
 
 # ✅ Route list toàn bộ file kết quả để kiểm tra
