@@ -1052,7 +1052,6 @@ def save_result():
         ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
         made = str(data.get("made", "000")).strip()
         answers = data.get("answers", [])
-        score_table = data.get("score_table", {})  # nhận trọng số nếu có
 
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
@@ -1076,6 +1075,16 @@ def save_result():
         tu_luan_score = 0.0
         timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
 
+        def normalize(ans):
+            if not ans:
+                return ""
+            ans = str(ans).strip().upper()
+            if ans in ["A", "ĐÚNG", "DUNG"]:
+                return "Đúng"
+            if ans in ["B", "SAI"]:
+                return "Sai"
+            return ans
+
         lines = [
             "KẾT QUẢ BÀI THI",
             f"Họ tên: {hoten}",
@@ -1084,14 +1093,6 @@ def save_result():
             f"Mã đề: {made}",
             ""
         ]
-
-        # Hàm chuẩn hóa dữ liệu
-        def normalize(ans):
-            if not ans: return ""
-            ans = str(ans).strip().upper()
-            if ans in ["A", "ĐÚNG", "DUNG"]: return "Đúng"
-            if ans in ["B", "SAI"]: return "Sai"
-            return ans
 
         for a in answers:
             cau = a.get("cau", "N/A")
@@ -1103,7 +1104,6 @@ def save_result():
             except Exception:
                 cau_goc = {}
 
-            weight = float(score_table.get(kieu, 1.0))  # lấy trọng số động
             lines.append(f"Câu {cau}: {noi_dung}")
 
             # --- Tự luận ---
@@ -1121,43 +1121,40 @@ def save_result():
             elif kieu == "dung_sai_nhieu_lua_chon":
                 da_chon = a.get("da_chon", {})
                 if isinstance(da_chon, str):
-                    da_chon = json.loads(da_chon) if da_chon.strip().startswith("{") else {}
+                    da_chon = json.loads(da_chon) if da_chon.startswith("{") else {}
                 dap_an_dung = cau_goc.get("dap_an_dung", {})
                 if isinstance(dap_an_dung, str):
-                    dap_an_dung = json.loads(dap_an_dung) if dap_an_dung.strip().startswith("{") else {}
+                    dap_an_dung = json.loads(dap_an_dung) if dap_an_dung.startswith("{") else {}
 
-                # chuẩn hóa đáp án gốc
-                dap_an_dung = {k: normalize(v) for k, v in (dap_an_dung.items() if isinstance(dap_an_dung, dict) else [])}
-
-                keys = list(cau_goc.get("lua_chon", {}).keys())
-                per_item_score = weight / len(keys) if keys else 0
-                score_this_question = 0
                 result_line = []
-                display_correct = []
-
+                correct_sub = 0
+                keys = list(cau_goc.get("lua_chon", {}).keys()) or ["a","b","c","d"]
                 for key in keys:
                     hs_ans = normalize(da_chon.get(key, ""))
-                    correct_ans = dap_an_dung.get(key, "")
-                    ok = hs_ans == correct_ans and bool(correct_ans)
-                    if ok:
-                        score_this_question += per_item_score
-                    result_line.append(f"{key}: {hs_ans or '(chưa chọn)'} {'✅' if ok else '❌'}")
-                    display_correct.append(f"{key}: {correct_ans or '(không có)'}")
+                    true_ans = normalize(dap_an_dung.get(key, ""))
+                    mark = "✅" if hs_ans == true_ans and true_ans else "❌"
+                    if mark == "✅":
+                        correct_sub += 1
+                    result_line.append(f"{key}: {hs_ans or '(chưa chọn)'} {mark}")
 
-                dung_sai_score += score_this_question
+                sub_score = correct_sub * 0.25
+                dung_sai_score += sub_score
+
                 lines.append("  Bạn chọn: " + ", ".join(result_line))
                 lines.append("  Đáp án đúng:")
-                lines.extend(f"    {c}" for c in display_correct)
-                lines.append(f"  {'✅' if score_this_question>0 else '❌'} ({score_this_question:.2f} điểm)")
+                for key in keys:
+                    val = normalize(dap_an_dung.get(key, ""))
+                    lines.append(f"    {key}: {val or '(không có)'}")
+                lines.append(f"  {'✅' if sub_score>0 else '❌'} ({sub_score:.2f} điểm)")
 
             # --- Trắc nghiệm 1 lựa chọn ---
             else:
                 da_chon_full = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
                 dap_an_full = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
-                da_chon_key = da_chon_full[0].upper() if da_chon_full[0].isalpha() else ""
-                dap_an_key = dap_an_full[0].upper() if dap_an_full[0].isalpha() else ""
+                da_chon_key = normalize(da_chon_full[0] if da_chon_full and da_chon_full[0].isalpha() else "")
+                dap_an_key = normalize(dap_an_full[0] if dap_an_full and dap_an_full[0].isalpha() else "")
                 mark = "✅" if da_chon_key == dap_an_key else "❌"
-                score_cau = weight if mark == "✅" else 0.0
+                score_cau = 0.25 if mark == "✅" else 0.0
                 trac_nghiem_score += score_cau
 
                 lines.append(f"  Bạn chọn: {da_chon_full} {mark}")
