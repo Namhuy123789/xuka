@@ -1147,6 +1147,7 @@ def save_result():
             else:
                 da_chon_full = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
                 dap_an_full = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
+                # So sánh ký tự đầu tiên
                 da_chon_key = da_chon_full[0].upper() if da_chon_full[0].isalpha() else ""
                 dap_an_key = dap_an_full[0].upper() if dap_an_full[0].isalpha() else ""
                 mark = "✅" if da_chon_key == dap_an_key else "❌"
