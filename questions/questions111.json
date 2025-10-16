@@ -175,10 +175,10 @@
       "d": "Không cần đặt tên chia sẻ cho ổ cứng; tên chia sẻ thường được đặt cho các thư mục hoặc máy in, không phải cho toàn bộ ổ cứng."
     },
     "dap_an_dung": {
-      "A": "Đúng",
-      "B": "Đúng",
-      "C": "Đúng",
-      "D": "Sai"
+      "a": "Đúng",
+      "b": "Đúng",
+      "c": "Đúng",
+      "d": "Sai"
     }
   },
   {
@@ -191,10 +191,10 @@
       "d": "Trợ lý ảo và chatbot do AI phát triển có thể hỗ trợ trong nhiều lĩnh vực khác nhau, không chỉ giới hạn ở tài chính ngân hàng."
     },
     "dap_an_dung": {
-      "A": "Đúng",
-      "B": "Sai",
-      "C": "Đúng",
-      "D": "Sai"
+      "a": "Đúng",
+      "b": "Sai",
+      "c": "Đúng",
+      "d": "Sai"
     }
   },
   {
@@ -207,10 +207,10 @@
       "d": "AI có khả năng kiểm soát hoặc ảnh hưởng đến ý thức và hành vi của con người, điều này có thể xảy ra khi các hệ thống AI được thiết kế để điều chỉnh hoặc thay đổi các hành vi dựa trên dữ liệu."
     },
     "dap_an_dung": {
-      "A": "Đúng",
-      "B": "Sai",
-      "C": "Đúng",
-      "D": "Sai"
+      "a": "Đúng",
+      "b": "Sai",
+      "c": "Đúng",
+      "d": "Sai"
     }
   }
 ]
