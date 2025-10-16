@@ -1088,7 +1088,7 @@ def save_result():
             noi_dung = a.get("noi_dung", "Không có nội dung")
             kieu = a.get("kieu", "trac_nghiem").lower()
 
-            # Lấy câu gốc dựa trên ID, tránh nhầm khi đề trộn
+            # Lấy câu gốc theo ID
             cau_goc = next((q for q in question_data if str(q.get("id")) == cau), {})
 
             lines.append(f"Câu {cau}: {noi_dung}")
@@ -1099,10 +1099,27 @@ def save_result():
                 lines.append(f"  Bạn trả lời: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
-            else:  # trac_nghiem hoặc khác
+
+            elif kieu == "dung_sai":
+                da_chon = a.get("da_chon", {})
+                dap_an_dung = cau_goc.get("dap_an_dung", {})
+                if isinstance(da_chon, dict) and isinstance(dap_an_dung, dict):
+                    result_list = []
+                    for key in sorted(dap_an_dung.keys()):
+                        val_chon = da_chon.get(key, "(chưa chọn)")
+                        val_dung = dap_an_dung.get(key, "")
+                        dung_sai = "ĐÚNG" if val_chon == val_dung else "SAI"
+                        result_list.append(f"{key}: {val_chon} ({dung_sai})")
+                    lines.append("  " + ", ".join(result_list))
+                    lines.append(f"  Đáp án đúng: {dap_an_dung}")
+                else:
+                    lines.append("  Không có dữ liệu chọn đúng/sai.")
+
+            else:  # trac_nghiem
                 da_chon = a.get("da_chon", "(chưa chọn)")
                 dap_an_dung = cau_goc.get("dap_an_dung", "")
-                lines.append(f"  Bạn chọn: {da_chon}")
+                dung_sai = "ĐÚNG" if da_chon == dap_an_dung else "SAI"
+                lines.append(f"  Bạn chọn: {da_chon} ({dung_sai})")
                 if dap_an_dung:
                     lines.append(f"  Đáp án đúng: {dap_an_dung}")
 
@@ -1124,6 +1141,7 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+
 
 
 # ✅ Route list toàn bộ file kết quả để kiểm tra
