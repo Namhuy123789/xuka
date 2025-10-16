@@ -1043,18 +1043,105 @@ def grading(answers, question_data):
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
+    def evaluate_answer(answer, question):
+        """
+        Xử lý một câu trả lời, trả về dict chứa:
+        - tra_loi_hoc_sinh
+        - dap_an_dung
+        - diem
+        - status ('✅' hoặc '❌')
+        - chi_tiet_lines: list các dòng mô tả chi tiết
+        """
+        kieu = (answer.get("kieu") or "trac_nghiem").lower()
+        lines = []
+        diem_cau = float(answer.get("diem", 0.0))
+
+        # --- Lấy câu trả lời gốc ---
+        dap_an_dung = question.get("dap_an_dung", "")
+
+        if kieu == "tu_luan":
+            tra_loi = answer.get("tra_loi_hoc_sinh", "").strip() or "(chưa trả lời)"
+            goi_y = answer.get("goi_y_dap_an", "").strip() or ""
+            lines.append(f"  Bạn trả lời: {tra_loi}")
+            if goi_y:
+                lines.append(f"  Gợi ý đáp án: {goi_y}")
+            lines.append(f"  Điểm: {diem_cau:.2f} {'✅' if diem_cau>0 else '❌'}")
+            status = "✅" if diem_cau>0 else "❌"
+        elif kieu == "dung_sai_nhieu_lua_chon":
+            da_chon_obj = {}
+            dap_an_obj = {}
+
+            # Chuẩn hóa object
+            da_chon = answer.get("da_chon", {})
+            if isinstance(da_chon, str):
+                try:
+                    da_chon_obj = json.loads(da_chon) if da_chon.startswith("{") else {}
+                except:
+                    da_chon_obj = {}
+            elif isinstance(da_chon, dict):
+                da_chon_obj = da_chon
+
+            if isinstance(dap_an_dung, str):
+                try:
+                    dap_an_obj = json.loads(dap_an_dung) if dap_an_dung.startswith("{") else {}
+                except:
+                    dap_an_obj = {}
+            elif isinstance(dap_an_dung, dict):
+                dap_an_obj = dap_an_dung
+
+            result_line = []
+            correct_sub = 0
+            for key in ["a","b","c","d"]:
+                hs_ans = (da_chon_obj.get(key,"") or "").strip()
+                true_ans = (dap_an_obj.get(key,"") or "").strip()
+                hs_norm = "Đúng" if hs_ans.upper() in ["A","ĐÚNG","DUNG"] else ("Sai" if hs_ans.upper() in ["B","SAI"] else hs_ans)
+                true_norm = "Đúng" if true_ans.upper() in ["A","ĐÚNG","DUNG"] else ("Sai" if true_ans.upper() in ["B","SAI"] else true_ans)
+                mark = "✅" if hs_norm==true_norm and true_ans else "❌"
+                if mark=="✅":
+                    correct_sub += 1
+                result_line.append(f"{key}: {hs_ans or '(chưa chọn)'} {mark}")
+
+            sub_score = correct_sub * 0.25
+            diem_cau = sub_score
+            lines.append("  Bạn chọn: " + ", ".join(result_line))
+            lines.append("  Đáp án đúng:")
+            for key, val in dap_an_obj.items():
+                lines.append(f"    {key}: {val}")
+            lines.append(f"  {'✅' if sub_score>0 else '❌'} ({sub_score:.2f} điểm)")
+            status = "✅" if sub_score>0 else "❌"
+
+        else:  # trac_nghiem 1 lựa chọn
+            da_chon_full = str(answer.get("da_chon","")).strip() or "(chưa chọn)"
+            dap_an_full = str(dap_an_dung).strip() or "(chưa có đáp án)"
+            da_chon_key = da_chon_full[0].upper() if da_chon_full[0].isalpha() else ""
+            dap_an_key = dap_an_full[0].upper() if dap_an_full[0].isalpha() else ""
+            status = "✅" if da_chon_key == dap_an_key else "❌"
+            diem_cau = 0.25 if status=="✅" else 0.0
+            lines.append(f"  Bạn chọn: {da_chon_full} {status}")
+            lines.append(f"  Đáp án đúng: {dap_an_full}")
+            lines.append(f"  {status} ({diem_cau:.2f} điểm)")
+
+        return {
+            "tra_loi_hoc_sinh": answer.get("tra_loi_hoc_sinh","") if kieu=="tu_luan" else da_chon_full,
+            "dap_an_dung": dap_an_dung,
+            "diem": diem_cau,
+            "status": status,
+            "chi_tiet_lines": lines
+        }
+
     try:
         data = request.get_json(silent=True) or {}
         hoten = str(data.get("hoten", "unknown")).strip()
         sbd = str(data.get("sbd", "N/A")).strip()
         ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
         made = str(data.get("made", "000")).strip()
+        diem = str(data.get("diem", "0.00")).strip()
         answers = data.get("answers", [])
 
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Load câu hỏi gốc (nếu có)
+        # Load câu hỏi gốc
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
@@ -1065,17 +1152,10 @@ def save_result():
             except Exception as e:
                 app.logger.error(f"Lỗi đọc file đề: {e}")
 
-        # Tạo file kết quả
         timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
-        app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
-
-        # Khởi tạo điểm
-        trac_nghiem_score = 0.0
-        dung_sai_score = 0.0
-        tu_luan_score = 0.0
 
         lines = [
             "KẾT QUẢ BÀI THI",
@@ -1083,109 +1163,25 @@ def save_result():
             f"SBD: {sbd}",
             f"Ngày sinh: {ngaysinh}",
             f"Mã đề: {made}",
-            "",
+            f"Điểm: {diem}/10",
+            f"Nộp lúc: {timestamp}",
+            ""
         ]
 
-        # Duyệt từng câu trả lời
         for a in answers:
-            cau = a.get("cau", "N/A")
-            noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = a.get("kieu", "trac_nghiem").lower()
-
             try:
-                idx = int(cau) - 1
+                idx = int(a.get("cau", "N/A")) - 1
                 cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except (ValueError, TypeError):
+            except:
                 cau_goc = {}
 
-            lines.append(f"Câu {cau}: {noi_dung}")
-
-            # --- Tự luận ---
-            if kieu == "tu_luan":
-                tra_loi = str(a.get("da_chon", "")).strip() or "(chưa trả lời)"
-                goi_y = str(a.get("goi_y_dap_an", "")).strip()
-                diem_cau = float(a.get("diem", 0.0))
-                tu_luan_score += diem_cau
-
-                lines.append(f"  Bạn trả lời: {tra_loi}")
-                if goi_y:
-                    lines.append(f"  Gợi ý đáp án: {goi_y}")
-                lines.append(f"  Điểm: {diem_cau:.2f} {'✅' if diem_cau>0 else '❌'}")
-
-            # --- Đúng/Sai nhiều lựa chọn ---
-            elif kieu == "dung_sai_nhieu_lua_chon":
-                da_chon = a.get("da_chon", {})
-                da_chon_obj = {}
-                if isinstance(da_chon, str):
-                    try:
-                        da_chon_obj = json.loads(da_chon) if da_chon.startswith("{") else {}
-                    except:
-                        da_chon_obj = {}
-                elif isinstance(da_chon, dict):
-                    da_chon_obj = da_chon
-
-                dap_an_goc = cau_goc.get("dap_an_dung", {})
-                dap_an_obj = {}
-                if isinstance(dap_an_goc, str):
-                    try:
-                        dap_an_obj = json.loads(dap_an_goc) if dap_an_goc.startswith("{") else {}
-                    except:
-                        dap_an_obj = {}
-                elif isinstance(dap_an_goc, dict):
-                    dap_an_obj = dap_an_goc
-
-                result_line = []
-                correct_sub = 0
-                for key in ["a","b","c","d"]:
-                    hs_ans = (da_chon_obj.get(key,"") or "").strip()
-                    true_ans = (dap_an_obj.get(key,"") or "").strip()
-                    hs_norm = "Đúng" if hs_ans.upper() in ["A","ĐÚNG","DUNG"] else ("Sai" if hs_ans.upper() in ["B","SAI"] else hs_ans)
-                    true_norm = "Đúng" if true_ans.upper() in ["A","ĐÚNG","DUNG"] else ("Sai" if true_ans.upper() in ["B","SAI"] else true_ans)
-                    mark = "✅" if hs_norm==true_norm and true_ans else "❌"
-                    if mark=="✅":
-                        correct_sub += 1
-                    result_line.append(f"{key}: {hs_ans or '(chưa chọn)'} {mark}")
-
-                sub_score = correct_sub * 0.25
-                dung_sai_score += sub_score
-
-                lines.append("  Bạn chọn: " + ", ".join(result_line))
-                lines.append("  Đáp án đúng:")
-                for key, val in dap_an_obj.items():
-                    lines.append(f"    {key}: {val}")
-                lines.append(f"  {'✅' if sub_score>0 else '❌'} ({sub_score:.2f} điểm)")
-
-            # --- Trắc nghiệm 1 lựa chọn ---
-            else:
-                da_chon_full = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
-                dap_an_full = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
-                da_chon_key = da_chon_full[0].upper() if da_chon_full[0].isalpha() else ""
-                dap_an_key = dap_an_full[0].upper() if dap_an_full[0].isalpha() else ""
-                mark = "✅" if da_chon_key==dap_an_key else "❌"
-                score_cau = 0.25 if mark=="✅" else 0.0
-                trac_nghiem_score += score_cau
-
-                lines.append(f"  Bạn chọn: {da_chon_full} {mark}")
-                lines.append(f"  Đáp án đúng: {dap_an_full}")
-                lines.append(f"  {mark} ({score_cau:.2f} điểm)")
-
+            lines.append(f"Câu {a.get('cau','N/A')}: {a.get('noi_dung','Không có nội dung')}")
+            eval_result = evaluate_answer(a, cau_goc)
+            lines.extend(eval_result["chi_tiet_lines"])
             lines.append("")
 
-        # Tổng điểm
-        total_score = trac_nghiem_score + dung_sai_score + tu_luan_score
-        lines.insert(6, f"{'✅' if trac_nghiem_score>0 else '❌'} Điểm Trắc nghiệm 1 lựa chọn: {trac_nghiem_score:.2f}")
-        lines.insert(7, f"{'✅' if dung_sai_score>0 else '❌'} Điểm Đúng/Sai: {dung_sai_score:.2f}")
-        lines.insert(8, f"{'✅' if tu_luan_score>0 else '❌'} Điểm Tự luận: {tu_luan_score:.2f}")
-        lines.insert(9, f"{'✅' if total_score>0 else '❌'} Tổng điểm: {total_score:.2f}/10")
-        lines.insert(10, f"Nộp lúc: {timestamp}")
-
-        # Lưu file
-        try:
-            filepath.write_text("\n".join(lines), encoding="utf-8")
-            app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
-        except Exception as e:
-            app.logger.error(f"Lỗi ghi file: {e}")
-            return jsonify({"status": "error","msg": f"Lỗi ghi file: {str(e)}"}), 500
+        filepath.write_text("\n".join(lines), encoding="utf-8")
+        app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
 
         return jsonify({
             "status": "saved",
@@ -1196,6 +1192,7 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+
 
 
 # ✅ Route list toàn bộ file kết quả để kiểm tra
