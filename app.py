@@ -1060,11 +1060,8 @@ def save_result():
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
         if filepath_de.exists():
-            try:
-                with open(filepath_de, "r", encoding="utf-8") as f:
-                    question_data = json.load(f)
-            except Exception as e:
-                app.logger.error(f"Lỗi đọc file đề: {e}")
+            with open(filepath_de, "r", encoding="utf-8") as f:
+                question_data = json.load(f)
 
         # Tạo thư mục lưu kết quả nếu chưa tồn tại
         RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -1090,7 +1087,6 @@ def save_result():
             cau = a.get("cau", "N/A")
             noi_dung = a.get("noi_dung", "Không có nội dung")
             kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower()
-
             try:
                 idx = int(cau) - 1
                 cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
@@ -1151,8 +1147,8 @@ def save_result():
             else:
                 da_chon_full = str(a.get("da_chon", "")).strip() or "(chưa chọn)"
                 dap_an_full = str(cau_goc.get("dap_an_dung", "")).strip() or "(chưa có đáp án)"
-                da_chon_key = da_chon_full[0].upper() if da_chon_full and da_chon_full[0].isalpha() else ""
-                dap_an_key = dap_an_full[0].upper() if dap_an_full and dap_an_full[0].isalpha() else ""
+                da_chon_key = da_chon_full[0].upper() if da_chon_full[0].isalpha() else ""
+                dap_an_key = dap_an_full[0].upper() if dap_an_full[0].isalpha() else ""
                 mark = "✅" if da_chon_key == dap_an_key else "❌"
                 score_cau = 0.25 if mark == "✅" else 0.0
                 trac_nghiem_score += score_cau
@@ -1170,6 +1166,7 @@ def save_result():
         lines.insert(8, f"Tổng điểm: {total_score:.2f}/10")
         lines.insert(9, f"Nộp lúc: {timestamp}")
 
+        # Ghi file UTF-8
         filepath.write_text("\n".join(lines), encoding="utf-8")
         app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
 
