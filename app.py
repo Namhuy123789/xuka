@@ -1056,7 +1056,7 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Load câu hỏi gốc (nếu có)
+        # Load câu hỏi gốc
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
@@ -1072,8 +1072,6 @@ def save_result():
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
 
-        app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
-
         lines = [
             "KẾT QUẢ BÀI THI",
             f"Họ tên: {hoten}",
@@ -1086,22 +1084,19 @@ def save_result():
         ]
 
         for a in answers:
-            cau = a.get("cau", "N/A")
+            cau = str(a.get("cau", "N/A"))
             noi_dung = a.get("noi_dung", "Không có nội dung")
             kieu = a.get("kieu", "trac_nghiem").lower()
 
-            try:
-                idx = int(cau) - 1
-                cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except (ValueError, TypeError):
-                cau_goc = {}
+            # Lấy câu gốc dựa trên id, tránh nhầm khi đề trộn
+            cau_goc = next((q for q in question_data if str(q.get("id")) == cau), {})
 
             lines.append(f"Câu {cau}: {noi_dung}")
 
             if kieu == "tu_luan":
                 tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
-                goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  Bạn chọn: {tra_loi}")
+                goi_y = cau_goc.get("goi_y_dap_an", "").strip()
+                lines.append(f"  Bạn trả lời: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
             else:  # trac_nghiem hoặc khác
