@@ -1041,6 +1041,7 @@ def grading(answers, question_data):
 
 # Route lưu kết quả
 
+
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
@@ -1050,23 +1051,29 @@ def save_result():
         sbd = str(data.get("sbd", "N/A")).strip()
         ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
         made = str(data.get("made", "000")).strip()
+        diem = str(data.get("diem", "0.00")).strip()
         answers = data.get("answers", [])
 
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
+        # Load câu hỏi gốc (nếu có)
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
         if filepath_de.exists():
-            with open(filepath_de, "r", encoding="utf-8") as f:
-                question_data = json.load(f)
+            try:
+                with open(filepath_de, "r", encoding="utf-8") as f:
+                    question_data = json.load(f)
+            except Exception as e:
+                app.logger.error(f"Lỗi đọc file đề: {e}")
 
-        total_score = 0.0
         timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
+
+        app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
 
         lines = [
             "KẾT QUẢ BÀI THI",
@@ -1074,6 +1081,7 @@ def save_result():
             f"SBD: {sbd}",
             f"Ngày sinh: {ngaysinh}",
             f"Mã đề: {made}",
+            f"Điểm: {diem}/10",
             f"Nộp lúc: {timestamp}",
             ""
         ]
@@ -1081,82 +1089,37 @@ def save_result():
         for a in answers:
             cau = a.get("cau", "N/A")
             noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower()
+            kieu = a.get("kieu", "trac_nghiem").lower()
+
             try:
                 idx = int(cau) - 1
                 cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except Exception:
+            except (ValueError, TypeError):
                 cau_goc = {}
 
             lines.append(f"Câu {cau}: {noi_dung}")
 
-            # --- Tự luận ---
             if kieu == "tu_luan":
                 tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
                 goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  Bạn trả lời: {tra_loi}")
+                lines.append(f"  Bạn chọn: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
-
-            # --- Dạng Đúng/Sai nhiều lựa chọn ---
-            elif kieu == "dung_sai_nhieu_lua_chon":
-                da_chon = a.get("da_chon", {})
-                dap_an_dung = cau_goc.get("dap_an_dung", {})
-                if isinstance(da_chon, str):
-                    da_chon = json.loads(da_chon) if da_chon.startswith("{") else {}
-                if not isinstance(da_chon, dict):
-                    da_chon = {}
-                if not isinstance(dap_an_dung, dict):
-                    dap_an_dung = {}
-
-                # So sánh từng lựa chọn (a,b,c,d)
-                result_line = []
-                correct_sub = 0
-                total_sub = len(dap_an_dung) if dap_an_dung else 4
-
-                for key in ["a", "b", "c", "d"]:
-                    hs_ans = da_chon.get(key, "").strip()
-                    true_ans = dap_an_dung.get(key, "").strip()
-                    if not true_ans:
-                        continue
-                    mark = "✅" if hs_ans == true_ans else "❌"
-                    if hs_ans == true_ans:
-                        correct_sub += 1
-                    result_line.append(f"{key}: {hs_ans or '[Chưa chọn]'} {mark}")
-
-                # Mỗi lựa chọn đúng = 0.25 điểm
-                sub_score = correct_sub * 0.25
-                total_score += sub_score
-
-                lines.append("  Bạn chọn: " + ", ".join(result_line))
-                lines.append("  Đáp án đúng:")
-                for key, val in dap_an_dung.items():
-                    lines.append(f"    {key}: {val}")
-
-            # --- Trắc nghiệm 1 hoặc nhiều đáp án ---
-            else:
-                da_chon = a.get("da_chon", "")
+            else:  # trac_nghiem hoặc khác
+                da_chon = a.get("da_chon", "(chưa chọn)")
                 dap_an_dung = cau_goc.get("dap_an_dung", "")
-
-                if isinstance(dap_an_dung, list):
-                    dap_an_text = ", ".join(map(str, dap_an_dung))
-                else:
-                    dap_an_text = str(dap_an_dung)
-
-                mark = "✅" if str(da_chon).strip() == str(dap_an_dung).strip() else "❌"
-                if mark == "✅":
-                    total_score += 1.0  # mỗi câu đúng 1 điểm (nếu bạn muốn có thể đổi)
-
-                lines.append(f"  Bạn chọn: {da_chon} {mark}")
-                lines.append(f"  Đáp án đúng: {dap_an_text}")
+                lines.append(f"  Bạn chọn: {da_chon}")
+                if dap_an_dung:
+                    lines.append(f"  Đáp án đúng: {dap_an_dung}")
 
             lines.append("")
 
-        # Ghi tổng điểm cuối cùng
-        lines.insert(5, f"Tổng điểm: {total_score:.2f}/10")
-
-        filepath.write_text("\n".join(lines), encoding="utf-8")
-        app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
+        try:
+            filepath.write_text("\n".join(lines), encoding="utf-8")
+            app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
+        except Exception as e:
+            app.logger.error(f"Lỗi ghi file: {e}")
+            return jsonify({"status": "error", "msg": f"Lỗi ghi file: {str(e)}"}), 500
 
         return jsonify({
             "status": "saved",
@@ -1167,7 +1130,6 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
-
 
 # ✅ Route list toàn bộ file kết quả để kiểm tra
 @app.route("/list_results")
