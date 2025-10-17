@@ -1057,7 +1057,10 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Load câu hỏi gốc (nếu có)
+        # Log dữ liệu nhận được
+        app.logger.info(f"[DEBUG] Dữ liệu nhận được: {json.dumps(data, ensure_ascii=False)}")
+
+        # Load câu hỏi gốc
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
@@ -1072,6 +1075,10 @@ def save_result():
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
+
+        # Tạo thư mục nếu chưa tồn tại
+        if not RESULTS_DIR.exists():
+            RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
         app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
 
@@ -1090,6 +1097,10 @@ def save_result():
             cau = a.get("cau", "N/A")
             noi_dung = a.get("noi_dung", "Không có nội dung")
             kieu = a.get("kieu", "trac_nghiem").lower()
+            tra_loi = a.get("tra_loi_hoc_sinh", "").strip().replace("\n", "\\n").replace("\r", "\\r") or "[Chưa trả lời]"
+
+            # Log câu trả lời
+            app.logger.info(f"[DEBUG] Câu {cau}, Kiểu: {kieu}, Trả lời: {tra_loi}")
 
             try:
                 idx = int(cau) - 1
@@ -1100,12 +1111,11 @@ def save_result():
             lines.append(f"Câu {cau}: {noi_dung}")
 
             if kieu == "tu_luan":
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
                 goi_y = a.get("goi_y_dap_an", "").strip()
                 lines.append(f"  Bạn chọn: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
-            else:  # trac_nghiem hoặc khác
+            else:
                 da_chon = a.get("da_chon", "(chưa chọn)")
                 dap_an_dung = cau_goc.get("dap_an_dung", "")
                 lines.append(f"  Bạn chọn: {da_chon}")
@@ -1115,7 +1125,7 @@ def save_result():
             lines.append("")
 
         try:
-            filepath.write_text("\n".join(lines), encoding="utf-8")
+            filepath.write_text("\n".join(lines), encoding="utf-8-sig")
             app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
         except Exception as e:
             app.logger.error(f"Lỗi ghi file: {e}")
