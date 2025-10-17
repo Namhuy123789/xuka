@@ -1041,6 +1041,7 @@ def grading(answers, question_data):
 
 # Route lưu kết quả
 
+
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
@@ -1056,7 +1057,7 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # --- Đọc đề gốc nếu có ---
+        # Load câu hỏi gốc (nếu có)
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
@@ -1067,7 +1068,6 @@ def save_result():
             except Exception as e:
                 app.logger.error(f"Lỗi đọc file đề: {e}")
 
-        # --- Tạo tên file kết quả ---
         timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
@@ -1075,7 +1075,6 @@ def save_result():
 
         app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
 
-        # --- Ghi nội dung đầu file ---
         lines = [
             "KẾT QUẢ BÀI THI",
             f"Họ tên: {hoten}",
@@ -1087,49 +1086,34 @@ def save_result():
             ""
         ]
 
-        tu_luan_score = 0.0
-
-        # --- Ghi từng câu ---
         for a in answers:
             cau = a.get("cau", "N/A")
             noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower()
+            kieu = a.get("kieu", "trac_nghiem").lower()
 
             try:
                 idx = int(cau) - 1
                 cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except Exception:
+            except (ValueError, TypeError):
                 cau_goc = {}
 
             lines.append(f"Câu {cau}: {noi_dung}")
 
-            # --- Câu trắc nghiệm ---
-            if kieu in ["trac_nghiem", "trac_nghiem_nhieu_lua_chon", "dung_sai"]:
-                da_chon = a.get("da_chon") or a.get("tra_loi_hoc_sinh", "(chưa chọn)")
-                dap_an_dung = cau_goc.get("dap_an_dung", "")
+            if kieu == "tu_luan":
+                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
                 goi_y = a.get("goi_y_dap_an", "").strip()
-
-                lines.append(f"  Bạn chọn: {da_chon}")
+                lines.append(f"  Bạn chọn: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
+            else:  # trac_nghiem hoặc khác
+                da_chon = a.get("da_chon", "(chưa chọn)")
+                dap_an_dung = cau_goc.get("dap_an_dung", "")
+                lines.append(f"  Bạn chọn: {da_chon}")
                 if dap_an_dung:
                     lines.append(f"  Đáp án đúng: {dap_an_dung}")
 
-            # --- Câu tự luận ---
-            elif kieu == "tu_luan":
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "(chưa trả lời)"
-                goi_y = a.get("goi_y_dap_an", "").strip()
-                diem_cau = float(a.get("diem", 0.0))
-                tu_luan_score += diem_cau
+            lines.append("")
 
-                lines.append(f"  Bạn trả lời: {tra_loi}")
-                if goi_y:
-                    lines.append(f"  Gợi ý đáp án: {goi_y}")
-                lines.append(f"  Điểm: {diem_cau:.2f} {'✅' if diem_cau > 0 else '❌'}")
-
-            lines.append("")  # dòng trống giữa các câu
-
-        # --- Ghi file kết quả ---
         try:
             filepath.write_text("\n".join(lines), encoding="utf-8")
             app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
@@ -1146,7 +1130,6 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
-
 
 
 # ✅ Route list toàn bộ file kết quả để kiểm tra
