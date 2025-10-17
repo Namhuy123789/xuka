@@ -284,6 +284,65 @@ qs('#btn-start-exam')?.addEventListener('click', async () => {
 });
 
 
+function submitAnswers() {
+  const answers = [];
+  document.querySelectorAll('.question').forEach((questionElement, index) => {
+    const cau = (index + 1).toString();
+    const noi_dung = questionElement.querySelector('.question-content')?.textContent || 'Không có nội dung';
+    const kieu = questionElement.dataset.type || 'trac_nghiem'; // Lấy kiểu câu hỏi từ data-type
+    let tra_loi_hoc_sinh = '';
+    let da_chon = '';
+
+    if (kieu === 'tu_luan') {
+      // Thu thập câu trả lời tự luận từ textarea
+      tra_loi_hoc_sinh = questionElement.querySelector('textarea')?.value.trim() || '';
+    } else {
+      // Thu thập câu trả lời trắc nghiệm từ radio/checkbox
+      da_chon = questionElement.querySelector('input:checked')?.value || '(chưa chọn)';
+    }
+
+    const answer = {
+      cau: cau,
+      noi_dung: noi_dung,
+      kieu: kieu
+    };
+
+    if (kieu === 'tu_luan') {
+      answer.tra_loi_hoc_sinh = tra_loi_hoc_sinh;
+      answer.goi_y_dap_an = questionElement.dataset.suggestedAnswer || ''; // Nếu có gợi ý
+    } else {
+      answer.da_chon = da_chon;
+    }
+
+    answers.push(answer);
+  });
+
+  // Gửi dữ liệu lên server
+  const payload = {
+    hoten: document.getElementById('hoten')?.value || 'unknown',
+    sbd: document.getElementById('sbd')?.value || 'N/A',
+    ngaysinh: document.getElementById('ngaysinh')?.value || 'N/A',
+    made: document.getElementById('made')?.value || '000',
+    diem: document.getElementById('diem')?.value || '0.00',
+    answers: answers
+  };
+
+  console.log('Payload gửi đi:', JSON.stringify(payload)); // Log để kiểm tra
+
+  fetch('/save_result', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Response từ server:', data);
+      alert('Kết quả đã được lưu!');
+    })
+    .catch(error => console.error('Lỗi:', error));
+}
+
+
 async function startExam(name, sbd, dob, made) {
   currentMade = made;
   qs('#info-hoten').textContent = name;
@@ -1359,6 +1418,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
