@@ -35,12 +35,78 @@ async function startExam(made) {
 
 // Khi nộp bài
 async function submitExam() {
-    // phần code gốc nộp bài
-    console.log("Nộp bài...");
+  console.log("🔹 Nộp bài...");
 
-    // gọi API bật lại mạng
-    await enableNetwork();
+  try {
+    // ✅ Thu toàn bộ câu hỏi hiển thị trên trang
+    const questionEls = document.querySelectorAll(".question-item");
+    const answers = [];
+
+    questionEls.forEach((el, i) => {
+      const cau = el.querySelector("p b")?.textContent.replace("Câu ", "").replace(":", "").trim() || (i + 1);
+      const noi_dung = el.querySelector("p")?.textContent || "";
+      const textarea = el.querySelector("textarea");
+      const checkedInput = el.querySelector("input[type=radio]:checked, input[type=checkbox]:checked");
+
+      let tra_loi_hoc_sinh = "";
+      let da_chon = "";
+
+      if (textarea) {
+        // ✅ Là câu tự luận
+        tra_loi_hoc_sinh = textarea.value.trim();
+      }
+
+      if (checkedInput) {
+        // ✅ Là trắc nghiệm hoặc đúng/sai
+        da_chon = checkedInput.value;
+      }
+
+      answers.push({
+        cau,
+        noi_dung,
+        kieu: textarea ? "tu_luan" : "trac_nghiem",
+        da_chon,
+        tra_loi_hoc_sinh,
+        goi_y_dap_an: el.dataset.goiY || ""
+      });
+    });
+
+    // ✅ Lấy thông tin thí sinh
+    const payload = {
+      hoten: document.querySelector("#info-hoten")?.textContent.trim() || "unknown",
+      sbd: document.querySelector("#info-sbd")?.textContent.trim() || "N/A",
+      ngaysinh: document.querySelector("#info-dob")?.textContent.trim() || "",
+      made: document.querySelector("#info-made")?.textContent.trim() || "000",
+      diem: (typeof calculateScore === "function" ? calculateScore() : 0).toFixed(2),
+      answers
+    };
+
+    console.log("📤 Gửi dữ liệu:", payload);
+
+    // ✅ Gửi kết quả lên server
+    const res = await fetch(`${API_BASE}/save_result`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrf()
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    console.log("📥 Phản hồi từ server:", data);
+
+    if (data.status === "saved") {
+      alert("✅ Bài thi đã được lưu thành công!");
+    } else {
+      alert("⚠️ Lỗi lưu bài thi: " + (data.msg || "Không rõ lỗi"));
+    }
+  } catch (err) {
+    console.error("❌ Lỗi khi nộp bài:", err);
+    alert("Đã xảy ra lỗi khi nộp bài. Vui lòng thử lại.");
+  }
 }
+
 
 
 
@@ -1395,6 +1461,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
