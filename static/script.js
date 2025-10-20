@@ -36,31 +36,11 @@ async function startExam(made) {
 // Khi nộp bài
 
 async function submitExam() {
-  const examHTML = document.querySelector("#exam-container").innerHTML;
-  const finalScore = typeof calculateScore === "function" ? calculateScore() : 0;
+    // phần code gốc nộp bài
+    console.log("Nộp bài...");
 
-  const payload = {
-    hoten: document.querySelector("#info-hoten")?.textContent.trim() || "unknown",
-    sbd: document.querySelector("#info-sbd")?.textContent.trim() || "N/A",
-    ngaysinh: document.querySelector("#info-dob")?.textContent.trim() || "",
-    made: document.querySelector("#info-made")?.textContent.trim() || "000",
-    diem: finalScore.toFixed(2),
-    exam_html: examHTML
-  };
-
-  console.log("📤 Gửi dữ liệu:", payload);
-
-  const res = await fetch(`${API_BASE}/save_result`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": csrf()
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await res.json();
-  console.log("📥 Kết quả từ server:", data);
+    // gọi API bật lại mạng
+    await enableNetwork();
 }
 
 
@@ -1439,6 +1419,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
