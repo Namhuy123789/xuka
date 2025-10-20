@@ -1041,9 +1041,6 @@ def grading(answers, question_data):
 
 # Route lưu kết quả
 
-
-
-
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
@@ -1053,78 +1050,105 @@ def save_result():
         sbd = str(data.get("sbd", "N/A")).strip()
         ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
         made = str(data.get("made", "000")).strip()
-        diem = data.get("diem", 0)
+        diem = str(data.get("diem", "0.00")).strip()
         answers = data.get("answers", [])
-        noptime = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
+
+        if not answers:
+            return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
+
+        # Log dữ liệu nhận được
+        app.logger.info(f"[DEBUG] Dữ liệu nhận được: {json.dumps(data, ensure_ascii=False)}")
+
+        # Load câu hỏi gốc
+        filename_de = f"questions{made}.json"
+        filepath_de = QUESTIONS_DIR / filename_de
+        question_data = []
+        if filepath_de.exists():
+            try:
+                with open(filepath_de, "r", encoding="utf-8") as f:
+                    question_data = json.load(f)
+            except Exception as e:
+                app.logger.error(f"Lỗi đọc file đề: {e}")
+
+        timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
+        safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
+        filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        filepath = RESULTS_DIR / filename
+
+        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+        app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
 
         lines = [
-            f"KẾT QUẢ BÀI THI\nHọ tên: {hoten}",
+            "KẾT QUẢ BÀI THI",
+            f"Họ tên: {hoten}",
             f"SBD: {sbd}",
             f"Ngày sinh: {ngaysinh}",
             f"Mã đề: {made}",
             f"Điểm: {diem}/10",
-            f"Nộp lúc: {noptime}",
+            f"Nộp lúc: {timestamp}",
             ""
         ]
 
-        for idx, a in enumerate(answers, start=1):
-            cauhoi = str(a.get("noi_dung", "")).strip()
-            kieu = str(a.get("kieu_cau_hoi", "")).strip()
-            lines.append(f"Câu {idx}: {cauhoi}")
+        for a in answers:
+            cau = a.get("cau", "N/A")
+            noi_dung = a.get("noi_dung", "Không có nội dung")
+            kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower()
 
-            # ----- TRẮC NGHIỆM -----
-            if kieu == "trac_nghiem":
-                dapan_sv = a.get("dap_an_sv", "")
-                dapan_dung = a.get("dap_an_dung", "")
-                lua_chon = a.get("lua_chon", {}).get(dapan_sv, "")
-                lines.append(f"  Bạn chọn: {dapan_sv}. {lua_chon or '[Chưa trả lời]'}")
-                if dapan_dung:
-                    lines.append(f"  Gợi ý đáp án: {dapan_dung}")
+            try:
+                idx = int(cau) - 1
+                cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
+            except (ValueError, TypeError):
+                cau_goc = {}
 
-            # ----- ĐÚNG/SAI NHIỀU LỰA CHỌN -----
-            elif "dung_sai" in kieu:
-                lua_chon = a.get("lua_chon", {})
-                dapan_sv = a.get("dap_an_sv", {})
-                dapan_dung = a.get("dap_an_dung", {})
-                for key, nd in lua_chon.items():
-                    val = dapan_sv.get(key, "[Chưa trả lời]")
-                    lines.append(f"  {key}. {nd}")
-                    lines.append(f"     Bạn chọn: {val}")
-                    lines.append(f"     Gợi ý đáp án: {dapan_dung.get(key, '')}")
+            lines.append(f"Câu {cau}: {noi_dung}")
 
             # ----- TỰ LUẬN -----
-            elif "tu_luan" in kieu:
+            if kieu in ["tu_luan", "tu_luan_ngan", "tu_luan_dai"]:
                 tra_loi = (
                     a.get("tra_loi_hoc_sinh")
-                    or a.get("ban_chon")  # thêm dòng này
-                    or a.get("traloi_hocsinh")
-                    or a.get("traLoiHocSinh")
+                    or a.get("student_answer")
                     or a.get("tra_loi")
+                    or a.get("answer")
                     or ""
-                )
-                tra_loi = str(tra_loi).strip()
+                ).strip() or "[Chưa trả lời]"
 
-                goi_y = str(a.get("goi_y_dap_an") or a.get("goiy_dapan") or "").strip()
+                goi_y = (
+                    a.get("goi_y_dap_an")
+                    or a.get("suggestion")
+                    or cau_goc.get("goi_y_dap_an")
+                    or cau_goc.get("suggestion")
+                    or ""
+                ).strip()
 
-                if tra_loi:
-                    lines.append(f"  Bạn trả lời: {tra_loi}")
-                else:
-                    lines.append("  Bạn trả lời: [Chưa trả lời]")
-
+                lines.append(f"  Bạn trả lời: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
 
+            # ----- TRẮC NGHIỆM -----
+            else:
+                da_chon = a.get("da_chon", "(chưa chọn)")
+                dap_an_dung = cau_goc.get("dap_an_dung", "")
+                lines.append(f"  Bạn chọn: {da_chon}")
+                if dap_an_dung:
+                    lines.append(f"  Đáp án đúng: {dap_an_dung}")
+
             lines.append("")
 
-        os.makedirs("ketqua", exist_ok=True)
-        filename = f"ketqua/{hoten}_{sbd}_{made}.txt"
-        with open(filename, "w", encoding="utf-8") as f:
-            f.write("\n".join(lines))
+        filepath.write_text("\n".join(lines), encoding="utf-8-sig")
+        app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
 
-        return jsonify({"status": "success", "file": filename})
+        return jsonify({
+            "status": "saved",
+            "text": "\n".join(lines),
+            "download": f"/download/{filename}"
+        })
 
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
+        app.logger.exception(f"Lỗi lưu kết quả: {e}")
+        return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+
+
+
 
 
 
