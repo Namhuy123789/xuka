@@ -848,43 +848,5 @@ async function sendMessage(){
       }
     }
 </script>
-	<script>
-document.getElementById("btn-submit").addEventListener("click", async () => {
-  const hoten = document.getElementById("info-hoten").innerText.trim() || "unknown";
-  const sbd = document.getElementById("info-sbd").innerText.trim() || "N/A";
-  const ngaysinh = document.getElementById("ngaysinh")?.value || "N/A";
-  const made = document.getElementById("info-made").innerText.trim() || "000";
-  const diem = window.finalScore || 0; // lấy điểm nếu có
-
-  // ✅ Dữ liệu cần gửi
-  const data = {
-    hoten: hoten,
-    sbd: sbd,
-    ngaysinh: ngaysinh,
-    made: made,
-    diem: diem,
-    thoigian: new Date().toLocaleString("vi-VN"),
-  };
-
-  try {
-    const response = await fetch("/save_result", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-    if (result.status === "success") {
-      alert("✅ Bài thi đã được lưu lên máy chủ!");
-    } else {
-      alert("⚠️ Lỗi lưu bài thi!");
-    }
-  } catch (error) {
-    console.error("Lỗi:", error);
-    alert("❌ Không thể kết nối đến máy chủ!");
-  }
-});
-</script>
-
 </body>
 </html>
