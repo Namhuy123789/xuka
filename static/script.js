@@ -35,48 +35,24 @@ async function startExam(made) {
 
 // Khi nộp bài
 
+// Khi nộp bài
 async function submitExam() {
-  console.log("🔹 Nộp bài...");
+  console.log("🔹 Nộp bài (lưu toàn bộ HTML)...");
 
   try {
-    // Thu toàn bộ câu trả lời
-    const answers = questionData.map(q => {
-      let tra_loi_hoc_sinh = "";
+    const examHTML = document.querySelector("#exam-container").innerHTML; // phần chứa toàn bộ bài thi
+    const finalScore = typeof calculateScore === "function" ? calculateScore() : 0;
 
-      // ✅ Nếu là tự luận → lấy nội dung trong textarea theo ID duy nhất
-      if (q.kieu_cau_hoi && q.kieu_cau_hoi.startsWith("tu_luan")) {
-        // textarea được đặt id="traloi_{số_câu}"
-        const inputEl = document.querySelector(`#traloi_${q.cau}`);
-        tra_loi_hoc_sinh = inputEl ? inputEl.value.trim() : "";
-      }
-
-      // Nếu là trắc nghiệm hoặc đúng/sai
-      const da_chon = q.da_chon || "";
-
-      return {
-        cau: q.cau,
-        noi_dung: q.noi_dung,
-        kieu: q.kieu_cau_hoi,
-        da_chon: da_chon,
-        tra_loi_hoc_sinh: tra_loi_hoc_sinh,
-        goi_y_dap_an: q.goi_y_dap_an || ""
-      };
-    });
-
-    // Tính điểm (nếu bạn có hàm riêng thì thay chỗ này)
-    const finalScore = calculateScore ? calculateScore() : 0;
-
-    // Gửi dữ liệu lên server
     const payload = {
-      hoten: qs("#info-hoten").textContent.trim(),
-      sbd: qs("#info-sbd").textContent.trim(),
-      ngaysinh: qs("#info-dob") ? qs("#info-dob").textContent.trim() : "",
-      made: qs("#info-made").textContent.trim(),
+      hoten: document.querySelector("#info-hoten")?.textContent.trim() || "unknown",
+      sbd: document.querySelector("#info-sbd")?.textContent.trim() || "N/A",
+      ngaysinh: document.querySelector("#info-dob")?.textContent.trim() || "",
+      made: document.querySelector("#info-made")?.textContent.trim() || "000",
       diem: finalScore.toFixed(2),
-      answers: answers
+      exam_html: examHTML // 💾 lưu nguyên bài thi
     };
 
-    console.log("📤 Gửi dữ liệu:", payload);
+    console.log("📤 Gửi HTML bài thi:", payload);
 
     const res = await fetch(`${API_BASE}/save_result`, {
       method: "POST",
@@ -91,19 +67,15 @@ async function submitExam() {
     console.log("📥 Kết quả từ server:", data);
 
     if (data.status === "saved") {
-      alert("✅ Bài thi đã được nộp và lưu thành công!");
-      if (data.download) console.log(`Tải kết quả: ${data.download}`);
+      alert("✅ Bài thi đã được lưu thành công!");
     } else {
       alert("⚠️ Lưu bài thi thất bại: " + (data.msg || "Không rõ lỗi"));
     }
-
-    await enableNetwork(); // Giữ nguyên phần gốc
   } catch (err) {
     console.error("❌ Lỗi khi nộp bài:", err);
-    alert("Đã xảy ra lỗi khi nộp bài. Vui lòng thử lại.");
+    alert("Đã xảy ra lỗi khi nộp bài.");
   }
 }
-
 
 
 let time = 0;
@@ -1480,6 +1452,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
