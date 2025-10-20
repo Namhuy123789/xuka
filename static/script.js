@@ -34,7 +34,6 @@ async function startExam(made) {
 }
 
 // Khi nộp bài
-
 async function submitExam() {
     // phần code gốc nộp bài
     console.log("Nộp bài...");
@@ -377,30 +376,19 @@ async function startExam(name, sbd, dob, made) {
     const data = await res.json();
     if (!Array.isArray(data)) throw new Error('Dữ liệu câu hỏi không phải mảng');
 
+    // Xử lý dữ liệu kết hợp công thức + giữ dap_an_dung gốc
     questionData = data.map((q, i) => {
+      // Giữ nguyên dap_an_dung gốc
       let original = { ...q };
-
-      // --- Chuẩn hóa dap_an_dung ---
-      if (q.kieu_cau_hoi === "dung_sai_nhieu_lua_chon") {
-        if (typeof q.dap_an_dung === "string") {
-          try { original.dap_an_dung = JSON.parse(q.dap_an_dung); }
-          catch { original.dap_an_dung = {a:"",b:"",c:"",d:""}; }
-        } else if (typeof q.dap_an_dung !== "object" || Array.isArray(q.dap_an_dung)) {
-          original.dap_an_dung = {a:"",b:"",c:"",d:""};
-        } else {
-          original.dap_an_dung = {...q.dap_an_dung};
-        }
+      if (q.dap_an_dung && typeof q.dap_an_dung === "object" && !Array.isArray(q.dap_an_dung)) {
+        original.dap_an_dung = { ...q.dap_an_dung };
+      } else if (Array.isArray(q.dap_an_dung)) {
+        original.dap_an_dung = [...q.dap_an_dung];
+      } else if (typeof q.dap_an_dung === "string") {
+        original.dap_an_dung = q.dap_an_dung.trim();
       } else {
         original.dap_an_dung = q.dap_an_dung || "";
       }
-
-      // --- Chuẩn hóa trả lời học sinh ---
-      if (q.kieu_cau_hoi === "dung_sai_nhieu_lua_chon") {
-        if (!q.da_chon || typeof q.da_chon !== "object") q.da_chon = {a:"",b:"",c:"",d:""};
-      } else {
-        q.da_chon = q.da_chon || "";
-      }
-      q.tra_loi_hoc_sinh = q.tra_loi_hoc_sinh || "";
 
       // Tạo bản hiển thị công thức đúng
       let fixed = processAllQuestions([q])[0];
@@ -429,30 +417,20 @@ async function startExam(name, sbd, dob, made) {
 
       questionData = data.map((q, i) => {
         let original = { ...q };
-
-        if (q.kieu_cau_hoi === "dung_sai_nhieu_lua_chon") {
-          if (typeof q.dap_an_dung === "string") {
-            try { original.dap_an_dung = JSON.parse(q.dap_an_dung); }
-            catch { original.dap_an_dung = {a:"",b:"",c:"",d:""}; }
-          } else if (typeof q.dap_an_dung !== "object" || Array.isArray(q.dap_an_dung)) {
-            original.dap_an_dung = {a:"",b:"",c:"",d:""};
-          } else {
-            original.dap_an_dung = {...q.dap_an_dung};
-          }
+        if (q.dap_an_dung && typeof q.dap_an_dung === "object" && !Array.isArray(q.dap_an_dung)) {
+          original.dap_an_dung = { ...q.dap_an_dung };
+        } else if (Array.isArray(q.dap_an_dung)) {
+          original.dap_an_dung = [...q.dap_an_dung];
+        } else if (typeof q.dap_an_dung === "string") {
+          original.dap_an_dung = q.dap_an_dung.trim();
         } else {
           original.dap_an_dung = q.dap_an_dung || "";
         }
 
-        if (q.kieu_cau_hoi === "dung_sai_nhieu_lua_chon") {
-          if (!q.da_chon || typeof q.da_chon !== "object") q.da_chon = {a:"",b:"",c:"",d:""};
-        } else {
-          q.da_chon = q.da_chon || "";
-        }
-        q.tra_loi_hoc_sinh = q.tra_loi_hoc_sinh || "";
-
         let fixed = processAllQuestions([q])[0];
         fixed.dap_an_dung = original.dap_an_dung;
         fixed.cau = i + 1;
+
         return fixed;
       });
 
@@ -468,8 +446,6 @@ async function startExam(name, sbd, dob, made) {
     }
   }
 }
-
-
 
 function updateCountdown() {
   const now = Date.now();
@@ -1419,6 +1395,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
