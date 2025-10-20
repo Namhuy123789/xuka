@@ -1047,89 +1047,80 @@ def grading(answers, question_data):
 def save_result():
     try:
         data = request.get_json(silent=True) or {}
+
+        # Lấy thông tin thí sinh
         hoten = str(data.get("hoten", "unknown")).strip()
         sbd = str(data.get("sbd", "N/A")).strip()
         ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
         made = str(data.get("made", "000")).strip()
-        diem = str(data.get("diem", "0.00")).strip()
+        diem = str(data.get("diem", "0")).strip()
         answers = data.get("answers", [])
 
-        if not answers:
-            return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
+        # Lấy thời gian nộp bài
+        now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
 
-        # Load câu hỏi gốc (nếu có)
-        filename_de = f"questions{made}.json"
-        filepath_de = QUESTIONS_DIR / filename_de
-        question_data = []
-        if filepath_de.exists():
-            try:
-                with open(filepath_de, "r", encoding="utf-8") as f:
-                    question_data = json.load(f)
-            except Exception as e:
-                app.logger.error(f"Lỗi đọc file đề: {e}")
+        # Tạo nội dung file kết quả
+        lines = []
+        lines.append("KẾT QUẢ BÀI THI")
+        lines.append(f"Họ tên: {hoten}")
+        lines.append(f"SBD: {sbd}")
+        lines.append(f"Ngày sinh: {ngaysinh}")
+        lines.append(f"Mã đề: {made}")
+        lines.append(f"Điểm: {diem}")
+        lines.append(f"Nộp lúc: {now}")
+        lines.append("")
 
-        timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
-        safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
-        filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-        filepath = RESULTS_DIR / filename
-
-        app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
-
-        lines = [
-            "KẾT QUẢ BÀI THI",
-            f"Họ tên: {hoten}",
-            f"SBD: {sbd}",
-            f"Ngày sinh: {ngaysinh}",
-            f"Mã đề: {made}",
-            f"Điểm: {diem}/10",
-            f"Nộp lúc: {timestamp}",
-            ""
-        ]
-
-        for a in answers:
-            cau = a.get("cau", "N/A")
+        # Ghi từng câu hỏi
+        for i, a in enumerate(answers, 1):
             noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = a.get("kieu", "trac_nghiem").lower()
+            kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower()
 
-            try:
-                idx = int(cau) - 1
-                cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except (ValueError, TypeError):
-                cau_goc = {}
+            lines.append(f"Câu {i}: {noi_dung}")
 
-            lines.append(f"Câu {cau}: {noi_dung}")
-
-            if kieu == "tu_luan":
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
-                goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  Bạn chọn: {tra_loi}")
+            # --- CÂU TỰ LUẬN ---
+            if "tu_luan" in kieu:
+                tra_loi = (a.get("tra_loi_hoc_sinh") or "").strip() or "[Chưa trả lời]"
+                goi_y = (a.get("goi_y_dap_an") or "").strip()
+                lines.append(f"  Bạn trả lời: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
-            else:  # trac_nghiem hoặc khác
+
+            # --- CÂU ĐÚNG/SAI NHIỀU LỰA CHỌN ---
+            elif "dung_sai" in kieu:
+                dap_an_dung = a.get("dap_an_dung", {})
+                da_chon = a.get("da_chon", {})
+                if isinstance(da_chon, dict) and da_chon:
+                    chon_text = ", ".join([f"{k}: {v} ✅" for k, v in da_chon.items()])
+                    lines.append(f"  Bạn chọn: {chon_text}")
+                if isinstance(dap_an_dung, dict) and dap_an_dung:
+                    dung_text = ", ".join([f"{k}: {v}" for k, v in dap_an_dung.items()])
+                    lines.append(f"  Đáp án đúng: {dung_text}")
+
+            # --- CÂU TRẮC NGHIỆM ---
+            else:
                 da_chon = a.get("da_chon", "(chưa chọn)")
-                dap_an_dung = cau_goc.get("dap_an_dung", "")
+                dap_an_dung = a.get("dap_an_dung", "")
                 lines.append(f"  Bạn chọn: {da_chon}")
                 if dap_an_dung:
                     lines.append(f"  Đáp án đúng: {dap_an_dung}")
 
             lines.append("")
 
-        try:
-            filepath.write_text("\n".join(lines), encoding="utf-8")
-            app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
-        except Exception as e:
-            app.logger.error(f"Lỗi ghi file: {e}")
-            return jsonify({"status": "error", "msg": f"Lỗi ghi file: {str(e)}"}), 500
+        # Lưu file kết quả
+        folder_path = "ketqua"
+        os.makedirs(folder_path, exist_ok=True)
+        filename = f"{sbd}_{made}.txt"
+        filepath = os.path.join(folder_path, filename)
 
-        return jsonify({
-            "status": "saved",
-            "text": "\n".join(lines),
-            "download": f"/download/{filename}"
-        })
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
+
+        print(f"✅ Đã lưu kết quả: {filepath}")
+        return jsonify({"status": "success", "message": "Đã lưu kết quả."}), 200
 
     except Exception as e:
-        app.logger.exception(f"Lỗi lưu kết quả: {e}")
-        return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+        print("❌ Lỗi khi lưu kết quả:", str(e))
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 
