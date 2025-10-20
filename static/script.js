@@ -34,6 +34,7 @@ async function startExam(made) {
 }
 
 // Khi nộp bài
+
 async function submitExam() {
   console.log("🔹 Nộp bài...");
 
@@ -42,10 +43,10 @@ async function submitExam() {
     const answers = questionData.map(q => {
       let tra_loi_hoc_sinh = "";
 
-      // Nếu là tự luận → lấy nội dung trong textarea tương ứng
+      // ✅ Nếu là tự luận → lấy nội dung trong textarea theo ID duy nhất
       if (q.kieu_cau_hoi && q.kieu_cau_hoi.startsWith("tu_luan")) {
-        const qEl = document.querySelector(`.question-item[data-index="${q.cau - 1}"]`);
-        const inputEl = qEl ? qEl.querySelector("textarea") : null;
+        // textarea được đặt id="traloi_{số_câu}"
+        const inputEl = document.querySelector(`#traloi_${q.cau}`);
         tra_loi_hoc_sinh = inputEl ? inputEl.value.trim() : "";
       }
 
@@ -96,13 +97,12 @@ async function submitExam() {
       alert("⚠️ Lưu bài thi thất bại: " + (data.msg || "Không rõ lỗi"));
     }
 
-    await enableNetwork(); // Giữ nguyên phần gốc của bạn
+    await enableNetwork(); // Giữ nguyên phần gốc
   } catch (err) {
     console.error("❌ Lỗi khi nộp bài:", err);
     alert("Đã xảy ra lỗi khi nộp bài. Vui lòng thử lại.");
   }
 }
-
 
 
 
@@ -1480,6 +1480,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
