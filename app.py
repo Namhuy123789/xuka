@@ -1046,106 +1046,33 @@ def grading(answers, question_data):
 def save_result():
     try:
         data = request.get_json(silent=True) or {}
-        hoten = str(data.get("hoten", "unknown")).strip()
-        sbd = str(data.get("sbd", "N/A")).strip()
-        ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
-        made = str(data.get("made", "000")).strip()
-        diem = str(data.get("diem", "0.00")).strip()
-        answers = data.get("answers", [])
+        hoten = data.get("hoten", "unknown").strip()
+        sbd = data.get("sbd", "N/A").strip()
+        ngaysinh = data.get("ngaysinh", "N/A").strip()
+        made = data.get("made", "000").strip()
+        diem = data.get("diem", "0").strip()
+        exam_html = data.get("exam_html", "")
 
-        if not answers:
-            return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
+        # Tạo thư mục lưu kết quả
+        os.makedirs("results", exist_ok=True)
+        filename = f"results/{sbd}_{made}.html"
 
-        # Log dữ liệu nhận được
-        app.logger.info(f"[DEBUG] Dữ liệu nhận được: {json.dumps(data, ensure_ascii=False)}")
+        # Lưu file HTML bài thi
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(f"""
+            <h2>KẾT QUẢ BÀI THI</h2>
+            <p><b>Họ tên:</b> {hoten}</p>
+            <p><b>SBD:</b> {sbd}</p>
+            <p><b>Ngày sinh:</b> {ngaysinh}</p>
+            <p><b>Mã đề:</b> {made}</p>
+            <p><b>Điểm:</b> {diem}</p>
+            <hr>
+            {exam_html}
+            """)
 
-        # Load câu hỏi gốc
-        filename_de = f"questions{made}.json"
-        filepath_de = QUESTIONS_DIR / filename_de
-        question_data = []
-        if filepath_de.exists():
-            try:
-                with open(filepath_de, "r", encoding="utf-8") as f:
-                    question_data = json.load(f)
-            except Exception as e:
-                app.logger.error(f"Lỗi đọc file đề: {e}")
-
-        timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
-        safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
-        filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-        filepath = RESULTS_DIR / filename
-
-        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-        app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
-
-        lines = [
-            "KẾT QUẢ BÀI THI",
-            f"Họ tên: {hoten}",
-            f"SBD: {sbd}",
-            f"Ngày sinh: {ngaysinh}",
-            f"Mã đề: {made}",
-            f"Điểm: {diem}/10",
-            f"Nộp lúc: {timestamp}",
-            ""
-        ]
-
-        for a in answers:
-            cau = a.get("cau", "N/A")
-            noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = (a.get("kieu") or a.get("kieu_cau_hoi") or "trac_nghiem").lower()
-
-            try:
-                idx = int(cau) - 1
-                cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except (ValueError, TypeError):
-                cau_goc = {}
-
-            lines.append(f"Câu {cau}: {noi_dung}")
-
-            # ----- TỰ LUẬN -----
-            if kieu in ["tu_luan", "tu_luan_ngan", "tu_luan_dai"]:
-                tra_loi = (
-                    a.get("tra_loi_hoc_sinh")
-                    or a.get("student_answer")
-                    or a.get("tra_loi")
-                    or a.get("answer")
-                    or ""
-                ).strip() or "[Chưa trả lời]"
-
-                goi_y = (
-                    a.get("goi_y_dap_an")
-                    or a.get("suggestion")
-                    or cau_goc.get("goi_y_dap_an")
-                    or cau_goc.get("suggestion")
-                    or ""
-                ).strip()
-
-                lines.append(f"  Bạn trả lời: {tra_loi}")
-                if goi_y:
-                    lines.append(f"  Gợi ý đáp án: {goi_y}")
-
-            # ----- TRẮC NGHIỆM -----
-            else:
-                da_chon = a.get("da_chon", "(chưa chọn)")
-                dap_an_dung = cau_goc.get("dap_an_dung", "")
-                lines.append(f"  Bạn chọn: {da_chon}")
-                if dap_an_dung:
-                    lines.append(f"  Đáp án đúng: {dap_an_dung}")
-
-            lines.append("")
-
-        filepath.write_text("\n".join(lines), encoding="utf-8-sig")
-        app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
-
-        return jsonify({
-            "status": "saved",
-            "text": "\n".join(lines),
-            "download": f"/download/{filename}"
-        })
-
+        return jsonify({"status": "saved", "msg": "Bài thi đã được lưu thành công!"})
     except Exception as e:
-        app.logger.exception(f"Lỗi lưu kết quả: {e}")
-        return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+        return jsonify({"status": "error", "msg": str(e)})
 
 
 
