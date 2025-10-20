@@ -1044,36 +1044,66 @@ def grading(answers, question_data):
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
+    import os, datetime
     try:
         data = request.get_json(silent=True) or {}
-        hoten = data.get("hoten", "unknown").strip()
-        sbd = data.get("sbd", "N/A").strip()
-        ngaysinh = data.get("ngaysinh", "N/A").strip()
-        made = data.get("made", "000").strip()
-        diem = data.get("diem", "0").strip()
+        hoten = str(data.get("hoten", "unknown")).strip()
+        sbd = str(data.get("sbd", "N/A")).strip()
+        ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
+        made = str(data.get("made", "000")).strip()
+        diem = str(data.get("diem", "0")).strip()
         exam_html = data.get("exam_html", "")
 
-        # Tạo thư mục lưu kết quả
-        os.makedirs("results", exist_ok=True)
-        filename = f"results/{sbd}_{made}.html"
+        if not exam_html.strip():
+            return jsonify({"status": "error", "msg": "Không có dữ liệu bài thi gửi lên."})
 
-        # Lưu file HTML bài thi
+        # 🔹 Đảm bảo thư mục tồn tại
+        os.makedirs("results", exist_ok=True)
+
+        # 🔹 Tên file duy nhất kèm timestamp
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"results/{sbd}_{made}_{timestamp}.html"
+
+        # 🔹 Ghi nội dung HTML vào file
         with open(filename, "w", encoding="utf-8") as f:
             f.write(f"""
-            <h2>KẾT QUẢ BÀI THI</h2>
-            <p><b>Họ tên:</b> {hoten}</p>
-            <p><b>SBD:</b> {sbd}</p>
-            <p><b>Ngày sinh:</b> {ngaysinh}</p>
-            <p><b>Mã đề:</b> {made}</p>
-            <p><b>Điểm:</b> {diem}</p>
-            <hr>
-            {exam_html}
+            <!DOCTYPE html>
+            <html lang="vi">
+            <head>
+              <meta charset="UTF-8">
+              <title>Kết quả bài thi</title>
+              <style>
+                body {{ font-family: Arial, sans-serif; padding: 20px; }}
+                h2 {{ color: #1a73e8; }}
+                p {{ margin: 4px 0; }}
+                hr {{ margin: 10px 0; }}
+              </style>
+            </head>
+            <body>
+              <h2>KẾT QUẢ BÀI THI</h2>
+              <p><b>Họ tên:</b> {hoten}</p>
+              <p><b>SBD:</b> {sbd}</p>
+              <p><b>Ngày sinh:</b> {ngaysinh}</p>
+              <p><b>Mã đề:</b> {made}</p>
+              <p><b>Điểm:</b> {diem}</p>
+              <p><b>Nộp lúc:</b> {datetime.datetime.now().strftime("%H:%M:%S, %d/%m/%Y")}</p>
+              <hr>
+              {exam_html}
+            </body>
+            </html>
             """)
 
-        return jsonify({"status": "saved", "msg": "Bài thi đã được lưu thành công!"})
-    except Exception as e:
-        return jsonify({"status": "error", "msg": str(e)})
+        print(f"✅ Đã lưu bài thi: {filename}")
 
+        return jsonify({
+            "status": "saved",
+            "msg": f"Đã lưu bài thi vào {filename}",
+            "download": f"/{filename}"
+        })
+
+    except Exception as e:
+        print("❌ Lỗi khi lưu bài thi:", e)
+        return jsonify({"status": "error", "msg": str(e)})
 
 
 
