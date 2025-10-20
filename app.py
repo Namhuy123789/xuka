@@ -1055,23 +1055,17 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Load câu hỏi gốc (nếu có)
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
         if filepath_de.exists():
-            try:
-                with open(filepath_de, "r", encoding="utf-8") as f:
-                    question_data = json.load(f)
-            except Exception as e:
-                app.logger.error(f"Lỗi đọc file đề: {e}")
+            with open(filepath_de, "r", encoding="utf-8") as f:
+                question_data = json.load(f)
 
         timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
-        filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        filename = f"ketqua_{sbd}_{made}.txt"
         filepath = RESULTS_DIR / filename
-
-        app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
 
         lines = [
             "KẾT QUẢ BÀI THI",
@@ -1086,42 +1080,56 @@ def save_result():
 
         for a in answers:
             cau = a.get("cau", "N/A")
-            noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = a.get("kieu", "trac_nghiem").lower()
+            noi_dung = a.get("noi_dung", "").strip()
+            kieu = a.get("kieu", "").lower()
 
+            # Lấy câu hỏi gốc
             try:
                 idx = int(cau) - 1
                 cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except (ValueError, TypeError):
+            except Exception:
                 cau_goc = {}
 
             lines.append(f"Câu {cau}: {noi_dung}")
 
+            # ✅ CÂU TỰ LUẬN
             if kieu == "tu_luan":
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
+                tra_loi = (
+                    a.get("tra_loi_hoc_sinh")
+                    or a.get("tra_loi")
+                    or a.get("answer")
+                    or ""
+                ).strip()
                 goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  Bạn chọn: {tra_loi}")
+
+                lines.append(f"  Bạn viết: {tra_loi or '[Chưa trả lời]'}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
-            else:  # trac_nghiem hoặc khác
-                da_chon = a.get("da_chon", "(chưa chọn)")
+
+            # ✅ CÂU TRẮC NGHIỆM & ĐÚNG SAI
+            else:
+                da_chon = a.get("da_chon", "").strip() or "[Chưa chọn]"
                 dap_an_dung = cau_goc.get("dap_an_dung", "")
+
                 lines.append(f"  Bạn chọn: {da_chon}")
                 if dap_an_dung:
-                    lines.append(f"  Đáp án đúng: {dap_an_dung}")
+                    if isinstance(dap_an_dung, dict):
+                        lines.append("  Đáp án đúng:")
+                        for k, v in dap_an_dung.items():
+                            lines.append(f"    {k}: {v}")
+                    elif isinstance(dap_an_dung, list):
+                        lines.append(f"  Đáp án đúng: {', '.join(map(str, dap_an_dung))}")
+                    else:
+                        lines.append(f"  Đáp án đúng: {dap_an_dung}")
 
             lines.append("")
 
-        try:
-            filepath.write_text("\n".join(lines), encoding="utf-8")
-            app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
-        except Exception as e:
-            app.logger.error(f"Lỗi ghi file: {e}")
-            return jsonify({"status": "error", "msg": f"Lỗi ghi file: {str(e)}"}), 500
+        filepath.write_text("\n".join(lines), encoding="utf-8")
+        app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
 
         return jsonify({
             "status": "saved",
-            "text": "\n".join(lines),
+            "msg": "Kết quả đã được lưu thành công",
             "download": f"/download/{filename}"
         })
 
