@@ -1045,84 +1045,27 @@ def grading(answers, question_data):
 @csrf.exempt
 def save_result():
     try:
-        data = request.get_json(silent=True) or {}
-        hoten = str(data.get("hoten", "unknown")).strip()
-        sbd = str(data.get("sbd", "N/A")).strip()
-        ngaysinh = str(data.get("ngaysinh", "N/A")).strip()
-        made = str(data.get("made", "000")).strip()
-        diem = str(data.get("diem", "0.00")).strip()
+        data = request.get_json()
+        hoten = data.get("hoten", "unknown")
+        sbd = data.get("sbd", "N/A")
+        made = data.get("made", "000")
         answers = data.get("answers", [])
+        time_str = data.get("time", "")
+        result_folder = "results"
+        os.makedirs(result_folder, exist_ok=True)
+        filename = os.path.join(result_folder, f"ketqua_{sbd}_{made}.txt")
 
-        if not answers:
-            return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(f"KẾT QUẢ BÀI THI\n")
+            f.write(f"Họ tên: {hoten}\nSBD: {sbd}\nMã đề: {made}\nNộp lúc: {time_str}\n\n")
+            for a in answers:
+                f.write(f"Câu {a['cau']}: {a['question']}\n")
+                f.write(f"  Bạn chọn: {a['user_answer']}\n")
+                f.write(f"  Gợi ý đáp án: {a['suggest_answer']}\n\n")
 
-        filename_de = f"questions{made}.json"
-        filepath_de = QUESTIONS_DIR / filename_de
-        question_data = []
-        if filepath_de.exists():
-            try:
-                with open(filepath_de, "r", encoding="utf-8") as f:
-                    question_data = json.load(f)
-            except Exception as e:
-                app.logger.error(f"Lỗi đọc file đề: {e}")
-
-        timestamp = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
-        safe_name = secure_filename(hoten.replace(" ", "_")) or "unknown"
-        filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-        filepath = RESULTS_DIR / filename
-
-        lines = [
-            "KẾT QUẢ BÀI THI",
-            f"Họ tên: {hoten}",
-            f"SBD: {sbd}",
-            f"Ngày sinh: {ngaysinh}",
-            f"Mã đề: {made}",
-            f"Điểm: {diem}/10",
-            f"Nộp lúc: {timestamp}",
-            ""
-        ]
-
-        for a in answers:
-            cau = a.get("cau", "N/A")
-            noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = a.get("kieu", "trac_nghiem").lower()
-
-            try:
-                idx = int(cau) - 1
-                cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except (ValueError, TypeError):
-                cau_goc = {}
-
-            lines.append(f"Câu {cau}: {noi_dung}")
-
-            if "tu_luan" in kieu:
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
-                goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  Bạn trả lời: {tra_loi}")
-                if goi_y:
-                    lines.append(f"  Gợi ý đáp án: {goi_y}")
-            else:
-                da_chon = a.get("da_chon", "(chưa chọn)")
-                dap_an_dung = cau_goc.get("dap_an_dung", "")
-                lines.append(f"  Bạn chọn: {da_chon}")
-                if dap_an_dung:
-                    lines.append(f"  Đáp án đúng: {dap_an_dung}")
-
-            lines.append("")
-
-        filepath.write_text("\n".join(lines), encoding="utf-8")
-        app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
-
-        return jsonify({
-            "status": "saved",
-            "text": "\n".join(lines),
-            "download": f"/download/{filename}"
-        })
-
+        return jsonify({"status": "success", "file": filename})
     except Exception as e:
-        app.logger.exception(f"Lỗi lưu kết quả: {e}")
-        return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
-
+        return jsonify({"status": "error", "message": str(e)})
 
 
 # ✅ Route list toàn bộ file kết quả để kiểm tra
