@@ -34,57 +34,55 @@ async function startExam(made) {
 }
 
 // Khi nộp bài
+
 async function submitExam() {
   console.log("🔹 Nộp bài...");
 
   try {
-    // ✅ Thu toàn bộ câu hỏi hiển thị trên trang
-    const questionEls = document.querySelectorAll(".question-item");
+    // ✅ Lấy tất cả câu trả lời trong trang HTML
     const answers = [];
-
-    questionEls.forEach((el, i) => {
-      const cau = el.querySelector("p b")?.textContent.replace("Câu ", "").replace(":", "").trim() || (i + 1);
-      const noi_dung = el.querySelector("p")?.textContent || "";
-      const textarea = el.querySelector("textarea");
-      const checkedInput = el.querySelector("input[type=radio]:checked, input[type=checkbox]:checked");
+    document.querySelectorAll(".question-item").forEach((item, index) => {
+      const cau = index + 1;
+      const noi_dung = item.querySelector("p")?.innerText.trim() || "";
+      const kieu = item.dataset.kieu || "trac_nghiem";
+      const goi_y = item.dataset.goi_y || "";
 
       let tra_loi_hoc_sinh = "";
       let da_chon = "";
 
-      if (textarea) {
-        // ✅ Là câu tự luận
-        tra_loi_hoc_sinh = textarea.value.trim();
-      }
-
-      if (checkedInput) {
-        // ✅ Là trắc nghiệm hoặc đúng/sai
-        da_chon = checkedInput.value;
+      if (kieu.startsWith("tu_luan")) {
+        // ✅ Lấy nội dung textarea cho câu tự luận
+        const textarea = item.querySelector("textarea");
+        tra_loi_hoc_sinh = textarea ? textarea.value.trim() : "";
+      } else {
+        // ✅ Lấy câu trả lời đã chọn (trắc nghiệm / đúng sai)
+        const checked = item.querySelector("input[type='radio']:checked");
+        da_chon = checked ? checked.value : "";
       }
 
       answers.push({
         cau,
         noi_dung,
-        kieu: textarea ? "tu_luan" : "trac_nghiem",
+        kieu,
+        tra_loi_hoc_sinh, // ✅ bắt buộc có
         da_chon,
-        tra_loi_hoc_sinh,
-        goi_y_dap_an: el.dataset.goiY || ""
+        goi_y_dap_an: goi_y
       });
     });
 
-    // ✅ Lấy thông tin thí sinh
+    // ✅ Chuẩn bị dữ liệu gửi lên server
     const payload = {
-      hoten: document.querySelector("#info-hoten")?.textContent.trim() || "unknown",
-      sbd: document.querySelector("#info-sbd")?.textContent.trim() || "N/A",
+      hoten: document.querySelector("#info-hoten").textContent.trim(),
+      sbd: document.querySelector("#info-sbd").textContent.trim(),
       ngaysinh: document.querySelector("#info-dob")?.textContent.trim() || "",
-      made: document.querySelector("#info-made")?.textContent.trim() || "000",
-      diem: (typeof calculateScore === "function" ? calculateScore() : 0).toFixed(2),
+      made: document.querySelector("#info-made").textContent.trim(),
+      diem: calculateScore ? calculateScore().toFixed(2) : "0.00",
       answers
     };
 
     console.log("📤 Gửi dữ liệu:", payload);
 
-    // ✅ Gửi kết quả lên server
-    const res = await fetch(`${API_BASE}/save_result`, {
+    const res = await fetch("/save_result", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -97,16 +95,15 @@ async function submitExam() {
     console.log("📥 Phản hồi từ server:", data);
 
     if (data.status === "saved") {
-      alert("✅ Bài thi đã được lưu thành công!");
+      alert("✅ Bài thi đã được lưu!");
     } else {
-      alert("⚠️ Lỗi lưu bài thi: " + (data.msg || "Không rõ lỗi"));
+      alert("⚠️ Lỗi lưu bài thi: " + (data.msg || "Không rõ nguyên nhân"));
     }
   } catch (err) {
-    console.error("❌ Lỗi khi nộp bài:", err);
-    alert("Đã xảy ra lỗi khi nộp bài. Vui lòng thử lại.");
+    console.error("❌ Lỗi nộp bài:", err);
+    alert("Lỗi khi nộp bài!");
   }
 }
-
 
 
 
@@ -1461,6 +1458,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
