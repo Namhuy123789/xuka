@@ -1055,7 +1055,7 @@ def save_result():
         if not answers:
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Load câu hỏi gốc (nếu có)
+        # Nạp đề gốc (nếu có)
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
@@ -1086,30 +1086,15 @@ def save_result():
 
         for a in answers:
             cau = a.get("cau", "N/A")
-            noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = a.get("kieu", "trac_nghiem").lower()
+            question = a.get("question", "Không có nội dung")
+            user_answer = a.get("user_answer", "[Chưa trả lời]").strip()
+            suggest_answer = a.get("suggest_answer", "").strip()
 
-            try:
-                idx = int(cau) - 1
-                cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-            except (ValueError, TypeError):
-                cau_goc = {}
-
-            lines.append(f"Câu {cau}: {noi_dung}")
-
-            if kieu == "tu_luan":
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
-                goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  Bạn chọn: {tra_loi}")
-                if goi_y:
-                    lines.append(f"  Gợi ý đáp án: {goi_y}")
-            else:  # trac_nghiem hoặc khác
-                da_chon = a.get("da_chon", "(chưa chọn)")
-                dap_an_dung = cau_goc.get("dap_an_dung", "")
-                lines.append(f"  Bạn chọn: {da_chon}")
-                if dap_an_dung:
-                    lines.append(f"  Đáp án đúng: {dap_an_dung}")
-
+            # Ghi nội dung câu hỏi
+            lines.append(f"Câu {cau}: {question}")
+            lines.append(f"  Bạn chọn: {user_answer}")
+            if suggest_answer:
+                lines.append(f"  Gợi ý đáp án: {suggest_answer}")
             lines.append("")
 
         try:
@@ -1128,6 +1113,7 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+
 
 # ✅ Route list toàn bộ file kết quả để kiểm tra
 @app.route("/list_results")
