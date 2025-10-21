@@ -832,7 +832,7 @@ function renderQuestions(questions) {
       localStorage.setItem(nsKey('savedAnswers'), JSON.stringify(saved));
     });
   });
-}
+
 
 
 function showResults(questions) {
@@ -1538,6 +1538,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
