@@ -1099,7 +1099,7 @@ def save_result():
             if kieu == "tu_luan":
                 tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
                 goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  Bạn chọn: {tra_loi}")
+                lines.append(f"  tra_loi_hoc_sinh: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
             else:  # trac_nghiem hoặc khác
