@@ -1001,49 +1001,59 @@ async function uploadResultsToServer() {
   typeset?.(container);
 
   // Nộp bài và tính điểm
-  window.showResults = function() {
-    const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
-    let totalScore = 0;
+ window.showResults = function() {
+  const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
+  let totalScore = 0;
 
-    questions.forEach((q, i) => {
-      const qDiv = qs(`#q-container-${i}`);
-      const type = (q.kieu_cau_hoi || '').toLowerCase();
-      const resultDiv = document.createElement('div');
-      resultDiv.className = 'mt-2 p-2 bg-gray-100 rounded-md text-sm';
+  questions.forEach((q, i) => {
+    const qDiv = qs(`#q-container-${i}`);
+    const type = (q.kieu_cau_hoi || '').toLowerCase();
+    const resultDiv = document.createElement('div');
+    resultDiv.className = 'mt-2 p-2 bg-gray-100 rounded-md text-sm';
 
-      if (type === 'tu_luan') {
-        const userAns = saved[`q${i}`] || '';
-        resultDiv.innerHTML = `<strong>Gợi ý đáp án:</strong> ${safeHTML(q.goi_y_dap_an || '')}<br>
-                               <strong>Đáp án của bạn:</strong> ${safeHTML(userAns)}`;
-      } else if (type === 'dung_sai_nhieu_lua_chon') {
-        let correctCount = 0, total = Object.keys(q.lua_chon).length;
-        let display = '';
-        Object.keys(q.lua_chon).forEach(k => {
-          const userAns = saved[`q${i}_${k}`] || '';
-          const correct = q.dap_an_dung.includes(k) ? 'Đúng' : 'Sai';
-          const mark = userAns === correct ? '✅' : '❌';
-          if(userAns === correct) correctCount++;
-          display += `${k}: Bạn chọn ${userAns || '...'} ${mark}, Đáp án đúng: ${correct}<br>`;
-        });
-        totalScore += correctCount / total;
-        resultDiv.innerHTML = display;
-      } else {
-        const userAns = saved[`q${i}`] || '';
-        const correctAns = Array.isArray(q.dap_an_dung) ? q.dap_an_dung[0] : q.dap_an_dung;
-        const mark = userAns === correctAns ? '✅' : '❌';
-        if(userAns === correctAns) totalScore += 1;
-        resultDiv.innerHTML = `Bạn chọn: ${userAns || '...'} ${mark}<br>Đáp án đúng: ${correctAns}`;
-      }
+    if (type === 'tu_luan') {
+      const userAns = saved[`q${i}`] || '[Chưa trả lời]';
+      resultDiv.innerHTML = `
+        <strong>Đáp án của bạn:</strong> ${safeHTML(userAns)}<br>
+        <strong>Gợi ý đáp án:</strong> ${safeHTML(q.goi_y_dap_an || '')}
+      `;
+    } else if (type === 'dung_sai_nhieu_lua_chon') {
+      let correctCount = 0,
+          total = Object.keys(q.lua_chon).length;
+      let display = '';
+      Object.keys(q.lua_chon).forEach(k => {
+        const userAns = saved[`q${i}_${k}`] || '[Chưa trả lời]';
+        const correct = q.dap_an_dung.includes(k) ? 'Đúng' : 'Sai';
+        const mark = userAns === correct ? '✅' : '❌';
+        if (userAns === correct) correctCount++;
+        display += `${k}: Bạn chọn ${userAns} ${mark}, Đáp án đúng: ${correct}<br>`;
+      });
+      totalScore += correctCount / total;
+      resultDiv.innerHTML = display;
+    } else {
+      const userAns = saved[`q${i}`] || '[Chưa trả lời]';
+      const correctAns = Array.isArray(q.dap_an_dung)
+        ? q.dap_an_dung[0]
+        : q.dap_an_dung;
+      const mark = userAns === correctAns ? '✅' : '❌';
+      if (userAns === correctAns) totalScore += 1;
+      resultDiv.innerHTML = `
+        Bạn chọn: ${userAns}<br>
+        Đáp án đúng: ${correctAns} ${mark}
+      `;
+    }
 
-      qDiv.appendChild(resultDiv);
-    });
+    qDiv.appendChild(resultDiv);
+  });
 
-    const scoreDiv = document.createElement('div');
-    scoreDiv.className = 'mt-4 text-lg font-bold text-green-700';
-    scoreDiv.innerHTML = `Điểm: ${totalScore.toFixed(2)}`;
-    container.appendChild(scoreDiv);
-  }
-}
+  const scoreDiv = document.createElement('div');
+  scoreDiv.className = 'mt-4 text-lg font-bold text-green-700';
+  scoreDiv.innerHTML = `Điểm: ${totalScore.toFixed(2)}`;
+  container.appendChild(scoreDiv);
+
+  // ✅ Gọi hàm gửi kết quả lên server
+  uploadResultsToServer();
+};
 
 
 
@@ -1511,6 +1521,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
