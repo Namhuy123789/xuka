@@ -893,6 +893,59 @@ function showResults(questions) {
   container.appendChild(scoreDiv);
 }
 
+async function uploadResultsToServer() {
+  const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
+  const payload = {
+    hoten: localStorage.getItem('hoten') || 'unknown',
+    sbd: localStorage.getItem('sbd') || 'N/A',
+    ngaysinh: localStorage.getItem('ngaysinh') || 'N/A',
+    made: localStorage.getItem('made') || '000',
+    time: new Date().toLocaleString('vi-VN'),
+    answers: []
+  };
+
+  questions.forEach((q, i) => {
+    const type = (q.kieu_cau_hoi || '').toLowerCase();
+    if (type === 'tu_luan') {
+      payload.answers.push({
+        cau: q.cau || i + 1,
+        question: q.noi_dung,
+        user_answer: saved[`q${i}`] || '[Chưa trả lời]',
+        suggest_answer: q.goi_y_dap_an || ''
+      });
+    } 
+    else if (type === 'dung_sai_nhieu_lua_chon') {
+      Object.keys(q.lua_chon).forEach(k => {
+        payload.answers.push({
+          cau: `${q.cau || i + 1}.${k}`,
+          question: q.lua_chon[k],
+          user_answer: saved[`q${i}_${k}`] || '[Chưa trả lời]',
+          suggest_answer: q.dap_an_dung[k] || ''
+        });
+      });
+    } 
+    else {
+      payload.answers.push({
+        cau: q.cau || i + 1,
+        question: q.noi_dung,
+        user_answer: saved[`q${i}`] || '[Chưa trả lời]',
+        suggest_answer: q.dap_an_dung || ''
+      });
+    }
+  });
+
+  try {
+    const res = await fetch('/save_result', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    console.log('✅ Gửi kết quả lên server thành công:', data);
+  } catch (err) {
+    console.error('❌ Lỗi khi gửi kết quả lên server:', err);
+  }
+}
 
 
 
@@ -1458,6 +1511,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
