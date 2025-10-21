@@ -1130,6 +1130,16 @@ def save_result():
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
+
+# ✅ Route list toàn bộ file kết quả để kiểm tra
+@app.route("/list_results")
+def list_results():
+    try:
+        files = [f.name for f in RESULTS_DIR.glob("*.txt")]
+        return jsonify({"count": len(files), "files": files})
+    except Exception as e:
+        app.logger.error(f"Lỗi liệt kê results/: {e}")
+        return jsonify({"status": "error", "msg": "Không thể đọc thư mục results"}), 500
 # ✅ Route list toàn bộ file kết quả để kiểm tra
 @app.route("/list_results")
 def list_results():
