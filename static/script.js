@@ -895,44 +895,55 @@ function showResults(questions) {
 
 async function uploadResultsToServer() {
   const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
-  const payload = {
-    hoten: localStorage.getItem('hoten') || 'unknown',
-    sbd: localStorage.getItem('sbd') || 'N/A',
-    ngaysinh: localStorage.getItem('ngaysinh') || 'N/A',
-    made: localStorage.getItem('made') || '000',
-    time: new Date().toLocaleString('vi-VN'),
-    answers: []
-  };
 
-  questions.forEach((q, i) => {
+  // Tạo danh sách câu trả lời gửi lên server
+  const answers = questions.map((q, i) => {
     const type = (q.kieu_cau_hoi || '').toLowerCase();
+    let user_answer = '';
+    let suggest_answer = q.goi_y_dap_an || '';
+    let correct_answer = '';
+    
+    // --- 1️⃣ CÂU TỰ LUẬN ---
     if (type === 'tu_luan') {
-      payload.answers.push({
-        cau: q.cau || i + 1,
-        question: q.noi_dung,
-        user_answer: saved[`q${i}`] || '[Chưa trả lời]',
-        suggest_answer: q.goi_y_dap_an || ''
-      });
-    } 
-    else if (type === 'dung_sai_nhieu_lua_chon') {
-      Object.keys(q.lua_chon).forEach(k => {
-        payload.answers.push({
-          cau: `${q.cau || i + 1}.${k}`,
-          question: q.lua_chon[k],
-          user_answer: saved[`q${i}_${k}`] || '[Chưa trả lời]',
-          suggest_answer: q.dap_an_dung[k] || ''
-        });
-      });
-    } 
-    else {
-      payload.answers.push({
-        cau: q.cau || i + 1,
-        question: q.noi_dung,
-        user_answer: saved[`q${i}`] || '[Chưa trả lời]',
-        suggest_answer: q.dap_an_dung || ''
-      });
+      user_answer = saved[`q${i}`]?.trim() || "[Chưa trả lời]";
     }
+
+    // --- 2️⃣ CÂU TRẮC NGHIỆM 1 LỰA CHỌN ---
+    else if (type !== 'dung_sai_nhieu_lua_chon') {
+      const selected = saved[`q${i}`];
+      user_answer = selected ? `${selected}. ${q.lua_chon[selected]}` : "[Chưa trả lời]";
+      correct_answer = Array.isArray(q.dap_an_dung) ? q.dap_an_dung[0] : q.dap_an_dung;
+    }
+
+    // --- 3️⃣ CÂU ĐÚNG/SAI NHIỀU LỰA CHỌN ---
+    else if (type === 'dung_sai_nhieu_lua_chon') {
+      const lines = [];
+      Object.keys(q.lua_chon || {}).forEach(k => {
+        const ua = saved[`q${i}_${k}`] || "[Chưa chọn]";
+        const da = q.dap_an_dung?.[k] || '';
+        lines.push(`${k}: Bạn chọn ${ua}, Đáp án đúng: ${da}`);
+      });
+      user_answer = lines.join('; ');
+    }
+
+    return {
+      cau: i + 1,
+      question: q.noi_dung || "Không có nội dung", // ✅ nội dung câu hỏi
+      user_answer,
+      suggest_answer,
+      correct_answer,
+      kieu: type
+    };
   });
+
+  const payload = {
+    hoten: qs('#hoten')?.value || '',
+    sbd: qs('#sbd')?.value || '',
+    ngaysinh: qs('#ngaysinh')?.value || '',
+    made: qs('#made')?.value || '',
+    diem: window.finalScore || 0,
+    answers
+  };
 
   try {
     const res = await fetch('/save_result', {
@@ -941,9 +952,11 @@ async function uploadResultsToServer() {
       body: JSON.stringify(payload)
     });
     const data = await res.json();
-    console.log('✅ Gửi kết quả lên server thành công:', data);
+    console.log('✅ Đã gửi kết quả:', data);
+    if (data.status === 'saved') alert("✅ Bài làm đã được lưu lên server!");
   } catch (err) {
-    console.error('❌ Lỗi khi gửi kết quả lên server:', err);
+    console.error('❌ Lỗi khi gửi kết quả:', err);
+    alert("❌ Không thể lưu kết quả lên server!");
   }
 }
 
@@ -1001,49 +1014,52 @@ async function uploadResultsToServer() {
   typeset?.(container);
 
   // Nộp bài và tính điểm
-  window.showResults = function() {
-    const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
-    let totalScore = 0;
+ window.showResults = function() {
+  const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
+  let totalScore = 0;
 
-    questions.forEach((q, i) => {
-      const qDiv = qs(`#q-container-${i}`);
-      const type = (q.kieu_cau_hoi || '').toLowerCase();
-      const resultDiv = document.createElement('div');
-      resultDiv.className = 'mt-2 p-2 bg-gray-100 rounded-md text-sm';
+  questions.forEach((q, i) => {
+    const qDiv = qs(`#q-container-${i}`);
+    const type = (q.kieu_cau_hoi || '').toLowerCase();
+    const resultDiv = document.createElement('div');
+    resultDiv.className = 'mt-2 p-2 bg-gray-100 rounded-md text-sm';
 
-      if (type === 'tu_luan') {
-        const userAns = saved[`q${i}`] || '';
-        resultDiv.innerHTML = `<strong>Gợi ý đáp án:</strong> ${safeHTML(q.goi_y_dap_an || '')}<br>
-                               <strong>Đáp án của bạn:</strong> ${safeHTML(userAns)}`;
-      } else if (type === 'dung_sai_nhieu_lua_chon') {
-        let correctCount = 0, total = Object.keys(q.lua_chon).length;
-        let display = '';
-        Object.keys(q.lua_chon).forEach(k => {
-          const userAns = saved[`q${i}_${k}`] || '';
-          const correct = q.dap_an_dung.includes(k) ? 'Đúng' : 'Sai';
-          const mark = userAns === correct ? '✅' : '❌';
-          if(userAns === correct) correctCount++;
-          display += `${k}: Bạn chọn ${userAns || '...'} ${mark}, Đáp án đúng: ${correct}<br>`;
-        });
-        totalScore += correctCount / total;
-        resultDiv.innerHTML = display;
-      } else {
-        const userAns = saved[`q${i}`] || '';
-        const correctAns = Array.isArray(q.dap_an_dung) ? q.dap_an_dung[0] : q.dap_an_dung;
-        const mark = userAns === correctAns ? '✅' : '❌';
-        if(userAns === correctAns) totalScore += 1;
-        resultDiv.innerHTML = `Bạn chọn: ${userAns || '...'} ${mark}<br>Đáp án đúng: ${correctAns}`;
-      }
+    if (type === 'tu_luan') {
+      const userAns = saved[`q${i}`] || '';
+      resultDiv.innerHTML = `<strong>Gợi ý đáp án:</strong> ${safeHTML(q.goi_y_dap_an || '')}<br>
+                             <strong>Đáp án của bạn:</strong> ${safeHTML(userAns)}`;
+    } else if (type === 'dung_sai_nhieu_lua_chon') {
+      let correctCount = 0, total = Object.keys(q.lua_chon).length;
+      let display = '';
+      Object.keys(q.lua_chon).forEach(k => {
+        const userAns = saved[`q${i}_${k}`] || '';
+        const correct = q.dap_an_dung.includes(k) ? 'Đúng' : 'Sai';
+        const mark = userAns === correct ? '✅' : '❌';
+        if (userAns === correct) correctCount++;
+        display += `${k}: Bạn chọn ${userAns || '...'} ${mark}, Đáp án đúng: ${correct}<br>`;
+      });
+      totalScore += correctCount / total;
+      resultDiv.innerHTML = display;
+    } else {
+      const userAns = saved[`q${i}`] || '';
+      const correctAns = Array.isArray(q.dap_an_dung) ? q.dap_an_dung[0] : q.dap_an_dung;
+      const mark = userAns === correctAns ? '✅' : '❌';
+      if (userAns === correctAns) totalScore += 1;
+      resultDiv.innerHTML = `Bạn chọn: ${userAns || '...'} ${mark}<br>Đáp án đúng: ${correctAns}`;
+    }
 
-      qDiv.appendChild(resultDiv);
-    });
+    qDiv.appendChild(resultDiv);
+  });
 
-    const scoreDiv = document.createElement('div');
-    scoreDiv.className = 'mt-4 text-lg font-bold text-green-700';
-    scoreDiv.innerHTML = `Điểm: ${totalScore.toFixed(2)}`;
-    container.appendChild(scoreDiv);
-  }
+  const scoreDiv = document.createElement('div');
+  scoreDiv.className = 'mt-4 text-lg font-bold text-green-700';
+  scoreDiv.innerHTML = `Điểm: ${totalScore.toFixed(2)}`;
+  container.appendChild(scoreDiv);
+
+  // ✅ Gọi hàm upload sau khi hiển thị kết quả
+  uploadResultsToServer();
 }
+
 
 
 
@@ -1511,6 +1527,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
