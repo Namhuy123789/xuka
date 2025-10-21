@@ -772,6 +772,7 @@ function renderQuestions(questions) {
       ta.rows = 4;
       ta.placeholder = 'Nhập câu trả lời...';
       ta.className = 'border p-2 w-full rounded-md';
+      ta.setAttribute('data-type', 'tu_luan');
       div.appendChild(ta);
     }
 
@@ -821,6 +822,17 @@ function renderQuestions(questions) {
 
     container.appendChild(div);
   });
+
+  // ✅ Gắn sự kiện lưu câu tự luận
+  document.querySelectorAll('textarea[data-type="tu_luan"]').forEach((textarea, i) => {
+    textarea.addEventListener('input', e => {
+      const val = e.target.value.trim();
+      const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
+      saved[`q${i}`] = val;
+      localStorage.setItem(nsKey('savedAnswers'), JSON.stringify(saved));
+    });
+  });
+}
 
 
 function showResults(questions) {
@@ -1526,6 +1538,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
