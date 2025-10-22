@@ -474,6 +474,7 @@ async function startExam(name, sbd, dob, made) {
   }
 }
 
+
 async function submitAnswers() {
   const answers = [];
   const essayPromises = []; // Chứa các Promise chấm tự luận
@@ -1381,16 +1382,16 @@ const totalScore = scoreTracNghiem1 + scoreDungSai + scoreTuLuan;
   const now = new Date();
   const formattedDate = now.toLocaleString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
 
-  // --- HIỂN THỊ KẾT QUẢ ---
+    // --- HIỂN THỊ KẾT QUẢ ---
+  const resultDiv = qs('#result-container');
+  resultDiv.classList.remove('hidden');
+
   let fileContent = `
     <div><strong>KẾT QUẢ BÀI THI</strong></div>
     <div><strong>Họ tên:</strong> ${safeHTML(name)}</div>
     <div><strong>SBD:</strong> ${safeHTML(sbd)}</div>
     <div><strong>Ngày sinh:</strong> ${safeHTML(dob)}</div>
     <div><strong>Mã đề:</strong> ${safeHTML(made)}</div>
-    <div>Điểm Trắc nghiệm 1 lựa chọn: ${scoreTracNghiem1.toFixed(2)}</div>
-    <div>Điểm Đúng/Sai: ${scoreDungSai.toFixed(2)}</div>
-    <div>Điểm Tự luận: ${scoreTuLuan.toFixed(2)}</div>
     <div><strong style="color:red;">Tổng điểm: ${finalScore}/10</strong></div>
     <div>Nộp lúc: ${safeHTML(formattedDate)}</div><br>
   `;
@@ -1399,28 +1400,16 @@ const totalScore = scoreTracNghiem1 + scoreDungSai + scoreTuLuan;
     const color = ans.dung ? 'green' : 'red';
     const symbol = ans.dung ? '✅' : '❌';
     const diemText = (typeof ans.diem === 'number') ? ` (${ans.diem.toFixed(2)} điểm)` : '';
-    fileContent += `<div style="margin-bottom: .75rem; border-bottom: 1px solid #eee; padding-bottom: .5rem;">`;
-    fileContent += `<div><strong>Câu ${ans.cau}:</strong> ${safeHTML(ans.noi_dung)}</div>`;
-
-    if (['trac_nghiem','trac_nghiem_nhieu','trac_nghiem_nhieu_lua_chon','nhieu_lua_chon'].includes(ans.kieu)) {
-      fileContent += `<div>Bạn chọn: <span style="color:${color}; font-weight:bold;">${safeHTML(ans.da_chon || '-')}</span></div>`;
-      if (ans.dap_an_dung) fileContent += `<div>Đáp án đúng: ${safeHTML(ans.dap_an_dung)}</div>`;
-      fileContent += `<div><strong style="color:${color};">${symbol}${diemText}</strong></div>`;
-    } else if (['dung_sai','dung_sai_nhieu_lua_chon'].includes(ans.kieu)) {
-      fileContent += `<div><strong>Bạn chọn:</strong> ${safeHTML(ans.da_chon || '-')}</div>`;
-      if (ans.dap_an_dung) fileContent += `<div><strong>Đáp án đúng:</strong> ${safeHTML(ans.dap_an_dung)}</div>`;
-      fileContent += `<div><strong style="color:${color};">${symbol}${diemText}</strong></div>`;
-    } else if (ans.kieu === 'tu_luan') {
-      fileContent += `<div><strong>Bạn trả lời:</strong><div style="margin-left:1rem;">${safeHTML(ans.da_chon)}</div></div>`;
-      if (ans.goi_y_dap_an) fileContent += `<div><strong>Gợi ý đáp án:</strong><div style="margin-left:1rem;">${safeHTML(ans.goi_y_dap_an)}</div></div>`;
-      fileContent += `<div><strong>Điểm:</strong> ${ans.diem.toFixed(2)} ${symbol}</div>`;
-    }
-
-    fileContent += `</div>`;
+    fileContent += `
+      <div style="margin-bottom:.75rem;border-bottom:1px solid #eee;padding-bottom:.5rem;">
+        <div><strong>Câu ${ans.cau}:</strong> ${safeHTML(ans.noi_dung)}</div>
+        <div>Bạn chọn: <span style="color:${color};font-weight:bold;">${safeHTML(ans.da_chon || '-')}</span></div>
+        ${ans.dap_an_dung ? `<div>Đáp án đúng: ${safeHTML(ans.dap_an_dung)}</div>` : ''}
+        ${ans.kieu === 'tu_luan' && ans.goi_y_dap_an ? `<div>Gợi ý đáp án: ${safeHTML(ans.goi_y_dap_an)}</div>` : ''}
+        <div><strong style="color:${color};">${symbol}${diemText}</strong></div>
+      </div>`;
   });
 
-  const resultDiv = qs('#result-container');
-  resultDiv.classList.remove('hidden');
   resultDiv.innerHTML = `
     <h1 class="text-2xl font-bold text-green-600 mb-4">✅ KẾT QUẢ BÀI THI</h1>
     <p class="text-sm text-gray-500 mb-4">🕒 Nộp lúc: ${safeHTML(formattedDate)}</p>
@@ -1437,14 +1426,27 @@ const totalScore = scoreTracNghiem1 + scoreDungSai + scoreTuLuan;
   qs('#btn-download-doc')?.addEventListener('click', () => downloadDOC(name, made));
   qs('#btn-download-pdf')?.addEventListener('click', () => downloadPDF(name, made, answers, finalScore, formattedDate));
 
+  // 🧩 GỬI KẾT QUẢ LÊN SERVER (sau khi tất cả đã hoàn tất)
+  const payload = { hoten: name, sbd, ngaysinh: dob, made, diem: finalScore, answers };
+  console.log("📤 Gửi dữ liệu lên /save_result:", JSON.stringify(payload, null, 2));
+
   try {
-    await fetch(`${API_BASE}/save_result`, {
+    const res = await fetch(`${API_BASE}/save_result`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf() },
-      body: JSON.stringify({ hoten: name, sbd, ngaysinh: dob, made, diem: finalScore, answers })
+      body: JSON.stringify(payload)
     });
+
+    const data = await res.json();
+    console.log("📥 Phản hồi từ /save_result:", data);
+
+    if (data.status === "saved") {
+      console.log("✅ Lưu kết quả thành công:", data.download);
+    } else {
+      console.warn("⚠️ Server không xác nhận lưu:", data.msg);
+    }
   } catch (err) {
-    console.error('Lỗi lưu backend:', err);
+    console.error('💥 Lỗi khi gửi /save_result:', err);
   }
 }
 
