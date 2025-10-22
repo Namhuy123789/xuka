@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory, send_file, render_template, abort, redirect, url_for
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import NotFound
+from pathlib import Path
 from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
@@ -17,6 +18,7 @@ import subprocess
 import sys
 import google.generativeai as genai
 from dotenv import load_dotenv
+from pathlib import Path
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, send_file, Response
@@ -30,7 +32,6 @@ from difflib import SequenceMatcher
 import vertexai
 from vertexai import init
 from vertexai.preview.generative_models import GenerativeModel
-from flask_wtf.csrf import generate_csrf
 
 
 
@@ -170,42 +171,33 @@ def normalize_text(text):
     return text.strip().lower()
 
 
-
 @app.route('/api/grade_essay_advanced', methods=['POST'])
 @csrf.exempt
 def grade_essay_advanced():
-    def normalize_text(text):
-        """Chuẩn hóa văn bản: loại bỏ ký tự đặc biệt, khoảng trắng, viết thường"""
-        text = text.lower()
-        text = re.sub(r'[\*\•\-\−]', '', text)
-        text = text.strip()
-        return text
+    def compute_question_score(similarities):
+        """Tính điểm câu từ similarity từng ý, làm tròn theo ngưỡng 0,0.25,0.5,0.75,1"""
+        thresholds = [0, 0.25, 0.5, 0.75, 1.0]
+        item_scores = []
+        for sim in similarities:
+            if sim >= 0.8:
+                item_scores.append(1.0)
+            elif sim >= 0.75:
+                item_scores.append(0.75)
+            elif sim >= 0.5:
+                item_scores.append(0.5)
+            elif sim >= 0.25:
+                item_scores.append(0.25)
+            else:
+                item_scores.append(0.0)
 
-    def compute_question_score(similarities, bonuses=None):
-        """Tính điểm từng ý, cộng bonus nếu có, làm tròn theo ngưỡng 0,0.25,0.5,0.75,1"""
-        thresholds = [0.0, 0.25, 0.5, 0.75, 1.0]
-        if not similarities:
+        if not item_scores:
             return 0.0
-        avg_score = sum(similarities) / len(similarities)
-        if bonuses:
-            avg_score = min(avg_score + sum(bonuses), 1.0)  # cộng bonus nhưng max 1.0
+
+        avg = sum(item_scores) / len(item_scores)
         for t in reversed(thresholds):
-            if avg_score >= t:
+            if avg >= t:
                 return t
         return 0.0
-
-    def detect_bonus(student_items, correct_items):
-        """Phát hiện ý sáng tạo/mở rộng hợp lý"""
-        bonus_flags = []
-        for s in student_items:
-            # Nếu ý không trùng với bất kỳ ý nào trong gợi ý nhưng có liên quan (ngữ nghĩa tương đồng >=0.4)
-            similarities = [SequenceMatcher(None, s, c).ratio() for c in correct_items]
-            if max(similarities) < 0.5:
-                # Bonus cho sáng tạo hợp lý
-                bonus_flags.append(0.05)
-            else:
-                bonus_flags.append(0.0)
-        return bonus_flags
 
     try:
         data = request.get_json(force=True)
@@ -228,38 +220,34 @@ def grade_essay_advanced():
                 })
                 continue
 
-            correct_items = [normalize_text(c) for c in re.split(r'[;,•\n]', correct_answer) if c.strip()]
-            student_items = [normalize_text(s) for s in re.split(r'[;,•\n]', student_answer) if s.strip()]
-
-            long_text = len(student_answer.split()) > 100
-            similarities = []
+            # Tách từng ý
+            correct_items = [c.strip() for c in re.split(r'[;,•\n]', correct_answer) if c.strip()]
+            student_items = [s.strip() for s in re.split(r'[;,•\n]', student_answer) if s.strip()]
 
             if ai_vertex:
                 try:
-                    if long_text:
-                        # Semantic scoring toàn đoạn
-                        prompt = f"""
-Bạn là AI chuyên về chấm tự luận nâng cao. Đọc đoạn trả lời của học sinh và gợi ý đáp án.
-- Đánh giá mức độ trùng ý nghĩa, đánh giá tương đồng về mặt ngữ nghĩa và khoa học, cộng điểm cho sáng tạo đúng hoặc mở rộng hợp lý.
-- Trả về DUY NHẤT số thực 0.0-1.0.
+                    prompt = f"""
+So sánh mức độ tương đồng về Ý NGHĨA giữa các ý của bài làm và đáp án mẫu.
 
-Học sinh: {student_answer}
-Gợi ý: {correct_answer}
-"""
-                    else:
-                        prompt = f"""
-Bạn là AI chuyên về chấm tự luận.
-- So sánh ý nghĩa từng ý, đánh giá tương đồng về mặt ngữ nghĩa và khoa học, cộng điểm cho sáng tạo hợp lý.
-- Bỏ qua lỗi khoảng trắng, *, ∗, -, −...
+- Với môn Xã hội: so sánh ý nghĩa từng ý, đánh giá mức độ giống nhau.
+- Với môn Tự nhiên: chấm theo từng bước làm; nếu đúng bước nào thì tính điểm bước đó, sai bước không tính, đáp án đúng được nguyên điểm nếu tất cả các bước đúng.
+- Bỏ qua các lỗi như khoảng trắng, định dạng chữ, chuẩn hóa đầu vào trước khi so sánh, dấu *, ∗, -, −...
+
 tra_loi_hoc_sinh: {student_items}
 goi_y_dap_an: {correct_items}
-Trả về DUY NHẤT danh sách số thực 0.0–1.0
+
+Trả về DUY NHẤT một danh sách số thực trong khoảng 0.0 đến 1.0,
+theo định dạng JSON: [0.0, 0.5, 0.75, 1.0, ...],
+mỗi số tương ứng với từng ý trong đáp án mẫu.
+KHÔNG giải thích, KHÔNG ký tự thừa, KHÔNG văn bản bổ sung.
 """
+
+                    # 🔹 SDK mới: vẫn dùng generate_content
                     response = ai_vertex.generate_content(
                         prompt,
                         generation_config={
                             "temperature": 0.3,
-                            "max_output_tokens": 512,
+                            "max_output_tokens": 256,
                         },
                     )
                     raw_text = response.text.strip()
@@ -267,23 +255,20 @@ Trả về DUY NHẤT danh sách số thực 0.0–1.0
                         float(s) if float(s) <= 1 else float(s) / 100
                         for s in re.findall(r"(\d*\.?\d+)", raw_text)
                     ]
-                    if long_text and len(similarities) == 1:
-                        similarities = [similarities[0]]
-                    if not similarities:
-                        raise Exception("AI trả về không có số")
+
                 except Exception:
+                    # fallback SequenceMatcher nếu AI lỗi
                     similarities = [
-                        max(SequenceMatcher(None, s, c).ratio() for c in correct_items)
-                        for s in student_items
+                        max(SequenceMatcher(None, s.lower(), c.lower()).ratio() for s in student_items)
+                        for c in correct_items
                     ]
             else:
                 similarities = [
-                    max(SequenceMatcher(None, s, c).ratio() for c in correct_items)
-                    for s in student_items
+                    max(SequenceMatcher(None, s.lower(), c.lower()).ratio() for s in student_items)
+                    for c in correct_items
                 ]
 
-            bonuses = detect_bonus(student_items, correct_items)
-            score = compute_question_score(similarities, bonuses)
+            score = compute_question_score(similarities)
             total += score
 
             graded.append({
@@ -324,85 +309,6 @@ def download_all():
         download_name="all_results.zip",
         mimetype="application/zip"
     )
-
-
-
-
-
-
-
-
-SCORE_FILE = os.path.join("data", "scores.json")  # hoặc đường dẫn đúng
-
-# --- API: Lấy CSRF token ---
-@app.route("/api/get_csrf_token")
-def get_csrf_token():
-    token = generate_csrf()
-    return jsonify({"csrf_token": token})
-
-
-@app.route("/api/get_score_weights")
-def get_score_weights():
-    made = request.args.get("made")
-    if not made:
-        return jsonify({"status": "error", "message": "Thiếu mã đề"}), 400
-
-    if not os.path.exists(SCORE_FILE):
-        return jsonify({"status": "error", "message": "Chưa có file trọng số"}), 404
-
-    with open(SCORE_FILE, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    if made in data:
-        return jsonify({"status": "success", "weights": data[made]})
-    else:
-        return jsonify({"status": "error", "message": "Không tìm thấy mã đề"}), 404
-
-
-
-# --- API: Lưu trọng số ---
-@app.route("/api/set_score_weights", methods=["POST"])
-@csrf.exempt   # ⛔ Nếu bạn muốn bỏ CSRF cho API này
-def set_score_weights():
-    try:
-        body = request.get_json(force=True)
-    except Exception:
-        return jsonify({"status": "error", "message": "Dữ liệu không hợp lệ"}), 400
-
-    made = body.get("made")
-    weights = body.get("weights", {})
-
-    if not made or not weights:
-        return jsonify({"status": "error", "message": "Thiếu dữ liệu"}), 400
-
-    # --- Tạo thư mục nếu chưa có ---
-    folder = os.path.dirname(SCORE_FILE)
-    if folder:
-        os.makedirs(folder, exist_ok=True)
-
-    # --- Đọc dữ liệu cũ ---
-    data = {}
-    if os.path.exists(SCORE_FILE):
-        with open(SCORE_FILE, "r", encoding="utf-8") as f:
-            try:
-                data = json.load(f)
-            except json.JSONDecodeError:
-                data = {}
-
-    # --- Cập nhật dữ liệu ---
-    data[made] = weights
-
-    # --- Ghi lại ---
-    with open(SCORE_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-    return jsonify({"status": "success", "message": f"Đã lưu trọng số cho mã đề {made}"})
-
-
-
-
-
-
 
 @app.route("/ask", methods=["POST"])
 @csrf.exempt
@@ -886,78 +792,39 @@ def get_exam_codes():
         app.logger.exception(f"Lỗi lấy mã đề: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-
-
-
-
 @app.route("/get_questions")
 def get_questions():
     try:
         made = request.args.get("made", "000")
         filename = f"questions{made}.json"
         filepath = QUESTIONS_DIR / filename
-
-        print("📂 Đang đọc file:", filepath.resolve())
-
         if not filepath.exists():
-            print("❌ Không tìm thấy file:", filepath)
             return jsonify({"status": "error", "msg": f"File {filename} không tồn tại"}), 404
 
-        # Đọc file gốc
-        with open(filepath, "r", encoding="utf-8") as f:
-            raw_content = f.read()
-            print("📜 Nội dung JSON (500 ký tự đầu):", raw_content[:500])
-
-        # Parse JSON
-        questions = json.loads(raw_content)
+        with open(filepath, encoding="utf-8") as f:
+            questions = json.load(f)
 
         processed_questions = []
         for i, q in enumerate(questions, 1):
-            kieu = q.get("kieu_cau_hoi", "trac_nghiem").lower()
-
             q_processed = {
                 "cau": i,
                 "noi_dung": q.get("noi_dung", ""),
-                "kieu_cau_hoi": kieu
+                "kieu_cau_hoi": q.get("kieu_cau_hoi", "trac_nghiem")
             }
-
-            if kieu == "tu_luan":
+            if q_processed["kieu_cau_hoi"] == "tu_luan":
+                q_processed["tra_loi_hoc_sinh"] = q.get("tra_loi_hoc_sinh", "")
                 q_processed["goi_y_dap_an"] = q.get("goi_y_dap_an", "")
             else:
                 q_processed["lua_chon"] = q.get("lua_chon", {})
-
-                dap_an = q.get("dap_an_dung", "")
-                print(f"🔍 Câu {i} kiểu {kieu} — dap_an_dung gốc:", dap_an)
-
-                # Nếu đáp án là chuỗi JSON chứa dict → parse thêm 1 lần
-                if isinstance(dap_an, str):
-                    try:
-                        parsed = json.loads(dap_an)
-                        dap_an = parsed
-                        print(f"✅ Câu {i}: parse thành công chuỗi JSON thành dict:", dap_an)
-                    except Exception:
-                        pass
-
-                if not isinstance(dap_an, (str, dict)):
-                    print(f"⚠️ Câu {i}: đáp án không hợp lệ, kiểu {type(dap_an)}")
-
-                q_processed["dap_an_dung"] = dap_an
-
+                q_processed["dap_an_dung"] = q.get("dap_an_dung", "")
             processed_questions.append(q_processed)
 
-        print("✅ Tổng số câu đọc được:", len(processed_questions))
         return jsonify(processed_questions)
-
-    except json.JSONDecodeError:
-        print("❌ JSON lỗi định dạng!")
+    except json.JSONDecodeError as e:
         return jsonify({"status": "error", "msg": "File câu hỏi không hợp lệ"}), 400
     except Exception as e:
-        import traceback
-        print("🔥 Lỗi bất ngờ:", e)
-        traceback.print_exc()
+        app.logger.exception(f"Lỗi tải câu hỏi: {e}")
         return jsonify({"status": "error", "msg": str(e)}), 500
-
-
 
 @app.route("/questions/<path:filename>")
 def serve_questions_file(filename):
@@ -971,73 +838,7 @@ def serve_questions_file(filename):
         app.logger.exception(f"Lỗi phục vụ file câu hỏi: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
 
-
-
-def grading(answers, question_data):
-    """
-    Tính điểm cho từng câu và tổng điểm (thang 10).
-    Hỗ trợ: trắc nghiệm, nhiều lựa chọn, đúng/sai nhiều lựa chọn, và tự luận.
-    """
-    total_score = 0
-    results = []
-
-    for a in answers:
-        cau = a.get("cau", "N/A")
-        tra_loi = a.get("da_chon") or a.get("tra_loi_hoc_sinh")
-        kieu = a.get("kieu", a.get("kieu_cau_hoi", "")).lower()
-
-        try:
-            idx = int(cau) - 1
-            cau_goc = question_data[idx] if 0 <= idx < len(question_data) else {}
-        except (ValueError, TypeError):
-            cau_goc = {}
-
-        dap_an_dung = cau_goc.get("dap_an_dung")
-        diem_cau = 0
-        tong_diem_cau = 1  # mỗi câu tối đa 1 điểm
-
-        # --- 1. Trắc nghiệm 1 đáp án đúng ---
-        if isinstance(dap_an_dung, str):
-            if tra_loi == dap_an_dung:
-                diem_cau = tong_diem_cau
-
-        # --- 2. Trắc nghiệm nhiều đáp án đúng ---
-        elif isinstance(dap_an_dung, list):
-            if isinstance(tra_loi, list):
-                dung = set(dap_an_dung)
-                chon = set(tra_loi)
-                if dung:
-                    diem_cau = tong_diem_cau * len(dung & chon) / len(dung)
-
-        # --- 3. Đúng/Sai nhiều lựa chọn ---
-        elif isinstance(dap_an_dung, dict):
-            if isinstance(tra_loi, dict):
-                tong = len(dap_an_dung)
-                dung_dem = sum(
-                    1 for k, v in dap_an_dung.items() if tra_loi.get(k) == v
-                )
-                if tong > 0:
-                    diem_cau = tong_diem_cau * dung_dem / tong
-
-        # --- 4. Tự luận ---
-        elif kieu == "tu_luan":
-            if tra_loi and len(tra_loi.strip()) > 0:
-                diem_cau = 0.5  # tạm chấm 0.5 nếu có trả lời
-
-        total_score += diem_cau
-
-        results.append({
-            "cau": cau,
-            "noi_dung": a.get("noi_dung", ""),
-            "kieu": kieu,
-            "diem": round(diem_cau, 2),
-            "dap_an_dung": dap_an_dung,
-            "da_chon": tra_loi
-        })
-
-    tong_diem_10 = round(total_score / len(answers) * 10, 2) if answers else 0
-    return tong_diem_10, results
-
+# Route lưu kết quả
 @app.route("/save_result", methods=["POST"])
 @csrf.exempt
 def save_result():
@@ -1098,7 +899,7 @@ def save_result():
             if kieu == "tu_luan":
                 tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
                 goi_y = a.get("goi_y_dap_an", "").strip()
-                lines.append(f"  tra_loi_hoc_sinh: {tra_loi}")
+                lines.append(f"  Bạn chọn: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
             else:  # trac_nghiem hoặc khác
@@ -1126,6 +927,7 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+
 
 # ✅ Route list toàn bộ file kết quả để kiểm tra
 @app.route("/list_results")
