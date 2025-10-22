@@ -35,12 +35,98 @@ async function startExam(made) {
 
 // Khi nộp bài
 async function submitExam() {
-    // phần code gốc nộp bài
-    console.log("Nộp bài...");
+  try {
+    // 🧠 1️⃣ Thu thập thông tin người thi
+    const hoten = qs('#hoten')?.value?.trim() || 'unknown';
+    const sbd = qs('#sbd')?.value?.trim() || 'N/A';
+    const ngaysinh = qs('#ngaysinh')?.value?.trim() || 'N/A';
+    const made = currentExamCode || '000';
 
-    // gọi API bật lại mạng
-    await enableNetwork();
+    // 🧩 2️⃣ Gom câu trả lời từ localStorage (hoặc biến toàn cục)
+    const saved = JSON.parse(localStorage.getItem(nsKey('savedAnswers')) || '{}');
+
+    // Danh sách các câu hỏi (đã load khi bắt đầu bài thi)
+    if (!window.questionData || questionData.length === 0) {
+      alert('Không có dữ liệu câu hỏi.');
+      return;
+    }
+
+    // 📋 3️⃣ Chuẩn bị mảng kết quả từng câu
+    const answerList = [];
+    const essayPromises = [];
+
+    questionData.forEach((q, i) => {
+      const cau = i + 1;
+      const kieu = (q.kieu_cau_hoi || '').toLowerCase();
+
+      if (kieu === 'tu_luan') {
+        const studentText = saved[`q${i}`] || '';
+        // Gọi API chấm tự luận và lưu promise
+        const p = gradeEssayWithAPI(studentText, q).then(result => {
+          answerList.push({
+            cau,
+            noi_dung: q.noi_dung,
+            kieu,
+            tra_loi_hoc_sinh: studentText || '[Chưa trả lời]',
+            goi_y_dap_an: q.goi_y_dap_an || '',
+            score: result?.score || 0
+          });
+        });
+        essayPromises.push(p);
+      } else {
+        // Trắc nghiệm hoặc đúng sai
+        const da_chon = saved[`q${i}`] || '(chưa chọn)';
+        answerList.push({
+          cau,
+          noi_dung: q.noi_dung,
+          kieu,
+          da_chon
+        });
+      }
+    });
+
+    // 🕒 4️⃣ Đợi toàn bộ chấm tự luận xong
+    if (essayPromises.length > 0) {
+      console.log(`⏳ Đang chấm ${essayPromises.length} câu tự luận...`);
+      await Promise.all(essayPromises);
+      console.log('✅ Đã chấm xong tất cả tự luận');
+    }
+
+    // 🧮 5️⃣ Tính điểm tổng
+    const diem = await calculateFinalScore(answerList);
+    console.log(`📊 Tổng điểm: ${diem}`);
+
+    // 📨 6️⃣ Gửi kết quả lên server
+    const payload = {
+      hoten,
+      sbd,
+      ngaysinh,
+      made,
+      diem,
+      answers: answerList
+    };
+
+    const res = await fetch('/save_result', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (res.ok && data.status === 'saved') {
+      console.log('✅ Đã lưu kết quả:', data.download);
+      alert('Bài thi đã được nộp và lưu thành công!');
+    } else {
+      console.warn('⚠️ Gửi kết quả thất bại:', data);
+      alert('Gửi kết quả không thành công. Vui lòng thử lại.');
+    }
+
+  } catch (err) {
+    console.error('❌ Lỗi khi nộp bài:', err);
+    alert('Đã xảy ra lỗi khi nộp bài. Xem log console để biết chi tiết.');
+  }
 }
+
 
 
 
@@ -385,6 +471,82 @@ async function startExam(name, sbd, dob, made) {
       qs('#form-error').textContent = `Không thể tải câu hỏi: ${e.message}`;
       qs('#form-error').classList.remove('hidden');
     }
+  }
+}
+
+
+async function submitAnswers() {
+  const answers = [];
+  const essayPromises = []; // Chứa các Promise chấm tự luận
+
+  document.querySelectorAll('.question').forEach((questionElement, index) => {
+    const cau = (index + 1).toString();
+    const noi_dung = questionElement.querySelector('.question-content')?.textContent.trim() || 'Không có nội dung';
+    const kieu = (questionElement.dataset.type || 'trac_nghiem').toLowerCase();
+    const goi_y = questionElement.dataset.suggestedAnswer || '';
+    let tra_loi_hoc_sinh = '';
+    let da_chon = '';
+
+    if (kieu === 'tu_luan') {
+      tra_loi_hoc_sinh = questionElement.querySelector('textarea')?.value.trim() || '';
+
+      // ✅ Gọi API chấm điểm tự luận (Promise)
+      const p = gradeEssayWithAPI(tra_loi_hoc_sinh, { noi_dung, goi_y }).then(result => {
+        const score = (result && result.score) || 0;
+        answers.push({
+          cau,
+          noi_dung,
+          kieu,
+          tra_loi_hoc_sinh,
+          goi_y_dap_an: goi_y,
+          diem_tu_luan: score
+        });
+      });
+      essayPromises.push(p);
+    } else {
+      da_chon = questionElement.querySelector('input:checked')?.value || '(chưa chọn)';
+      answers.push({
+        cau,
+        noi_dung,
+        kieu,
+        da_chon,
+        goi_y_dap_an: goi_y
+      });
+    }
+  });
+
+  // ✅ Chờ tất cả câu tự luận được chấm xong
+  await Promise.all(essayPromises);
+
+  // ✅ Tạo payload gửi lên Flask
+  const payload = {
+    hoten: document.getElementById('hoten')?.value || 'unknown',
+    sbd: document.getElementById('sbd')?.value || 'N/A',
+    ngaysinh: document.getElementById('ngaysinh')?.value || 'N/A',
+    made: document.getElementById('made')?.value || '000',
+    diem: document.getElementById('diem')?.value || '0.00',
+    answers
+  };
+
+  console.log('📤 Payload gửi đi:', payload);
+
+  try {
+    const res = await fetch('/save_result', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    console.log('📥 Phản hồi từ server:', data);
+
+    if (data.status === 'saved') {
+      alert('✅ Bài làm đã được lưu thành công!');
+    } else {
+      alert('⚠️ Lỗi lưu bài thi: ' + (data.msg || 'Không rõ nguyên nhân'));
+    }
+  } catch (err) {
+    console.error('❌ Lỗi khi gửi kết quả:', err);
+    alert('❌ Không thể lưu kết quả lên server!');
   }
 }
 
@@ -945,27 +1107,51 @@ function clearTempStorage() {
 async function gradeEssayWithAPI(selected, q) {
   const daChonText = selected?.trim() || '';
   const goiY = q.goi_y_dap_an?.trim() || '';
-  if (!daChonText || !goiY) return 0;
+
+  // Nếu học sinh chưa trả lời hoặc không có gợi ý, cho 0 điểm luôn
+  if (!daChonText || !goiY) {
+    console.warn("⚠️ Thiếu dữ liệu để chấm tự luận:", { daChonText, goiY });
+    return 0;
+  }
 
   // 🔹 Lấy CSRF token từ <meta> trong <head>
-  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
   try {
     const res = await fetch(`${API_BASE}/api/grade_essay`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken  // gửi token CSRF
+        'X-CSRFToken': csrfToken
       },
-      body: JSON.stringify({ answer: daChonText, reference: goiY })
+      body: JSON.stringify({
+        answer: daChonText,
+        reference: goiY
+      })
     });
+
+    // Nếu server trả lỗi HTTP (400, 500, ...)
+    if (!res.ok) {
+      console.error("❌ API /api/grade_essay lỗi HTTP:", res.status);
+      return 0;
+    }
+
     const data = await res.json();
-    return data.score ?? 0;
+
+    // Đảm bảo có score hợp lệ
+    const score = Number(data.score);
+    if (isNaN(score)) {
+      console.warn("⚠️ API trả về điểm không hợp lệ:", data);
+      return 0;
+    }
+
+    return score;
   } catch (e) {
-    console.error('Lỗi gọi API chấm tự luận:', e);
+    console.error("❌ Lỗi khi gọi API chấm tự luận:", e);
     return 0;
   }
 }
+
 
 
 
@@ -1263,7 +1449,6 @@ const totalScore = scoreTracNghiem1 + scoreDungSai + scoreTuLuan;
     console.error('💥 Lỗi khi gửi /save_result:', err);
   }
 }
-
 
 
 
