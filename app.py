@@ -1057,10 +1057,14 @@ def save_result():
         diem = str(data.get("diem", "0.00")).strip()
         answers = data.get("answers", [])
 
+        app.logger.info(f"📩 Nhận yêu cầu lưu kết quả từ {hoten} ({sbd}) — mã đề {made}")
+        app.logger.info(f"[DEBUG] Tổng số câu nhận được: {len(answers)}")
+
         if not answers:
+            app.logger.warning(f"⚠️ Học sinh {hoten} ({sbd}) không có câu trả lời nào.")
             return jsonify({"status": "error", "msg": "Không có câu trả lời nào được gửi"}), 400
 
-        # Load câu hỏi gốc (nếu có)
+        # Đọc đề gốc (nếu có)
         filename_de = f"questions{made}.json"
         filepath_de = QUESTIONS_DIR / filename_de
         question_data = []
@@ -1068,6 +1072,7 @@ def save_result():
             try:
                 with open(filepath_de, "r", encoding="utf-8") as f:
                     question_data = json.load(f)
+                app.logger.info(f"📘 Đã tải đề gốc ({len(question_data)} câu): {filename_de}")
             except Exception as e:
                 app.logger.error(f"Lỗi đọc file đề: {e}")
 
@@ -1076,7 +1081,7 @@ def save_result():
         filename = f"KQ_{safe_name}_{made}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         filepath = RESULTS_DIR / filename
 
-        app.logger.info(f"[DEBUG] Lưu kết quả vào: {filepath.resolve()}")
+        app.logger.info(f"💾 Đang ghi kết quả vào: {filepath.resolve()}")
 
         lines = [
             "KẾT QUẢ BÀI THI",
@@ -1092,7 +1097,10 @@ def save_result():
         for a in answers:
             cau = a.get("cau", "N/A")
             noi_dung = a.get("noi_dung", "Không có nội dung")
-            kieu = a.get("kieu", "trac_nghiem").lower()
+            kieu = str(a.get("kieu", "trac_nghiem")).lower()
+
+            # Log chi tiết từng câu
+            app.logger.info(f"[DEBUG] Xử lý câu {cau} ({kieu}) → {a}")
 
             try:
                 idx = int(cau) - 1
@@ -1103,13 +1111,20 @@ def save_result():
             lines.append(f"Câu {cau}: {noi_dung}")
 
             if kieu == "tu_luan":
-                tra_loi = a.get("tra_loi_hoc_sinh", "").strip() or "[Chưa trả lời]"
-                goi_y = a.get("goi_y_dap_an", "").strip()
+                tra_loi = (
+                    a.get("tra_loi_hoc_sinh")
+                    or a.get("da_chon")
+                    or "[Chưa trả lời]"
+                )
+                tra_loi = str(tra_loi).strip()
+                goi_y = str(a.get("goi_y_dap_an", "")).strip()
+
                 lines.append(f"  Bạn chọn: {tra_loi}")
                 if goi_y:
                     lines.append(f"  Gợi ý đáp án: {goi_y}")
-            else:  # trac_nghiem hoặc khác
-                da_chon = a.get("da_chon", "(chưa chọn)")
+
+            else:  # trac_nghiem hoặc dạng khác
+                da_chon = str(a.get("da_chon", "(chưa chọn)"))
                 dap_an_dung = cau_goc.get("dap_an_dung", "")
                 lines.append(f"  Bạn chọn: {da_chon}")
                 if dap_an_dung:
@@ -1119,9 +1134,9 @@ def save_result():
 
         try:
             filepath.write_text("\n".join(lines), encoding="utf-8")
-            app.logger.info(f"✅ Đã lưu kết quả: {filepath.resolve()}")
+            app.logger.info(f"✅ Đã lưu kết quả: {filepath.name}")
         except Exception as e:
-            app.logger.error(f"Lỗi ghi file: {e}")
+            app.logger.error(f"❌ Lỗi ghi file: {e}")
             return jsonify({"status": "error", "msg": f"Lỗi ghi file: {str(e)}"}), 500
 
         return jsonify({
@@ -1131,8 +1146,9 @@ def save_result():
         })
 
     except Exception as e:
-        app.logger.exception(f"Lỗi lưu kết quả: {e}")
+        app.logger.exception(f"💥 Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+
 
 # ✅ Route list toàn bộ file kết quả để kiểm tra
 @app.route("/list_results")
