@@ -1024,21 +1024,29 @@ def grading(answers, question_data):
                 if tong > 0:
                     diem_cau = tong_diem_cau * dung_dem / tong
 
-        # --- 4. Tự luận ---
-        elif kieu == "tu_luan":
-            if tra_loi and len(tra_loi.strip()) > 0:
-                diem_cau = 0.5  # tạm chấm 0.5 nếu có trả lời
+       # --- 4. Tự luận ---
+            elif kieu == "tu_luan":
+                tra_loi = a.get("da_chon", "").strip()
+                dung = a.get("dung", False)  # True nếu AI chấm đúng, False nếu sai
+                diem_cau = float(a.get("diem", 0)) if dung else 0.0
 
-        total_score += diem_cau
+                # Nếu học sinh có trả lời nhưng không đúng → vẫn 0 điểm
+                # Nếu không trả lời gì → cũng 0 điểm
+                if not tra_loi:
+                    diem_cau = 0.0
 
-        results.append({
-            "cau": cau,
-            "noi_dung": a.get("noi_dung", ""),
-            "kieu": kieu,
-            "diem": round(diem_cau, 2),
-            "dap_an_dung": dap_an_dung,
-            "da_chon": tra_loi
-        })
+            # Cộng điểm
+            total_score += diem_cau
+
+            # Lưu kết quả chi tiết
+            results.append({
+                "cau": cau,
+                "noi_dung": a.get("noi_dung", ""),
+                "kieu": kieu,
+                "diem": round(diem_cau, 2),
+                "dap_an_dung": dap_an_dung,
+                "da_chon": tra_loi
+            })
 
     tong_diem_10 = round(total_score / len(answers) * 10, 2) if answers else 0
     return tong_diem_10, results
