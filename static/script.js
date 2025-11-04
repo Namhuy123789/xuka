@@ -1055,31 +1055,47 @@ function showResults(questions) {
 
 function renderAnswerSheet() {
   const sheet = qs('#answer-sheet');
+  if (!sheet) return; // kiểm tra tồn tại
+
   sheet.innerHTML = '';
+
   questionData.forEach((_, i) => {
     const answer = getAnswerValue(i);
     const div = document.createElement('div');
     div.className = `p-2 rounded text-center cursor-pointer ${answer ? 'bg-green-100' : 'bg-gray-100'}`;
     div.innerText = `Câu ${i + 1}: ${answer || '-'}`;
-    div.onclick = () => qs(`#q${i}`).scrollIntoView({ behavior: 'smooth' });
+
+    div.onclick = () => {
+      const qEl = qs(`#q${i}`);
+      if (qEl) qEl.scrollIntoView({ behavior: 'smooth' });
+    };
+
     sheet.appendChild(div);
   });
-  typeset(sheet);
+
+  typeset?.(sheet); // typeset MathJax nếu có
   updateReviewList();
 }
 
 function updateReviewList() {
   const reviewList = qs('#review-list');
+  if (!reviewList) return; // kiểm tra tồn tại
+
   reviewList.innerHTML = '';
+
   const flagged = JSON.parse(localStorage.getItem(nsKey('flaggedQuestions')) || '[]');
   flagged.forEach(i => {
     const li = document.createElement('li');
-    li.innerHTML = `Câu ${i + 1}`;
     li.className = 'cursor-pointer hover:underline';
-    li.onclick = () => qs(`#q${i}`).scrollIntoView({ behavior: 'smooth' });
+    li.innerText = `Câu ${i + 1}`;
+    li.onclick = () => {
+      const qEl = qs(`#q${i}`);
+      if (qEl) qEl.scrollIntoView({ behavior: 'smooth' });
+    };
     reviewList.appendChild(li);
   });
-  typeset(reviewList);
+
+  typeset?.(reviewList);
 }
 
 function toggleReview(index) {
@@ -1110,9 +1126,12 @@ function restoreAnswers() {
 }
 
 function clearTempStorage() {
-  localStorage.removeItem(nsKey('savedAnswers'));
-  localStorage.removeItem(nsKey('savedTime'));
-  localStorage.removeItem(nsKey('flaggedQuestions'));
+  // Xóa tất cả key localStorage có tiền tố 'xuka_{made}_{sbd}_'
+  Object.keys(localStorage).forEach(k => {
+    if (k.startsWith(`xuka_${currentMade || ''}_${currentStudentId || ''}_`)) {
+      localStorage.removeItem(k);
+    }
+  });
 }
 
 
@@ -1515,6 +1534,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
