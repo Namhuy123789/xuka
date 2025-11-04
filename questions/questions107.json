@@ -1,14 +1,42 @@
 [
   {
-    "noi_dung": "Em hãy nêu cảm nghĩ của mình về lòng nhân ái trong cuộc sống.(5 điểm)",
+    "noi_dung": "Xác định phương thức biểu đạt chính của đoạn trích. (1 điểm)",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Lòng nhân ái là tình yêu thương, sự quan tâm và giúp đỡ giữa con người với nhau. Người có lòng nhân ái luôn sẵn sàng chia sẻ, cảm thông và giúp đỡ người khác khi gặp khó khăn. Lòng nhân ái giúp xã hội trở nên tốt đẹp hơn."
+    "goi_y_dap_an": "Biểu đạt nghị luận (trình bày quan điểm, rút ra bài học sống)",
+    "chu_thich": "Phần I: Đọc hiểu (3 điểm). Đọc đoạn trích sau và trả lời các câu hỏi: Trong cuộc sống, mỗi con người đều phải trải qua những khó khăn, thử thách. Điều quan trọng là cách chúng ta đối mặt với thử thách ấy, bằng sự kiên nhẫn, lòng dũng cảm và niềm tin vào bản thân. Những ai biết giữ vững tinh thần trước gian nan sẽ trưởng thành và chín chắn hơn.",
+    "nhan_xet": ""
   },
   {
-    "noi_dung": "Phân tích ý nghĩa của hình ảnh bếp lửa trong bài thơ 'Bếp lửa' của Bằng Việt.(5 điểm)",
+    "noi_dung": "Theo đoạn trích, yếu tố nào giúp con người vượt qua khó khăn? (1 điểm)",
     "kieu_cau_hoi": "tu_luan",
     "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Hình ảnh bếp lửa tượng trưng cho tình bà cháu, cho sự tần tảo, yêu thương và hy sinh của người bà. Bếp lửa còn là biểu tượng của quê hương, của niềm tin và nghị lực sống mà bà truyền cho cháu."
+    "goi_y_dap_an": "Kiên nhẫn, dũng cảm và niềm tin vào bản thân.",
+    "chu_thich": "Phần I: Đọc hiểu (3 điểm). Đọc đoạn trích sau và trả lời các câu hỏi: Trong cuộc sống, mỗi con người đều phải trải qua những khó khăn, thử thách. Điều quan trọng là cách chúng ta đối mặt với thử thách ấy, bằng sự kiên nhẫn, lòng dũng cảm và niềm tin vào bản thân. Những ai biết giữ vững tinh thần trước gian nan sẽ trưởng thành và chín chắn hơn.",
+    "nhan_xet": ""
+  },
+  {
+    "noi_dung": "Nêu ý nghĩa của việc vượt qua thử thách đối với sự trưởng thành của con người. (1 điểm)",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Giúp con người trưởng thành, chín chắn hơn, rèn luyện tính cách và bản lĩnh sống.",
+    "chu_thich": "Phần I: Đọc hiểu (3 điểm). Đọc đoạn trích sau và trả lời các câu hỏi: Trong cuộc sống, mỗi con người đều phải trải qua những khó khăn, thử thách. Điều quan trọng là cách chúng ta đối mặt với thử thách ấy, bằng sự kiên nhẫn, lòng dũng cảm và niềm tin vào bản thân. Những ai biết giữ vững tinh thần trước gian nan sẽ trưởng thành và chín chắn hơn.",
+    "nhan_xet": ""
+  },
+  {
+    "noi_dung": "Em hãy viết một đoạn văn khoảng 200 chữ bàn về vai trò của lòng nhân ái trong cuộc sống. (2 điểm, nghị luận xã hội)",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Lòng nhân ái là tình yêu thương, sự quan tâm và giúp đỡ giữa con người với nhau. Người có lòng nhân ái biết sẻ chia, cảm thông, giúp đỡ người khác khi gặp khó khăn.Lòng nhân ái giúp xã hội trở nên tốt đẹp và gắn kết hơn.",
+    "chu_thich": "Phần II: Làm văn (7 điểm)",
+    "nhan_xet": ""
+  },
+  {
+    "noi_dung": "Phân tích hình ảnh bếp lửa trong bài thơ “Bếp lửa” của Bằng Việt và nêu cảm nhận về tình bà cháu. (5 điểm, nghị luận văn học)",
+    "kieu_cau_hoi": "tu_luan",
+    "tra_loi_hoc_sinh": "",
+    "goi_y_dap_an": "Hình ảnh bếp lửa tượng trưng cho tình bà cháu, sự tần tảo, hy sinh và yêu thương của người bà. Bếp lửa còn là biểu tượng của quê hương, của niềm tin và nghị lực sống mà bà truyền cho cháu.Qua đó, thể hiện tình cảm gia đình, sự biết ơn và gắn bó với cội nguồn.",
+    "chu_thich": "Phần II: Làm văn (7 điểm)",
+    "nhan_xet": ""
   }
 ]
