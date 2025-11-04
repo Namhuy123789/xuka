@@ -1003,24 +1003,25 @@ async function submitExam(autoByTime = false) {
   const sbd = qs('#sbd').value.trim();
   const dob = qs('#ngaysinh').value;
 
-  // --- LẤY TRỌNG SỐ TỰ LUẬN (RETRY ĐẾN KHI TÌM THẤY DOM) ---
+  // --- LẤY TRỌNG SỐ TỰ LUẬN ---
   function layTrongSoTuLuan() {
-  const tuLuan = {};
-  document.querySelectorAll(".tu-luan-row").forEach(row => {
-    const cau = row.querySelector(".question-number")?.value?.trim();
-    const diem = row.querySelector(".score-input")?.value?.trim();
-    if (cau && diem) tuLuan[cau] = parseFloat(diem);
-  });
-  console.log("TRỌNG SỐ TỰ LUẬN:", tuLuan);
-  return tuLuan;
- }
+    const tuLuan = {};
+    document.querySelectorAll(".tu-luan-row").forEach(row => {
+      const cau = row.querySelector(".question-number")?.value?.trim();
+      const diem = row.querySelector(".score-input")?.value?.trim();
+      if (cau && diem) tuLuan[cau] = parseFloat(diem);
+    });
+    console.log("TRỌNG SỐ TỰ LUẬN:", tuLuan);
+    return tuLuan;
+  }
+
   // --- Khởi tạo + CHỜ LẤY TU_LUAN ---
   let scoreTable = {
-   trac_nghiem: 0.25,
-   trac_nghiem_nhieu: 0.25,
-   dung_sai: 0.25,
-   dung_sai_nhieu_lua_chon: 1,
-   tu_luan: layTrongSoTuLuan() // ← DÙNG HÀM MỚI
+    trac_nghiem: 0.25,
+    trac_nghiem_nhieu: 0.25,
+    dung_sai: 0.25,
+    dung_sai_nhieu_lua_chon: 1,
+    tu_luan: layTrongSoTuLuan()
   };
   console.log("✅ Bảng trọng số mặc định:", scoreTable);
 
@@ -1118,7 +1119,6 @@ async function submitExam(autoByTime = false) {
     const kieu = (q.kieu_cau_hoi || 'trac_nghiem').toLowerCase();
     const student = readStudentAnswer(q, i);
     let selectedContent = '', correctContent = '', isCorrect = false, matchScore = 0;
-
     const questionNumber = String(q.so_thu_tu || (i + 1));
     const weight = kieu === 'tu_luan' ? (scoreTable.tu_luan[questionNumber] || 1) : (scoreTable[kieu] || 0);
 
@@ -1187,13 +1187,15 @@ async function submitExam(autoByTime = false) {
     });
   }
 
-  // --- TỔNG ĐIỂM + HIỂN THỊ (GIỮ NGUYÊN) ---
+  // --- TỔNG ĐIỂM ---
   const totalScore = scoreTracNghiem1 + scoreDungSai + scoreTuLuan;
   const finalScore = Math.min(totalScore, 10).toFixed(2);
 
   const now = new Date();
   const formattedDate = now.toLocaleString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
   const resultDiv = qs('#result-container'); resultDiv.classList.remove('hidden');
+
+  // --- Hiển thị kết quả ---
   let fileContent = `<div><strong>KẾT QUẢ BÀI THI</strong></div>
     <div><strong>Họ tên:</strong> ${safeHTML(name)}</div>
     <div><strong>SBD:</strong> ${safeHTML(sbd)}</div>
@@ -1228,7 +1230,7 @@ async function submitExam(autoByTime = false) {
   qs('#btn-download-doc')?.addEventListener('click', () => downloadDOC(name, made));
   qs('#btn-download-pdf')?.addEventListener('click', () => downloadPDF(name, made, answers, finalScore, formattedDate));
 
-  // --- GỬI SERVER (tu_luan = null nếu rỗng) ---
+  // --- GỬI SERVER ---
   const payload = {
     hoten: name, sbd, ngaysinh: dob, made, diem: finalScore, answers,
     score_table: {
@@ -1236,8 +1238,6 @@ async function submitExam(autoByTime = false) {
       tu_luan: Object.keys(scoreTable.tu_luan).length > 0 ? scoreTable.tu_luan : null
     }
   };
-
-  console.log("📤 GỬI /save_result:", JSON.stringify(payload.score_table, null, 2));
 
   try {
     const res = await fetch(`${API_BASE}/save_result`, {
@@ -1248,12 +1248,23 @@ async function submitExam(autoByTime = false) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     console.log("📥 PHẢN HỒI:", data);
-    if (data.status === "saved") console.log("✅ LƯU THÀNH CÔNG!");
-    else console.warn("⚠️ Lưu thất bại:", data.msg);
+
+    if (data.status === "saved") {
+      console.log("✅ LƯU THÀNH CÔNG!");
+
+      // 🔹 XÓA dữ liệu tạm thời sau khi nộp
+      const keys = ['savedAnswers','savedTime','flaggedQuestions','lastSaveTime'];
+      keys.forEach(k => localStorage.removeItem(nsKey(k)));
+
+      alert('Nộp bài thành công! Kết quả sẽ không lưu lại cũ khi mở lại.');
+    } else {
+      console.warn("⚠️ Lưu thất bại:", data.msg);
+    }
   } catch (err) {
     console.error('💥 Lỗi gửi:', err);
   }
 }
+
 
 
 function downloadDOC(name, made) {
@@ -1329,4 +1340,5 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
