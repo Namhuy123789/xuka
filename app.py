@@ -31,6 +31,17 @@ import vertexai
 from vertexai import init
 from vertexai.preview.generative_models import GenerativeModel
 from flask_wtf.csrf import generate_csrf
+import logging
+
+# 🧩 Ẩn log truy cập Flask (Werkzeug)
+class Filter400(logging.Filter):
+    def filter(self, record):
+        # Ẩn riêng log 400 (Bad Request)
+        return '" 400 ' not in record.getMessage()
+
+werk_log = logging.getLogger('werkzeug')
+werk_log.setLevel(logging.INFO)  # vẫn hiển thị log quan trọng
+werk_log.addFilter(Filter400())  # thêm bộ lọc để ẩn 400
 
 
 
@@ -1152,6 +1163,10 @@ def save_result():
     except Exception as e:
         app.logger.exception(f"Lỗi lưu kết quả: {e}")
         return jsonify({"status": "error", "msg": "Lỗi server nội bộ"}), 500
+
+
+
+
 
 
 # ✅ Route list toàn bộ file kết quả để kiểm tra
