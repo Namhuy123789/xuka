@@ -1269,8 +1269,6 @@ async function submitExam(autoByTime = false) {
       // 🔹 XÓA dữ liệu tạm thời sau khi nộp
       const keys = ['savedAnswers','savedTime','flaggedQuestions','lastSaveTime'];
       keys.forEach(k => localStorage.removeItem(nsKey(k)));
-
-      alert('Nộp bài thành công! Kết quả sẽ không lưu lại cũ khi mở lại.');
     } else {
       console.warn("⚠️ Lưu thất bại:", data.msg);
     }
@@ -1354,6 +1352,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
