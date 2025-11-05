@@ -27,7 +27,7 @@
   <header class="fixed top-0 left-0 right-0 bg-[#87CEFA] shadow-md z-50">
     <div class="flex justify-between items-center px-4 py-3">
       <h1 class="text-[#FF3300] text-2xl font-bold flex items-center">
-        <img src="https://raw.githubusercontent.com/huybo43534/xuka4/main/xuka.ico" class="w-8 h-8 mr-2">
+       <img src="https://cdn.jsdelivr.net/gh/Namhuy123789/xuka@main/xuka.png" class="w-8 h-8 inline-block mr-2">
         XUKA 4.0
         <span class="text-white text-sm ml-2">xuka.com.vn</span>
       </h1>
@@ -151,71 +151,63 @@
     }
 
     // === TẢI TRỌNG SỐ ===
-    async function loadWeights() {
-      const made = document.querySelector('#made-score').value.trim();
-      if (!made) return alert('Vui lòng nhập mã đề trước khi tải.');
-      try {
-        const res = await fetch(`/api/get_score_weights?made=${made}`);
-        const data = await res.json();
-        if (data.status === 'success') {
-          const w = data.weights;
-          // Cập nhật input trắc nghiệm
-          ['trac_nghiem', 'trac_nghiem_nhieu', 'dung_sai', 'dung_sai_nhieu_lua_chon'].forEach(k => {
-            const inp = document.querySelector(`.score-input[data-type="${k}"]`);
-            if (inp && w[k] !== undefined) inp.value = w[k];
-          });
-          // Cập nhật tự luận
-          if (w.tu_luan && typeof w.tu_luan === 'object') {
-            Object.entries(w.tu_luan).forEach(([cau, diem]) => {
-              const num = String(cau).replace(/^cau[_]?/i, '');
-              const row = Array.from(document.querySelectorAll(".tu-luan-row")).find(r =>
-                r.querySelector(".question-number")?.value?.trim() === num
-              );
-              if (row) row.querySelector(".score-input").value = diem;
-            });
-          }
-          document.querySelector('#status').textContent = `Đã tải trọng số của mã đề ${made}`;
-        } else {
-          document.querySelector('#status').textContent = `Không tìm thấy trọng số cho mã đề ${made}`;
-        }
-      } catch (e) {
-        console.error(e);
-        document.querySelector('#status').textContent = 'Lỗi kết nối server.';
-      }
-    }
+async function loadWeights() {
+  const made = document.querySelector('#made-score').value.trim();
+  if (!made) return alert('Vui lòng nhập mã đề trước khi tải.');
 
-    // === LƯU TRỌNG SỐ ===
-    async function saveWeights() {
-      const made = document.querySelector('#made-score').value.trim();
-      if (!made) return alert('Nhập mã đề trước khi lưu.');
+  try {
+    const res = await fetch(`/api/get_score_weights?made=${made}`);
+    const data = await res.json();
 
-      const weights = {};
-      // Lấy trắc nghiệm
-      document.querySelectorAll('.score-input[data-type]').forEach(inp => {
-        weights[inp.dataset.type] = parseFloat(inp.value) || 0;
+    if (data.status === 'success') {
+      const w = data.weights;
+
+      // --- Cập nhật các phần trắc nghiệm ---
+      ['trac_nghiem', 'trac_nghiem_nhieu', 'dung_sai', 'dung_sai_nhieu_lua_chon'].forEach(k => {
+        const inp = document.querySelector(`.score-input[data-type="${k}"]`);
+        if (inp && w[k] !== undefined) inp.value = w[k];
       });
-      // Lấy tự luận
-      weights.tu_luan = layTrongSoTuLuan();
 
-      try {
-        const csrf = await (await fetch('/api/get_csrf_token')).json().csrf_token;
-        const res = await fetch('/api/set_score_weights', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrf
-          },
-          body: JSON.stringify({ made, weights })
-        });
-        const data = await res.json();
-        document.querySelector('#status').textContent = data.status === 'success'
-          ? `Đã lưu trọng số cho mã đề ${made}`
-          : `Lỗi: ${data.message || 'Không rõ'}`;
-      } catch (e) {
-        console.error(e);
-        document.querySelector('#status').textContent = 'Lỗi kết nối server.';
+      // --- Làm mới phần tự luận ---
+      const tbody = document.querySelector("tbody");
+      // Xóa các hàng tự luận cũ
+      tbody.querySelectorAll(".tu-luan-row").forEach(r => r.closest("tr").remove());
+
+      // Nếu có dữ liệu tự luận, tạo lại các dòng
+      if (w.tu_luan && typeof w.tu_luan === 'object') {
+        const entries = Object.entries(w.tu_luan);
+        const firstRow = document.createElement('tr');
+        firstRow.innerHTML = `
+          <td class="border px-2 py-1" rowspan="${entries.length}">Tự luận</td>
+          <td class="border px-2 py-1 flex items-center gap-2 tu-luan-row">
+            <span>Câu</span>
+            <input type="number" min="1" step="1" value="${entries[0][0]}" class="question-number w-16 border rounded px-2 py-1">
+            <input type="number" min="0" step="0.1" value="${entries[0][1]}" class="score-input w-24 border rounded px-2 py-1" placeholder="Trọng số">
+          </td>`;
+        tbody.appendChild(firstRow);
+
+        // Thêm các dòng còn lại
+        for (let i = 1; i < entries.length; i++) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="border px-2 py-1 flex items-center gap-2 tu-luan-row">
+              <span>Câu</span>
+              <input type="number" min="1" step="1" value="${entries[i][0]}" class="question-number w-16 border rounded px-2 py-1">
+              <input type="number" min="0" step="0.1" value="${entries[i][1]}" class="score-input w-24 border rounded px-2 py-1" placeholder="Trọng số">
+            </td>`;
+          tbody.appendChild(tr);
+        }
       }
+
+      document.querySelector('#status').textContent = `✅ Đã tải trọng số của mã đề ${made}`;
+    } else {
+      document.querySelector('#status').textContent = `⚠️ Không tìm thấy trọng số cho mã đề ${made}`;
     }
+  } catch (e) {
+    console.error(e);
+    document.querySelector('#status').textContent = '❌ Lỗi kết nối server.';
+  }
+}
 
     // === SỰ KIỆN ===
     document.getElementById('load-scores').addEventListener('click', loadWeights);
