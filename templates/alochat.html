@@ -208,7 +208,38 @@ async function loadWeights() {
     document.querySelector('#status').textContent = '❌ Lỗi kết nối server.';
   }
 }
+// === LƯU TRỌNG SỐ ===
+    async function saveWeights() {
+      const made = document.querySelector('#made-score').value.trim();
+      if (!made) return alert('Nhập mã đề trước khi lưu.');
 
+      const weights = {};
+      // Lấy trắc nghiệm
+      document.querySelectorAll('.score-input[data-type]').forEach(inp => {
+        weights[inp.dataset.type] = parseFloat(inp.value) || 0;
+      });
+      // Lấy tự luận
+      weights.tu_luan = layTrongSoTuLuan();
+
+      try {
+        const csrf = await (await fetch('/api/get_csrf_token')).json().csrf_token;
+        const res = await fetch('/api/set_score_weights', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrf
+          },
+          body: JSON.stringify({ made, weights })
+        });
+        const data = await res.json();
+        document.querySelector('#status').textContent = data.status === 'success'
+          ? `Đã lưu trọng số cho mã đề ${made}`
+          : `Lỗi: ${data.message || 'Không rõ'}`;
+      } catch (e) {
+        console.error(e);
+        document.querySelector('#status').textContent = 'Lỗi kết nối server.';
+      }
+    }
     // === SỰ KIỆN ===
     document.getElementById('load-scores').addEventListener('click', loadWeights);
     document.getElementById('apply-scores').addEventListener('click', saveWeights);
@@ -221,3 +252,4 @@ async function loadWeights() {
   </script>
 </body>
 </html>
+
