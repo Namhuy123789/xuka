@@ -184,7 +184,8 @@ async function generateSingleQR() {
 
   try {
     resultDiv.innerHTML = "⏳ Đang mã hóa và tạo QR...";
-    const encQR = await encryptWithPassphrase(JSON.stringify({ username, password }), MASTER_PASSPHRASE);
+    const MASTER_PASSPHRASE = 'thay-bang-chuoi-bi-mat';
+
     const qrText = `v1.${encQR.salt}.${encQR.iv}.${encQR.data}`;
 
     resultDiv.innerHTML = "";
@@ -211,7 +212,8 @@ async function generateSingleQR() {
 }
 
 // --- Hàm mã hóa QR + Excel ---
-const MASTER_PASSPHRASE = "xuka_edu_secret"; 
+const MASTER_PASSPHRASE = 'thay-bang-chuoi-bi-mat';
+
 
 async function encryptWithPassphrase(text, passphrase) {
   const enc = new TextEncoder();
@@ -355,3 +357,4 @@ function copySample() {
 
 </body>
 </html>
+
