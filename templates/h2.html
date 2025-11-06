@@ -70,11 +70,6 @@
 </div>
   </div>
   </div>
-
- 
-
-
-
     <!-- Section 1: Tạo tài khoản -->
     <div id="registerSection" class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-inner">
 	<div class="flex justify-center mb-4">
@@ -97,13 +92,9 @@
       <p id="reg-msg" class="text-center font-semibold mt-2 hidden"></p>
 	  
     </div>
-
     <!-- Section 2: Excel -->
     <!-- Phần Excel -->
     <div id="shuffleSectionExcel" class="hidden max-w-md mx-auto bg-white p-6 rounded-lg shadow-inner">
- 
-
-
       <label class="block text-sm font-semibold mb-2">📁 Chọn file Excel tạo Tài khoản & QR theo danh sách:</label>
       <input type="file" id="excelFile" accept=".xlsx" onchange="generateAccountsFromExcel(event)" class="mx-auto block border rounded-lg p-2">
       <div id="status-account" class="mt-3 text-center font-semibold"></div>
@@ -353,221 +344,11 @@ function shuffleArray(arr) {
 function copySample() {
   const sample = `[
   {
-    "noi_dung": "AI là viết tắt của cụm từ nào?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Artificial Intelligence",
-      "B": "Automated Intelligence",
-      "C": "Artificial Instruction",
-      "D": "Automatic Instruction"
-    },
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Khái niệm về AI được định nghĩa như thế nào?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Khả năng của con người thực hiện công việc thông minh",
-      "B": "Khả năng của máy tính thực hiện các công việc không đòi hỏi trí tuệ",
-      "C": "Khả năng của máy tính làm những công việc mang tính trí tuệ của con người",
-      "D": "Khả năng của máy tính tự sửa chữa"
-    },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Google Dịch sử dụng công nghệ AI để thực hiện nhiệm vụ gì?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Chẩn đoán bệnh",
-      "B": "Dịch thuật",
-      "C": "Điều khiển xe hơi",
-      "D": "Khuyến nghị video"
-    },
+    "noi_dung": "Câu 1. Hàm số nào sau đây là hàm số bậc hai?",
+    "lua_chon": {"A": "y = 2x + 3", "B": "y = x^2 + 2x + 1", "C": "y = 1/x", "D": "y = √x"},
     "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Hệ chuyên gia MYCIN được phát triển trong lĩnh vực nào?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Tài chính",
-      "B": "Y học",
-      "C": "Giáo dục",
-      "D": "Thể thao"
-    },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Trí tuệ nhân tạo hẹp (AI yếu) được thiết kế để làm gì?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Thực hiện mọi công việc như con người",
-      "B": "Thực hiện một nhiệm vụ cụ thể",
-      "C": "Giải quyết mọi vấn đề trong cuộc sống",
-      "D": "Tự học hỏi và tự cải thiện"
-    },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Các năng lực trí tuệ thường được liên kết với AI không bao gồm khả năng nào sau đây?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Học",
-      "B": "Suy luận",
-      "C": "Nhận thức",
-      "D": "Ăn uống"
-    },
-    "dap_an_dung": "D"
-  },
-  {
-    "noi_dung": "Khả năng nào không thuộc về AI?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Thực hiện các công việc cảm xúc như con người",
-      "B": "Hiểu và xử lí ngôn ngữ tự nhiên",
-      "C": "Vận dụng logic và tri thức để đưa ra quyết định",
-      "D": "Học từ dữ liệu và điều chỉnh hành vi dựa trên thông tin mới"
-    },
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Loại cáp nào thường được sử dụng trong mạng LAN?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Cáp mạng",
-      "B": "Cáp đồng trục",
-      "C": "Cáp điện thoại",
-      "D": "Cáp quang"
-    },
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Thiết bị mạng nào dưới đây gửi dữ liệu đến tất cả các cổng khác khi nhận dữ liệu từ một cổng?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Router",
-      "B": "Switch",
-      "C": "Hub",
-      "D": "Access Point"
-    },
-    "dap_an_dung": "C"
-  },
-  {
-    "noi_dung": "Thiết bị nào dưới đây không phải là thiết bị mạng thông dụng?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Hub",
-      "B": "Switch",
-      "C": "Router",
-      "D": "Máy in"
-    },
-    "dap_an_dung": "D"
-  },
-  {
-    "noi_dung": "Điểm truy cập không dây (Wireless Access Point - WAP) dùng để làm gì?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Kết nối tất cả các thiết bị đầu cuối trong một khu vực mà không cần cáp mạng",
-      "B": "Kết nối các máy tính qua Internet",
-      "C": "Kết nối trực tiếp vào LAN",
-      "D": "Chuyển tiếp dữ liệu qua mạng viễn thông"
-    },
-    "dap_an_dung": "A"
-  },
-  {
-    "noi_dung": "Điểm truy cập không dây (WAP) được hiểu như thế nào?",
-    "kieu_cau_hoi": "trac_nghiem",
-    "lua_chon": {
-      "A": "Một bộ định tuyến không dây",
-      "B": "Một bộ thu phát Wi-Fi kết nối thiết bị đầu cuối trong mạng LAN",
-      "C": "Một loại cáp mạng",
-      "D": "Một thiết bị chuyển mạch mạng"
-    },
-    "dap_an_dung": "B"
-  },
-  {
-    "noi_dung": "Lĩnh vực dịch vụ nào được AI hỗ trợ mạnh mẽ?",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "AI hỗ trợ mạnh mẽ trong nhiều lĩnh vực dịch vụ, bao gồm trợ lý ảo và chatbot, dịch vụ khách hàng, tài chính ngân hàng, y tế, và giáo dục đào tạo."
-  },
-  {
-    "noi_dung": "AI được ứng dụng như thế nào trong việc điều khiển tự động?",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "AI giúp máy móc và thiết bị hoạt động tự động mà không cần sự can thiệp của con người, ví dụ như giám sát nguyên vật liệu, quét sản phẩm lỗi, và điều khiển thiết bị bay không người lái."
-  },
-  {
-    "noi_dung": "Switch trong mạng LAN có chức năng gì?",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Switch kết nối và chuyển tiếp dữ liệu giữa các thiết bị trong mạng LAN."
-  },
-  {
-    "noi_dung": "Trong quá trình kết nối máy tính với Switch, các bước sau đây có chính xác không? Chọn đúng hoặc sai.",
-    "kieu_cau_hoi": "dung_sai_nhieu_lua_chon",
-    "lua_chon": {
-      "a": "Sử dụng cáp mạng RJ45 là bước đúng để kết nối máy tính với Switch.",
-      "b": "Cáp mạng RJ45 không kết nối qua cổng USB, mà cắm vào cổng LAN trên máy tính và Switch.",
-      "c": "Kiểm tra đèn báo hiệu trên cổng là cách để xác nhận kết nối vật lý thành công.",
-      "d": "Mở trình duyệt web là một cách để kiểm tra kết nối mạng."
-    },
-    "dap_an_dung": {
-      "a": "Đúng",
-      "b": "Đúng",
-      "c": "Đúng",
-      "d": "Sai"
-    }
-  },
-  {
-    "noi_dung": "Trong quá trình chia sẻ dữ liệu từ máy tính PC-A trên cùng mạng LAN, các bước sau đây có đúng không? Chọn đúng hoặc sai.",
-    "kieu_cau_hoi": "dung_sai_nhieu_lua_chon",
-    "lua_chon": {
-      "a": "Để bắt đầu chia sẻ dữ liệu từ máy tính PC-A, cần chọn ổ cứng chứa dữ liệu và chọn Properties.",
-      "b": "Sau đó vào tab Sharing và chọn Advanced Sharing.",
-      "c": "Tích vào ô 'Share this folder' và chọn Permissions để cài đặt quyền truy cập.",
-      "d": "Không cần đặt tên chia sẻ cho ổ cứng; tên chia sẻ thường được đặt cho các thư mục hoặc máy in, không phải cho toàn bộ ổ cứng."
-    },
-    "dap_an_dung": {
-      "a": "Đúng",
-      "b": "Đúng",
-      "c": "Đúng",
-      "d": "Sai"
-    }
-  },
-  {
-    "noi_dung": "Phát biểu sau đây đúng hay sai về một số lĩnh vực phát triển nhờ ứng dụng AI?",
-    "kieu_cau_hoi": "dung_sai_nhieu_lua_chon",
-    "lua_chon": {
-      "a": "AI trong lĩnh vực robotics đã phát triển những robot thông minh có khả năng giao tiếp đa ngôn ngữ, như robot Grace ở Hồng Kông.",
-      "b": "AI có thể áp dụng trong điều khiển tự động, giúp máy móc và thiết bị hoạt động mà không cần sự can thiệp của con người.",
-      "c": "Dạng vân tay và khuôn mặt trên điện thoại di động là một ví dụ về các tiện ích thông minh phát triển nhờ AI.",
-      "d": "Trợ lý ảo và chatbot do AI phát triển có thể hỗ trợ trong nhiều lĩnh vực khác nhau, không chỉ giới hạn ở tài chính ngân hàng."
-    },
-    "dap_an_dung": {
-      "a": "Đúng",
-      "b": "Sai",
-      "c": "Đúng",
-      "d": "Sai"
-    }
-  },
-  {
-    "noi_dung": "Cảnh báo về ứng dụng AI sau đây đúng hay sai?",
-    "kieu_cau_hoi": "dung_sai_nhieu_lua_chon",
-    "lua_chon": {
-      "a": "AI có khả năng tự động hóa nhiều công việc, điều này có thể dẫn đến áp lực thất nghiệp cho một số ngành nghề.",
-      "b": "AI có thể vi phạm quyền riêng tư nếu dữ liệu cá nhân bị lạm dụng, đặc biệt khi thu thập và xử lý dữ liệu không đúng cách.",
-      "c": "AI có thể đe dọa an ninh hệ thống nếu bị tấn công xâm nhập hoặc thay đổi dữ liệu.",
-      "d": "AI có khả năng kiểm soát hoặc ảnh hưởng đến ý thức và hành vi của con người, điều này có thể xảy ra khi các hệ thống AI được thiết kế để điều chỉnh hoặc thay đổi các hành vi dựa trên dữ liệu."
-    },
-    "dap_an_dung": {
-      "a": "Đúng",
-      "b": "Sai",
-      "c": "Đúng",
-      "d": "Sai"
-    }
   }
-]
-;
+]`;
   navigator.clipboard.writeText(sample).then(() => alert("📋 Mẫu đề đã được sao chép!"));
 }
 </script>
