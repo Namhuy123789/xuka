@@ -70,6 +70,11 @@
 </div>
   </div>
   </div>
+
+ 
+
+
+
     <!-- Section 1: Tạo tài khoản -->
     <div id="registerSection" class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-inner">
 	<div class="flex justify-center mb-4">
@@ -92,9 +97,13 @@
       <p id="reg-msg" class="text-center font-semibold mt-2 hidden"></p>
 	  
     </div>
+
     <!-- Section 2: Excel -->
     <!-- Phần Excel -->
     <div id="shuffleSectionExcel" class="hidden max-w-md mx-auto bg-white p-6 rounded-lg shadow-inner">
+ 
+
+
       <label class="block text-sm font-semibold mb-2">📁 Chọn file Excel tạo Tài khoản & QR theo danh sách:</label>
       <input type="file" id="excelFile" accept=".xlsx" onchange="generateAccountsFromExcel(event)" class="mx-auto block border rounded-lg p-2">
       <div id="status-account" class="mt-3 text-center font-semibold"></div>
@@ -186,13 +195,19 @@ async function generateSingleQR() {
     resultDiv.innerHTML = "⏳ Đang mã hóa và tạo QR...";
     const MASTER_PASSPHRASE = 'thay-bang-chuoi-bi-mat';
 
+    // 🔹 Thêm dòng này để thực sự mã hóa username + password
+    const encQR = await encryptWithPassphrase(JSON.stringify({ username, password }), MASTER_PASSPHRASE);
+
+    // 🔹 Ghép dữ liệu QR đã mã hóa
     const qrText = `v1.${encQR.salt}.${encQR.iv}.${encQR.data}`;
 
+    // Hiển thị kết quả
     resultDiv.innerHTML = "";
     const qrContainer = document.createElement("div");
     new QRCode(qrContainer, { text: qrText, width: 200, height: 200 });
     resultDiv.appendChild(qrContainer);
 
+    // Nút tải QR
     const downloadBtn = document.createElement("button");
     downloadBtn.textContent = "📥 Tải QR về máy";
     downloadBtn.className = "bg-green-600 text-white mt-4 px-4 py-2 rounded hover:bg-green-700";
@@ -206,14 +221,15 @@ async function generateSingleQR() {
       link.download = `${username}_qr.png`;
       downloadBtn.onclick = () => link.click();
     }, 300);
+
   } catch (err) {
     resultDiv.innerHTML = `<p class="text-red-600 font-semibold">❌ Lỗi: ${err.message}</p>`;
   }
 }
 
+
 // --- Hàm mã hóa QR + Excel ---
 const MASTER_PASSPHRASE = 'thay-bang-chuoi-bi-mat';
-
 
 async function encryptWithPassphrase(text, passphrase) {
   const enc = new TextEncoder();
@@ -357,4 +373,3 @@ function copySample() {
 
 </body>
 </html>
-
