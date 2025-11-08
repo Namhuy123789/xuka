@@ -666,7 +666,42 @@ function renderQuestions(questions) {
 
     const type = (q.kieu_cau_hoi || '').toLowerCase();
 
-    // Tự luận
+    // ===== Hàm phụ hiển thị chú thích =====
+    function appendHint(hintText) {
+      if (!hintText || hintText.trim() === '') return;
+      const hintBox = document.createElement('div');
+      hintBox.className = 'mt-3 p-2 border border-yellow-200 bg-yellow-50 rounded text-sm text-gray-700';
+
+      const imgWidth = q.chu_thich_img_width || '300px';
+      const imgHeight = q.chu_thich_img_height || 'auto';
+
+      // Tách chuỗi theo khoảng trắng
+      const parts = hintText.trim().split(/\s+/);
+      parts.forEach(part => {
+        if (/\.(jpg|jpeg|png|gif|webp)$/i.test(part)) {
+          const imgWrapper = document.createElement('div');
+          imgWrapper.style.textAlign = 'center';
+          imgWrapper.className = 'my-2';
+          const img = document.createElement('img');
+          img.src = part;
+          img.alt = 'Chú thích hình ảnh';
+          img.style.maxWidth = imgWidth;
+          img.style.height = imgHeight;
+          img.className = 'rounded-md shadow-sm';
+          imgWrapper.appendChild(img);
+          hintBox.appendChild(imgWrapper);
+        } else {
+          const span = document.createElement('span');
+          if (hintBox.childNodes.length > 0) span.appendChild(document.createElement('br'));
+          span.textContent = part + ' ';
+          hintBox.appendChild(span);
+        }
+      });
+
+      div.appendChild(hintBox);
+    }
+
+    // ===== TỰ LUẬN =====
     if (type === 'tu_luan') {
       const ta = document.createElement('textarea');
       ta.id = `q${i}`;
@@ -674,12 +709,15 @@ function renderQuestions(questions) {
       ta.placeholder = 'Nhập câu trả lời...';
       ta.className = 'border p-2 w-full rounded-md';
       div.appendChild(ta);
+
+      appendHint(q.chu_thich);
     }
 
-    // Trắc nghiệm 1 lựa chọn
+    // ===== TRẮC NGHIỆM 1 LỰA CHỌN =====
     else if (q.lua_chon && type !== 'dung_sai_nhieu_lua_chon') {
       const wrap = document.createElement('div');
       wrap.className = 'border rounded-md p-2 max-h-40 overflow-y-auto space-y-2';
+
       Object.entries(q.lua_chon).forEach(([k, v]) => {
         const id = `q${i}_${k}`;
         const row = document.createElement('div');
@@ -692,14 +730,17 @@ function renderQuestions(questions) {
         `;
         wrap.appendChild(row);
       });
+
       div.appendChild(wrap);
+      appendHint(q.chu_thich);
     }
 
-    // Đúng/Sai nhiều lựa chọn
+    // ===== ĐÚNG/SAI NHIỀU LỰA CHỌN =====
     else if (type === 'dung_sai_nhieu_lua_chon' && q.lua_chon) {
       Object.entries(q.lua_chon).forEach(([k, v]) => {
         const subDiv = document.createElement('div');
         subDiv.className = 'mb-2 pl-4';
+
         const subLabel = document.createElement('p');
         subLabel.className = 'mb-1 font-medium';
         subLabel.innerHTML = `${k}. ${safeHTML(v)}`;
@@ -718,10 +759,13 @@ function renderQuestions(questions) {
         subDiv.appendChild(btnWrap);
         div.appendChild(subDiv);
       });
+
+      appendHint(q.chu_thich);
     }
 
     container.appendChild(div);
   });
+
 
 
 function showResults(questions) {
@@ -1352,6 +1396,7 @@ function downloadPDF(name, made, answers, finalScore, formattedDate) {
 document.addEventListener('DOMContentLoaded', () => {
   startQrScanner();
 });
+
 
 
 
