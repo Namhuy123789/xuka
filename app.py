@@ -737,6 +737,9 @@ def xuka():
 @app.route('/huongdan')
 def huongdan():
     return render_template('huongdan.html')
+@app.route('/loadtest')
+def huongdan():
+    return render_template('loadtest.html')
 
 @app.route('/tronde')
 def tronde():
