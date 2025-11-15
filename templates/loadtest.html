@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nhận diện vật thể - SSD MobileNet</title>
+ <!-- TensorFlow.js (phiên bản ổn định) -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0"></script>
+
+<!-- COCO-SSD mới nhất -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      margin: 20px;
+      background: #f4f7fa;
+    }
+    #video, #canvas {
+      width: 640px;
+      height: 480px;
+      border: 3px solid #3498db;
+      border-radius: 10px;
+      margin: 15px auto;
+      display: block;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    #canvas {
+      position: absolute;
+      top: 150px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+    .controls {
+      margin: 20px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      margin: 8px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    #startBtn { background: #27ae60; color: white; }
+    #stopBtn { background: #c0392b; color: white; }
+    #downloadBtn { background: #8e44ad; color: white; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #log {
+      width: 660px;
+      height: 180px;
+      margin: 20px auto;
+      padding: 12px;
+      background: #2c3e50;
+      color: #2ecc71;
+      font-family: monospace;
+      text-align: left;
+      border-radius: 8px;
+      overflow-y: auto;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+    }
+    .status {
+      font-weight: bold;
+      color: #e74c3c;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Giám thị AI giám sát phòng thi</h1>
+  <p>Nhận diện được các đồ vật như điện thoại, máy tính, tai nghe, người...trong khung hình</p>
+
+  <div class="status" id="status">Trạng thái: Đang chờ...</div>
+
+  <video id="video" autoplay muted playsinline></video>
+  <canvas id="canvas"></canvas>
+
+  <div class="controls">
+    <button id="startBtn">Bắt đầu</button>
+    <button id="stopBtn" disabled>Dừng</button>
+    <button id="downloadBtn" disabled>Tải Log</button>
+  </div>
+
+  <h3>Ghi log nhận diện</h3>
+  <div id="log"></div>
+
+  <script>
+    // === Biến toàn cục ===
+    const THRESHOLD = 0.5;
+    let model = null;
+    let video, canvas, ctx;
+    let isRunning = false;
+    let lastDetected = new Set();
+    let logElement, statusElement;
+
+    // === Khởi tạo ===
+    async function setup() {
+      logElement = document.getElementById('log');
+      statusElement = document.getElementById('status');
+      video = document.getElementById('video');
+      canvas = document.getElementById('canvas');
+      ctx = canvas.getContext('2d');
+
+      statusElement.textContent = "Đang tải mô hình...";
+      logElement.textContent = "Đang tải mô hình coco-ssd...\n";
+
+      try {
+        // Tải mô hình
+        model = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
+        statusElement.textContent = "Mô hình đã tải xong! Cho phép webcam...";
+        logElement.textContent += "Mô hình tải thành công!\n";
+
+        // Yêu cầu webcam
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { width: 640, height: 480 } 
+        });
+        video.srcObject = stream;
+
+        video.onloadedmetadata = () => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          statusElement.textContent = "Sẵn sàng! Nhấn 'Bắt đầu'";
+          document.getElementById('startBtn').disabled = false;
+          logElement.textContent += `Webcam: ${video.videoWidth}x${video.videoHeight}\n`;
+        };
+
+      } catch (err) {
+        statusElement.textContent = "Lỗi: " + err.message;
+        logElement.textContent += "LỖI: " + err.message + "\n";
+        console.error(err);
+      }
+    }
+
+    // === Ghi log ===
+    function writeLog(label, score) {
+      const time = new Date().toLocaleString('vi-VN', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+      const line = `[${time}] Nhận diện: ${label} (Độ tin cậy: ${(score*100).toFixed(1)}%)\n`;
+      
+      logElement.textContent += line;
+      logElement.scrollTop = logElement.scrollHeight;
+
+      // Lưu vào localStorage
+      const logs = (localStorage.getItem('detection_logs') || '') + line;
+      localStorage.setItem('detection_logs', logs);
+    }
+
+    // === Vẽ bounding box ===
+    function drawPredictions(predictions) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const currentDetected = new Set();
+
+      predictions.forEach(p => {
+        if (p.score >= THRESHOLD) {
+          const [x, y, width, height] = p.bbox;
+          currentDetected.add(p.class);
+
+          // Vẽ khung
+          ctx.strokeStyle = '#00ff00';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(x, y, width, height);
+
+          // Viền nền cho text
+          const text = `${p.class} ${(p.score*100).toFixed(0)}%`;
+          ctx.font = '20px Arial';
+          const textWidth = ctx.measureText(text).width;
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          ctx.fillRect(x, y - 28, textWidth + 12, 28);
+
+          // Text
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(text, x + 6, y - 6);
+        }
+      });
+
+      // Ghi log khi có vật thể mới
+      const newObjects = [...currentDetected].filter(obj => !lastDetected.has(obj));
+      newObjects.forEach(obj => {
+        const pred = predictions.find(p => p.class === obj);
+        writeLog(obj, pred.score);
+      });
+
+      lastDetected = currentDetected;
+    }
+
+    // === Vòng lặp nhận diện ===
+    async function detectLoop() {
+      if (!isRunning || !model) return;
+
+      try {
+        const predictions = await model.detect(video);
+        drawPredictions(predictions);
+      } catch (err) {
+        console.error("Lỗi detect:", err);
+      }
+
+      requestAnimationFrame(detectLoop);
+    }
+
+    // === Bắt đầu ===
+    document.getElementById('startBtn').onclick = async () => {
+      if (!model) {
+        await setup();
+        return;
+      }
+
+      isRunning = true;
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
+      document.getElementById('downloadBtn').disabled = false;
+      statusElement.textContent = "Đang nhận diện... (Nhấn 'q' để dừng)";
+      logElement.textContent += "Bắt đầu nhận diện...\n";
+      detectLoop();
+    };
+
+    // === Dừng ===
+    document.getElementById('stopBtn').onclick = () => {
+      isRunning = false;
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('stopBtn').disabled = true;
+      statusElement.textContent = "Đã dừng. Nhấn 'Bắt đầu' để tiếp tục.";
+      logElement.textContent += "--- Đã dừng nhận diện ---\n";
+    };
+
+    // === Tải log ===
+    document.getElementById('downloadBtn').onclick = () => {
+      const logs = localStorage.getItem('detection_logs') || 'Chưa có log.';
+      const blob = new Blob([logs], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'detection_log.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // === Phím tắt 'q' ===
+    window.addEventListener('keydown', e => {
+      if (e.key === 'q' && isRunning) {
+        document.getElementById('stopBtn').click();
+      }
+    });
+
+    // === Khởi động ===
+    window.onload = () => {
+      logElement.textContent = "Nhấn 'Bắt đầu' để chạy.\n";
+      statusElement.textContent = "Sẵn sàng. Nhấn 'Bắt đầu' để tải mô hình & webcam.";
+      document.getElementById('startBtn').disabled = false;
+    };
+  </script>
+</body>
+</html>
