@@ -150,16 +150,6 @@
     "goi_y_dap_an": "Switch kết nối và chuyển tiếp dữ liệu giữa các thiết bị trong mạng LAN."
   },
   {
-    "noi_dung": "Xác định phương thức biểu đạt chính của đoạn trích. (1 điểm)",
-    "kieu_cau_hoi": "tu_luan",
-    "tra_loi_hoc_sinh": "",
-    "goi_y_dap_an": "Biểu đạt nghị luận (trình bày quan điểm, rút ra bài học sống)",
-    "chu_thich": "Biểu đạt nghị luận (trình bày quan điểm, rút ra bài học sống). /static/h.jpg",
-	"chu_thich_img_width": "500px",
-    "chu_thich_img_height": "150px",
-    "nhan_xet": ""
-  },
-  {
     "noi_dung": "Trong quá trình kết nối máy tính với Switch, các bước sau đây có chính xác không? Chọn đúng hoặc sai.",
     "kieu_cau_hoi": "dung_sai_nhieu_lua_chon",
     "lua_chon": {
