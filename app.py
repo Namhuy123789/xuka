@@ -414,34 +414,65 @@ def set_score_weights():
 
 
 
+SYSTEM_PROMPT = """
+Bạn là Trợ lý AI chính thức của nền tảng giáo dục xuka.com.vn.
+
+QUY TẮC BẮT BUỘC:
+- CHỈ trả lời các câu hỏi liên quan trực tiếp đến:
+  • xuka.com.vn/web
+  • hệ thống thi trực tuyến Xuka
+  • AI chấm tự luận ngữ nghĩa
+  • AI Proctoring (giám sát thi)
+  • trợ lý học tập, trợ giảng AI trong Xuka
+- KHÔNG trả lời nội dung ngoài phạm vi trên.
+- Nếu câu hỏi không liên quan, trả lời đúng câu:
+  "Câu hỏi này nằm ngoài phạm vi hỗ trợ của hệ thống Xuka."
+"""
+
 
 @app.route("/ask", methods=["POST"])
 @csrf.exempt
 def ask():
     data = request.get_json(silent=True) or {}
     user_msg = data.get("message", "").strip()
+
     if not user_msg:
         return jsonify({"error": "No message provided"}), 400
 
+    XUKA_KEYWORDS = [
+        "xuka", "xuka.com.vn/web", "thi trực tuyến",
+        "chấm tự luận", "ai chấm bài",
+        "proctoring", "giám sát thi",
+        "trợ lý ai", "trợ giảng ai",
+        "hệ thống thi", "đề thi", "bài thi"
+    ]
+
+    if not any(k.lower() in user_msg.lower() for k in XUKA_KEYWORDS):
+        return jsonify({
+            "reply": "Câu hỏi này nằm ngoài phạm vi hỗ trợ của hệ thống Xuka."
+        })
+
     try:
         resp = model.generate_content(
-            f"Bạn là trợ lý AI thông minh, trả lời mọi câu hỏi một cách chi tiết, chính xác và lịch sự.\n\nNgười dùng: {user_msg}"
+            f"{SYSTEM_PROMPT}\n\nNgười dùng: {user_msg}"
         )
 
-        # Kiểm tra cấu trúc response an toàn
         reply = ""
         if getattr(resp, "candidates", None):
             parts = getattr(resp.candidates[0].content, "parts", [])
-            reply = "".join([getattr(p, "text", "") for p in parts]).strip()
+            reply = "".join(getattr(p, "text", "") for p in parts).strip()
 
         if not reply:
-            reply = "AI không trả lời được câu hỏi này."
+            reply = "AI không thể trả lời câu hỏi này trong phạm vi Xuka."
 
         return jsonify({"reply": reply})
 
     except Exception as e:
         app.logger.exception(f"Lỗi /ask: {e}")
-        return jsonify({"error": str(e), "reply": "Lỗi server nội bộ"}), 500
+        return jsonify({
+            "reply": "Lỗi hệ thống Xuka. Vui lòng thử lại sau."
+        }), 500
+
 
 @app.after_request
 def add_security_headers(response):
