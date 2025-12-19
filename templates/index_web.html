@@ -203,18 +203,101 @@
   <!-- Left Column -->
 <aside id="left-column" class="flex flex-col gap-3 w-full sm:w-1/3">
 
-    <div class="card h-full">
-      <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">🌍 TRỢ LÝ XUKA - AI</h2>
-    <div id="chat-box" class="h-60 overflow-y-auto border rounded-lg p-3 bg-gray-50 mb-4"></div>
-    <div class="flex">
-      <input id="msg" type="text" placeholder="Nhập câu hỏi..." 
-             class="flex-grow border rounded-l-lg px-3 py-2 focus:outline-none" />
-      <button onclick="sendMessage()" 
-              class="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700">
-        Gửi
-      </button>
-    </div>
+  <div class="card h-full">
+    <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">
+      📰 ĐIỂM NỔI BẬT XUKA
+    </h2>
+
+    <!-- TABLE (NO HORIZONTAL SCROLL) -->
+    <div class="mt-4">
+      <table
+        class="w-full border border-gray-300 rounded-lg
+               text-[11px] leading-snug
+               border-collapse table-fixed">
+
+        <thead class="bg-blue-600 text-white">
+          <tr>
+            <th class="border px-1 py-3 text-left">Nền tảng</th>
+            <th class="border px-1 py-3">Trắc nghiệm</th>
+            <th class="border px-1 py-3">Tự luận</th>
+            <th class="border px-1 py-3">AI tự luận</th>
+            <th class="border px-1 py-3">Face</th>
+            <th class="border px-1 py-3">Phục hồi</th>
+            <th class="border px-1 py-3">Tùy chỉnh</th>
+            <th class="border px-1 py-3 text-left">Mạnh</th>
+          </tr>
+        </thead>
+
+        <tbody class="text-gray-700 break-words">
+          <!-- XUKA -->
+          <tr class="bg-blue-50 font-semibold">
+            <td class="border px-1 py-2 text-blue-700">XUKA</td>
+            <td class="border text-center">✔️</td>
+            <td class="border text-center">✔️</td>
+            <td class="border text-center text-green-700">✔️</td>
+            <td class="border text-center">✔️</td>
+            <td class="border text-center">✔️</td>
+            <td class="border text-center">✔️</td>
+            <td class="border px-1 py-2 text-blue-700">
+              Thi online
+            </td>
+          </tr>
+
+          <tr>
+            <td class="border px-1 py-2">Forms</td>
+            <td class="border text-center">✔️</td>
+            <td class="border text-center">✔️</td>
+            <td class="border text-center text-red-600">❌</td>
+            <td class="border text-center">❌</td>
+            <td class="border text-center">❌</td>
+            <td class="border text-center text-yellow-600">⚠️</td>
+            <td class="border px-1 py-2">Bài tập</td>
+          </tr>
+
+          <tr class="bg-gray-50">
+            <td class="border px-1 py-2">Azota</td>
+            <td class="border text-center">✔️</td>
+            <td class="border text-center">✔️</td>
+            <td class="border text-center text-yellow-600">⚠️</td>
+            <td class="border text-center">❌</td>
+            <td class="border text-center">❌</td>
+            <td class="border text-center text-yellow-600">⚠️</td>
+            <td class="border px-1 py-2">Giao bài</td>
+          </tr>
+
+          <tr>
+            <td class="border px-1 py-2">Quizizz</td>
+            <td class="border text-center">✔️</td>
+            <td class="border text-center">⚠️</td>
+            <td class="border text-center text-red-600">❌</td>
+            <td class="border text-center">❌</td>
+            <td class="border text-center">❌</td>
+            <td class="border text-center">❌</td>
+            <td class="border px-1 py-2">Game</td>
+          </tr>
+
+          <tr class="bg-gray-50">
+            <td class="border px-1 py-2">Kahoot</td>
+            <td class="border text-center">✔️</td>
+            <td class="border text-center">❌</td>
+            <td class="border text-center text-red-600">❌</td>
+            <td class="border text-center">❌</td>
+            <td class="border text-center">❌</td>
+            <td class="border text-center">❌</td>
+            <td class="border px-1 py-2">Giải trí</td>
+          </tr>
+        </tbody>
+
+      </table>
+    
+
+   
+
+
   </div>
+  </div>
+
+  
     <div class="card h-full">
       <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
         <li class="flex items-center gap-2">
@@ -366,13 +449,14 @@
 <aside id="right-column" class="flex flex-col gap-3 w-full sm:w-1/3">
 
     <div class="card h-full">
-      <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">📰 SỰ KHÁC BIỆT</h2>
+      <h2 class="text-xl font-bold text-blue-800 border-b pb-2 mb-3">📰 SỰ KHÁCH BIỆT </h2>
       <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
       <li class="flex items-start space-x-3">
   <div>
+    
     <p class="text-gray-500 text-justify leading-relaxed mt-1">
       Đây là mô hình đầu tiên ứng dụng AI hiểu ngữ nghĩa vào chấm tự luận, giúp nâng cao độ chính xác, tính khách quan và hiệu quả trong công tác đánh giá học sinh (Mã đề 107,111...). Là một bước tiến mới trong việc ứng dụng trí tuệ nhân tạo vào giáo dục, góp phần thúc đẩy quá trình chuyển đổi số toàn diện của ngành, thực hiện thắng lợi nghị quyết 57. Hệ thống có nhiều tính năng tiên tiến và hiện đại như nhận diện khuôn mặt, quét QR, tự phục hồi bài thi khi mất điện..., thi trắc nghiệm và tự luận... cho kết quả nhanh và chính xác, hệ thống giám sát thi và chống gian lận thông minh. Giải quyết bài toán thi giấy truyền thống tốn kém .
-    </p>
+   </p>
   </div>
 </li>
       </ul>
@@ -842,5 +926,80 @@ async function sendMessage(){
       }
     }
 </script>
+
+<!-- ===== XUKA AI CHATBOT POPUP ===== -->
+
+<!-- Callout + Button -->
+<div class="fixed bottom-5 right-5 z-50 flex flex-col items-end space-y-2">
+
+  <!-- Text bên ngoài trợ lý AI -->
+  <div id="xuka-ai-callout"
+       class="bg-white border border-gray-200 rounded-lg shadow-md
+              px-4 py-2 text-sm text-gray-700 max-w-[260px]">
+    <div class="font-semibold text-blue-700">
+      Trợ lý AI hỗ trợ XUKA
+    </div>
+    
+  </div>
+
+  <!-- Nút mở chatbot -->
+  <div id="xuka-ai-btn"
+       class="bg-blue-600 text-white rounded-full w-14 h-14
+              flex items-center justify-center shadow-xl cursor-pointer
+              hover:bg-blue-700 transition">
+    💬
+  </div>
+</div>
+
+<!-- Popup chat -->
+<div id="xuka-ai-popup"
+     class="hidden fixed bottom-24 right-5 z-50 w-80 h-[420px]
+            bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+
+  <!-- Header -->
+  <div class="bg-blue-600 text-white px-4 py-3 flex justify-between items-center">
+    <span class="font-semibold">XUKA AI – Trợ lý hỗ trợ</span>
+    <button id="xuka-ai-close" class="text-xl leading-none" type="button">&times;</button>
+  </div>
+
+  <!-- Chat content -->
+  <div id="chat-box"
+       class="flex-1 p-3 overflow-y-auto bg-gray-50 text-sm"></div>
+
+  <!-- Input -->
+  <div class="border-t p-2 flex">
+    <input id="msg" type="text"
+           placeholder="Nhập câu hỏi về XUKA..."
+           class="flex-1 border rounded-l-lg px-3 py-2 focus:outline-none text-sm"
+           onkeydown="if(event.key==='Enter'){ event.preventDefault(); sendMessage(); }">
+    <button type="button" onclick="sendMessage()"
+            class="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 text-sm">
+      Gửi
+    </button>
+  </div>
+
+  <!-- Footer note -->
+  <div class="text-xs text-gray-400 text-center py-1">
+    
+  </div>
+</div>
+
+<script>
+  const aiBtn     = document.getElementById("xuka-ai-btn");
+  const aiPopup   = document.getElementById("xuka-ai-popup");
+  const aiClose   = document.getElementById("xuka-ai-close");
+  const aiCallout = document.getElementById("xuka-ai-callout");
+
+  aiBtn.onclick = () => {
+    aiPopup.classList.toggle("hidden");
+    if (!aiPopup.classList.contains("hidden")) {
+      aiCallout.style.display = "none"; // Ẩn text khi đã mở chat
+    }
+  };
+
+  aiClose.onclick = () => aiPopup.classList.add("hidden");
+</script>
+
+
 </body>
 </html>
