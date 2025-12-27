@@ -761,6 +761,9 @@ def login():
 def alochat():
     return render_template('alochat.html')
 
+@app.route('/xo')
+def xo():
+    return render_template('xo.html')
 @socketio.on("send_file")
 def handle_file(data):
     emit("receive_file", data, broadcast=True, include_self=False)
