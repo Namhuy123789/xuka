@@ -798,6 +798,11 @@ def xuka():
 def xo():
     return render_template('xo.html')
 
+@app.route('/GT')
+def GT():
+    return render_template('GT.html')
+
+
 @app.route('/huongdan')
 def huongdan():
     return render_template('huongdan.html')
