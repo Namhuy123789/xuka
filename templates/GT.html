@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XUKA 4.0 – Đánh giá phần mềm AI giáo dục</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background: linear-gradient(to bottom, #f8fafc, #eef2ff);
+      min-height: 100vh;
+    }
+  </style>
+</head>
+
+<body class="font-sans text-gray-800">
+
+ <!-- Navbar -->
+  <div class="fixed top-0 left-0 right-0 bg-[#87CEFA] shadow-md z-50">
+    <div class="flex justify-between items-center px-4 py-3">
+      <h1 class="text-[#FF3300] text-2xl font-bold flex items-center">
+        <img src="https://raw.githubusercontent.com/Namhuy123789/xuka/main/xuka.ico" class="w-8 h-8 inline-block mr-2">
+        XUKA 4.0
+        <span class="text-white text-sm ml-2">xuka.com.vn</span>
+      </h1>
+      <div class="flex items-center gap-2">
+        <img src="https://flagcdn.com/w20/vn.png" alt="VN" class="h-5 w-8 object-cover rounded" />
+        <span class="text-sm font-medium">TRƯỜNG THPT PHƯỚC LONG - ĐỒNG NAI</span>
+      </div>
+    </div>
+  </div>
+<body class="bg-gray-100 text-gray-800">
+  <!-- Container -->
+  <div class="max-w-6xl mx-auto px-3 py-6">
+
+
+  <!-- ===== MAIN ===== -->
+  <main class="pt-28 max-w-7xl mx-auto px-4">
+
+    <!-- ===== AWARD / ACHIEVEMENT ===== -->
+    <section class="mb-8 flex justify-center">
+      <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 px-6 py-3 rounded-xl shadow font-semibold text-center">
+        🏆 Phần mềm XUKA đạt giải nhất Cuộc thi Khoa học Kỹ thuật Thị xã Phước Long năm 2025
+      </div>
+    </section>
+
+    <!-- ===== HERO IMAGE ===== -->
+    <section class="flex justify-center mb-12">
+      <img
+        src="https://cdn.jsdelivr.net/gh/Namhuy123789/xuka@main/do.jpg"
+        alt="XUKA Dashboard"
+        class="rounded-2xl shadow-xl max-w-full w-[900px]"
+      />
+    </section>
+
+
+
+
+    <!-- ===== VIDEO SECTION ===== -->
+    <section class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+      <h2 class="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+        🎥 Video giới thiệu XUKA 4.0
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="aspect-video">
+          <iframe
+            class="w-full h-full rounded-xl shadow"
+            src="https://www.youtube.com/embed/FxIGbF24gkU"
+            allowfullscreen
+          ></iframe>
+        </div>
+
+        <div class="aspect-video">
+          <iframe
+            class="w-full h-full rounded-xl shadow"
+            src="https://www.youtube.com/embed/jqwQPZ2uNyc"
+            allowfullscreen
+          ></iframe>
+        </div>
+
+        <div class="aspect-video">
+          <iframe
+            class="w-full h-full rounded-xl shadow"
+            src="https://www.youtube.com/embed/l_4eslm2VEY"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="mt-14 py-6 text-center text-gray-600 text-sm">
+    Bản quyền © 2025
+    <span class="font-bold text-red-600">PHẠM HUY TUÂN</span>
+    · ĐT:
+    <a href="tel:0389897989" class="text-blue-600 hover:underline">
+      0389 897 989
+    </a>
+  </footer>
+
+  <script src="{{ url_for('static', filename='fix-svg-viewbox.js') }}"></script>
+</body>
+</html>
