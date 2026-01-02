@@ -56,8 +56,58 @@
         </li>
         <li><strong>Đối tượng sử dụng:</strong> Tất cả các kỳ thi - kiểm tra  liên quan trắc nghiệm, tự luận, tự luận cộng trắc nghiệm</li>
         <li><strong>Công nghệ:</strong> HTML, CSS (Tailwind), JavaScript, html5-qrcode, backend API.....</li>
-		<li><strong>Sự khác biệt:</strong>Đây là mô hình đầu tiên ứng dụng AI hiểu ngữ nghĩa vào chấm tự luận, giúp nâng cao độ chính xác, tính khách quan và hiệu quả trong công tác đánh giá học sinh (Mã đề 107,111...). Là một bước tiến mới trong việc ứng dụng trí tuệ nhân tạo vào giáo dục, góp phần thúc đẩy quá trình chuyển đổi số toàn diện của ngành, thực hiện thắng lợi nghị quyết 57. Hệ thống có nhiều tính năng tiên tiến và hiện đại như nhận diện khuôn mặt, quét QR, tự phục hồi bài thi khi mất điện..., thi trắc nghiệm và tự luận... cho kết quả nhanh và chính xác, hệ thống giám sát thi và chống gian lận thông minh. Giải quyết bài toán thi giấy truyền thống tốn kém .Về mặt kỹ thuật, hệ thống chấm tự luận của XUKA được xây dựng theo kiến trúc chấm điểm lai (hybrid scoring architecture), trong đó quá trình đánh giá được tách thành hai lớp chức năng độc lập: lớp ước lượng ngữ nghĩa và lớp ra quyết định điểm số. Ở lớp thứ nhất, dữ liệu bài làm được tiền xử lý thông qua các bước chuẩn hoá văn bản, phân tách ý và loại bỏ các yếu tố nhiễu về hình thức nhằm đảm bảo đầu vào đồng nhất. Hệ thống sử dụng mô hình AI ngôn ngữ để ước lượng mức độ tương đồng về mặt ngữ nghĩa giữa câu trả lời của học sinh và tập đáp án hoặc gợi ý chuẩn, từ đó sinh ra các chỉ số tương đồng liên tục trong miền giá trị [0,1], phản ánh mức độ phù hợp về nội dung kiến thức thay vì sự trùng khớp bề mặt của từ ngữ. Ở lớp thứ hai, các chỉ số ngữ nghĩa này được đưa vào một mô-đun ra quyết định dựa trên luật (rule-based decision engine), nơi áp dụng các quy tắc chấm điểm sư phạm được xây dựng tường minh, bao gồm thang điểm rời phù hợp với thực tiễn chấm thi, cơ chế làm tròn điểm và các tiêu chí cộng điểm cho các nội dung trả lời sáng tạo hoặc mở rộng nhưng vẫn đúng kiến thức. Điểm số cuối cùng được xác định bởi mô-đun luật, không phải bởi mô hình AI. Bên cạnh đó, hệ thống được thiết kế với cơ chế kiểm soát và dự phòng, cho phép tự động chuyển sang các thuật toán đánh giá khác khi mô hình AI không khả dụng hoặc cho kết quả thiếu ổn định, qua đó đảm bảo tính liên tục, độ ổn định và khả năng giải trình của kết quả chấm. Cách tiếp cận phân lớp và kiểm soát này giúp hệ thống giảm phụ thuộc vào mô hình AI cụ thể, hạn chế sai số ngẫu nhiên của mô hình học máy, đồng thời đáp ứng yêu cầu triển khai trong các hệ thống kiểm tra, đánh giá quy mô lớn trong giáo dục. </li>
-        <li><strong>Tương thích:</strong> Chrome, Edge, Firefox, Cốc Cốc coc, Máy tính, Mobile, Ipad ....</li>
+		<li>
+  <strong>Sự khác biệt:</strong>
+  Đây là mô hình đầu tiên ứng dụng AI hiểu ngữ nghĩa vào chấm tự luận, 
+  giúp nâng cao độ chính xác, tính khách quan và hiệu quả trong công tác đánh giá học sinh 
+  (Mã đề 107, 111…). 
+  Đây là một bước tiến mới trong việc ứng dụng trí tuệ nhân tạo vào giáo dục, 
+  góp phần thúc đẩy quá trình chuyển đổi số toàn diện của ngành, 
+  thực hiện thắng lợi Nghị quyết 57.
+  <br><br>
+
+  Hệ thống tích hợp nhiều tính năng tiên tiến và hiện đại như: 
+  nhận diện khuôn mặt, quét QR, tự phục hồi bài thi khi mất điện; 
+  hỗ trợ thi trắc nghiệm và tự luận cho kết quả nhanh, chính xác; 
+  hệ thống giám sát thi và chống gian lận thông minh. 
+  Qua đó, giải quyết hiệu quả bài toán thi giấy truyền thống tốn kém và kém linh hoạt.
+  <br><br>
+
+  <strong>Về mặt kỹ thuật,</strong> hệ thống chấm tự luận của XUKA được xây dựng theo 
+  kiến trúc chấm điểm lai (<em>hybrid scoring architecture</em>), 
+  trong đó quá trình đánh giá được tách thành hai lớp chức năng độc lập: 
+  lớp ước lượng ngữ nghĩa và lớp ra quyết định điểm số.
+  <br><br>
+
+  Ở lớp thứ nhất, dữ liệu bài làm được tiền xử lý thông qua các bước chuẩn hoá văn bản, 
+  phân tách ý và loại bỏ các yếu tố nhiễu về hình thức nhằm đảm bảo đầu vào đồng nhất. 
+  Hệ thống sử dụng mô hình AI ngôn ngữ để ước lượng mức độ tương đồng ngữ nghĩa 
+  giữa câu trả lời của học sinh và tập đáp án hoặc gợi ý chuẩn, 
+  từ đó sinh ra các chỉ số tương đồng liên tục trong miền giá trị [0,1], 
+  phản ánh mức độ phù hợp về nội dung kiến thức thay vì sự trùng khớp bề mặt của từ ngữ.
+  <br><br>
+
+  Ở lớp thứ hai, các chỉ số ngữ nghĩa này được đưa vào mô-đun ra quyết định dựa trên luật 
+  (<em>rule-based decision engine</em>), 
+  nơi áp dụng các quy tắc chấm điểm sư phạm được xây dựng tường minh, 
+  bao gồm thang điểm rời phù hợp với thực tiễn chấm thi, 
+  cơ chế làm tròn điểm và các tiêu chí cộng điểm cho nội dung trả lời sáng tạo 
+  hoặc mở rộng nhưng vẫn đúng kiến thức.
+  <br><br>
+
+  Điểm số cuối cùng được xác định bởi mô-đun luật, không phải trực tiếp bởi mô hình AI. 
+  Bên cạnh đó, hệ thống được thiết kế với cơ chế kiểm soát và dự phòng, 
+  cho phép tự động chuyển sang các thuật toán đánh giá khác khi mô hình AI không khả dụng 
+  hoặc cho kết quả thiếu ổn định, qua đó đảm bảo tính liên tục, độ ổn định 
+  và khả năng giải trình của kết quả chấm.
+  <br><br>
+
+  Cách tiếp cận phân lớp và kiểm soát này giúp hệ thống giảm phụ thuộc vào mô hình AI cụ thể, 
+  hạn chế sai số ngẫu nhiên của mô hình học máy, đồng thời đáp ứng yêu cầu triển khai 
+  trong các hệ thống kiểm tra, đánh giá quy mô lớn trong giáo dục.
+</li>
+
+		  <li><strong>Tương thích:</strong> Chrome, Edge, Firefox, Cốc Cốc coc, Máy tính, Mobile, Ipad ....</li>
 		  <li><strong>📊   Trang web và phần mềm XUKA 4.0 chuyên về tổ chức các kỳ thi và kiểm tra     </strong>
 </li>
       </ul>
